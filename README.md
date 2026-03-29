@@ -14,14 +14,14 @@ The active implementation targets a professional `Godot 4` codebase for PC, usin
 
 ## Current Status
 
-This repo is in `systems slice` state.
+This repo is in `mission systems slice` state.
 
 What exists now:
 
 - a new Godot project scaffold in [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game)
 - importer tooling in [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers)
 - planning and continuation docs in [`docs/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs)
-- a deterministic Mission 1 map with worker economy, first construction, production, research, combat, and save/load support
+- a deterministic Mission 1 map with worker economy, first construction, production, research, combat, save/load, runtime objectives, and scripted mission events
 
 ## Project Layout
 
@@ -68,6 +68,7 @@ In the current Godot vertical slice:
 - `F5` saves to `user://save_slot_1.json`
 - `F9` loads from `user://save_slot_1.json`
 - `Esc` clears build mode
+- the HUD now shows objective progress, recent mission alerts, and selection detail
 
 ## Constraints
 

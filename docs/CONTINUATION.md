@@ -46,18 +46,23 @@ Working now:
 - player combat units and enemy units now run through the same lightweight combat runtime
 - Mission 1 map includes scripted enemy pressure data
 - save/load exists for the current runtime state
+- runtime mission objectives now drive victory state instead of only the old stockpile fallback
+- Mission 1 map now includes scripted mission-event beats, rewards, and reinforcements
+- the debug HUD now surfaces objective progress, recent mission alerts, and deeper selection detail
 - a Godot smoke-test script exists for the vertical-slice resource loop
 - a second Godot smoke-test script exists for builder construction
 - a third Godot smoke-test script exists for production, research, combat, and save/load
+- a fourth Godot smoke-test script exists for runtime objectives
+- a fifth Godot smoke-test script exists for mission events and mission-event save/load persistence
 - issue and PR templates exist for public repo workflow
 - the old browser prototype files have been removed from the active codebase
 
 Not done yet:
 
-- richer mission scripting and objective logic beyond the bootstrap stockpile goal
 - more complete unit rosters, buildings, and faction rules
 - stronger command queueing, selection UX, and HUD feedback
 - diplomacy, campaign progression, and save-slot UX
+- broader mission scripting coverage across additional scenarios and campaign flow
 - expanded-content ruleset layered cleanly on top of the classic remake
 
 ## Important Paths
@@ -69,19 +74,22 @@ Not done yet:
 - Godot classic loader: [`game/scripts/data/classic_database.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/data/classic_database.gd)
 - Vertical-slice map: [`game/data/classic/vertical_slice/mission_001_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/mission_001_map.json)
 - Godot map loader: [`game/scripts/core/map_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/map_state.gd)
+- Mission-event runtime: [`game/scripts/core/mission_event_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/mission_event_state.gd)
 - Worker runtime: [`game/scripts/simulation/worker_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/worker_unit_state.gd)
 - Combat runtime: [`game/scripts/simulation/combat_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/combat_unit_state.gd)
 - Resource runtime: [`game/scripts/simulation/resource_node_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/resource_node_state.gd)
 - Smoke test: [`game/scripts/tests/vertical_slice_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/vertical_slice_smoke.gd)
 - Construction smoke test: [`game/scripts/tests/construction_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/construction_smoke.gd)
 - Systems smoke test: [`game/scripts/tests/systems_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/systems_smoke.gd)
+- Objective smoke test: [`game/scripts/tests/mission_objectives_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mission_objectives_smoke.gd)
+- Mission-events smoke test: [`game/scripts/tests/mission_events_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mission_events_smoke.gd)
 
 ## Next Session Start Here
 
-1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate the new training, research, combat, and save/load interactions visually.
+1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate the mission alerts, objective progress, and reinforcement events visually.
 2. Expand the playable ruleset beyond the current `culture` / `barracks` / `laboratory` slice.
 3. Add better selection UX, command feedback, and HUD surfacing for queues and research.
-4. Push mission scripting forward so combat, production, and research tie into explicit objectives.
+4. Extend the mission-event system from Mission 1 into reusable scenario scripting for later missions.
 5. Keep the repo trace clean by updating this file and the session log whenever systems behavior changes.
 
 ## Commands
@@ -129,8 +137,25 @@ Run the systems smoke test:
   --script res://scripts/tests/systems_smoke.gd
 ```
 
+Run the runtime-objectives smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/mission_objectives_smoke.gd
+```
+
+Run the mission-events smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/mission_events_smoke.gd
+```
+
 ## Blockers
 
 - `.NET SDK` is not installed, so a Godot C# workflow is not practical right now
 - current shell PATH may need a refresh before bare `git` or `godot` commands resolve without full paths
-- the repo worktree now contains the next gameplay-systems tranche and should be reviewed before the next commit

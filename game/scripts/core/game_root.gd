@@ -3,6 +3,7 @@ extends Node2D
 
 const WorldStateScript = preload("res://scripts/core/world_state.gd")
 const MissionStateScript = preload("res://scripts/core/mission_state.gd")
+const MissionEventStateScript = preload("res://scripts/core/mission_event_state.gd")
 const MapStateScript = preload("res://scripts/core/map_state.gd")
 const ClassicDatabaseScript = preload("res://scripts/data/classic_database.gd")
 const ResourceNodeStateScript = preload("res://scripts/simulation/resource_node_state.gd")
@@ -15,6 +16,7 @@ const TILE_SIZE: float = 40.0
 const MAP_TOP_MARGIN: float = 160.0
 const DEFAULT_MAP_PATH: String = "res://data/classic/vertical_slice/mission_001_map.json"
 const DEFAULT_SAVE_PATH: String = "user://save_slot_1.json"
+const MAX_ALERT_LOG: int = 6
 
 var world_state
 var mission_state
@@ -28,6 +30,8 @@ var workers: Array = []
 var combat_units: Array = []
 var enemy_units: Array = []
 var pending_enemy_spawns: Array = []
+var mission_events: Array = []
+var alert_log: Array[String] = []
 var simulation_status: String = "bootstrapping"
 var selected_worker_index: int = -1
 var selected_combat_index: int = -1
@@ -66,8 +70,10 @@ func initialize_runtime(show_ui: bool = true) -> void:
         world_state.map_size = Vector2i(map_state.width, map_state.height)
 
     _load_mission_record()
+    _load_mission_events_from_map()
     _spawn_vertical_slice_entities()
     pending_enemy_spawns = map_state.enemy_spawns.duplicate(true)
+    mission_state.evaluate(_build_mission_snapshot())
     simulation_status = "systems online"
     runtime_initialized = true
 
@@ -248,6 +254,11 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
         mission_state.load_stub_mission(str(payload.get("mission_id", "mission_001")))
     else:
         mission_state.load_from_record(mission_record)
+    mission_state.configure_runtime_objectives(_objective_payloads_from_map())
+    if payload.get("mission_events", []).is_empty():
+        _load_mission_events_from_map()
+    else:
+        _load_mission_events_from_payload(payload.get("mission_events", []))
 
     resource_nodes = []
     for resource_payload in payload.get("resource_nodes", []):
@@ -299,6 +310,9 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
         enemy_units.append(enemy_unit)
 
     pending_enemy_spawns = payload.get("pending_enemy_spawns", []).duplicate(true)
+    alert_log = []
+    for alert_entry in payload.get("alert_log", []):
+        alert_log.append(str(alert_entry))
     simulation_status = str(payload.get("simulation_status", "loaded save"))
     selected_worker_index = -1
     selected_combat_index = -1
@@ -308,6 +322,7 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
     runtime_initialized = true
     _refresh_player_modifiers()
     _update_worker_home_positions()
+    mission_state.evaluate(_build_mission_snapshot())
     _refresh_debug_text()
     if is_inside_tree():
         queue_redraw()
@@ -326,7 +341,55 @@ func serialize_runtime() -> Dictionary:
         "combat_units": _serialize_collection(combat_units),
         "enemy_units": _serialize_collection(enemy_units),
         "pending_enemy_spawns": pending_enemy_spawns.duplicate(true),
+        "mission_events": _serialize_collection(mission_events),
+        "alert_log": alert_log.duplicate(true),
         "simulation_status": simulation_status
+    }
+
+
+func _objective_payloads_from_map() -> Array:
+    if map_state != null and not map_state.objectives.is_empty():
+        return map_state.objectives.duplicate(true)
+
+    var fallback_objectives: Array = []
+    var food_target: int = int(map_state.storehouse_goal.get("food", 0))
+    var stone_target: int = int(map_state.storehouse_goal.get("stone", 0))
+    if food_target > 0:
+        fallback_objectives.append({
+            "id": "stockpile_food",
+            "type": "stockpile",
+            "resource": "food",
+            "target": food_target,
+            "label": "Stock %d sacks of food in the cave" % food_target,
+            "required": true
+        })
+    if stone_target > 0:
+        fallback_objectives.append({
+            "id": "stockpile_stone",
+            "type": "stockpile",
+            "resource": "stone",
+            "target": stone_target,
+            "label": "Stock %d sacks of stones in the cave" % stone_target,
+            "required": true
+        })
+    return fallback_objectives
+
+
+func _build_mission_snapshot() -> Dictionary:
+    var building_counts: Dictionary = {}
+    for building in buildings:
+        if building.team != "player" or not building.is_alive():
+            continue
+        building_counts[building.building_id] = int(building_counts.get(building.building_id, 0)) + 1
+
+    return {
+        "resources": world_state.resources.duplicate(true),
+        "building_counts": building_counts,
+        "branch_levels": world_state.branch_levels.duplicate(true),
+        "elapsed_time": world_state.elapsed_time,
+        "enemy_waves_spawned": world_state.enemy_waves_spawned,
+        "enemy_units_alive": enemy_units.size(),
+        "pending_enemy_spawns": pending_enemy_spawns.size()
     }
 
 
@@ -440,6 +503,23 @@ func _load_mission_record() -> void:
         mission_state.load_stub_mission("mission_001")
     else:
         mission_state.load_from_record(mission_record)
+    mission_state.configure_runtime_objectives(_objective_payloads_from_map())
+
+
+func _load_mission_events_from_map() -> void:
+    mission_events = []
+    for event_payload in map_state.mission_events:
+        var mission_event = MissionEventStateScript.new()
+        mission_event.configure_from_payload(event_payload)
+        mission_events.append(mission_event)
+
+
+func _load_mission_events_from_payload(payloads: Array) -> void:
+    mission_events = []
+    for event_payload in payloads:
+        var mission_event = MissionEventStateScript.new()
+        mission_event.load_from_payload(event_payload)
+        mission_events.append(mission_event)
 
 
 func _spawn_vertical_slice_entities() -> void:
@@ -520,7 +600,7 @@ func _update_enemy_spawns() -> void:
             var enemy_actor: Variant = spawn_unit(unit_id, spawn_position, "enemy")
             if enemy_actor != null:
                 world_state.enemy_waves_spawned += 1
-                simulation_status = "enemy sighted: %s" % unit_id
+                _push_alert("enemy sighted: %s" % unit_id)
         else:
             remaining_spawns.append(spawn_payload)
 
@@ -599,6 +679,14 @@ func _update_worker_home_positions() -> void:
 
 
 func _update_mission_state() -> void:
+    var snapshot: Dictionary = _build_mission_snapshot()
+    var newly_completed: Array[String] = mission_state.evaluate(snapshot)
+    for completed_label in newly_completed:
+        _push_alert("objective complete: %s" % completed_label)
+
+    _update_mission_events(snapshot)
+    mission_state.evaluate(_build_mission_snapshot())
+
     if _goal_complete():
         world_state.mission_status = "victory"
         simulation_status = "mission goal complete"
@@ -622,10 +710,54 @@ func _player_defeated() -> bool:
     return not has_storehouse or (workers.is_empty() and combat_units.is_empty())
 
 
+func _update_mission_events(snapshot: Dictionary) -> void:
+    for mission_event in mission_events:
+        if not mission_event.should_fire(snapshot, mission_state):
+            continue
+
+        mission_event.fired = true
+        for action_payload in mission_event.actions:
+            _execute_mission_event_action(action_payload)
+
+
+func _execute_mission_event_action(action_payload: Dictionary) -> void:
+    var action_type: String = str(action_payload.get("type", ""))
+    match action_type:
+        "message":
+            _push_alert(str(action_payload.get("text", "Mission event")))
+        "grant_resources":
+            var resource_payload: Dictionary = action_payload.get("resources", {})
+            for resource_type in resource_payload.keys():
+                world_state.add_resource(str(resource_type), int(resource_payload.get(resource_type, 0)))
+        "spawn_unit":
+            var spawn_count: int = maxi(1, int(action_payload.get("count", 1)))
+            var base_position := Vector2(
+                float(action_payload.get("x", map_state.player_start.x)) + 0.5,
+                float(action_payload.get("y", map_state.player_start.y)) + 0.5
+            )
+            for index in range(spawn_count):
+                var spawn_offset := Vector2(float(index % 2) * 0.45, float(index / 2) * 0.45)
+                spawn_unit(
+                    str(action_payload.get("unit_id", "")),
+                    base_position + spawn_offset,
+                    str(action_payload.get("team", "player"))
+                )
+        "spawn_building":
+            spawn_completed_building(
+                str(action_payload.get("building_id", "")),
+                Vector2i(int(action_payload.get("x", map_state.player_start.x)), int(action_payload.get("y", map_state.player_start.y))),
+                str(action_payload.get("team", "player"))
+            )
+        _:
+            pass
+
+
 func _goal_complete() -> bool:
-    var food_target: int = int(map_state.storehouse_goal.get("food", 0))
-    var stone_target: int = int(map_state.storehouse_goal.get("stone", 0))
-    return int(world_state.resources.get("food", 0)) >= food_target and int(world_state.resources.get("stone", 0)) >= stone_target
+    if mission_state.runtime_objectives.is_empty():
+        var food_target: int = int(map_state.storehouse_goal.get("food", 0))
+        var stone_target: int = int(map_state.storehouse_goal.get("stone", 0))
+        return int(world_state.resources.get("food", 0)) >= food_target and int(world_state.resources.get("stone", 0)) >= stone_target
+    return mission_state.required_objectives_complete()
 
 
 func _map_origin(viewport_size: Vector2) -> Vector2:
@@ -1018,18 +1150,55 @@ func _handle_right_click(screen_position: Vector2) -> void:
         simulation_status = "%s moving" % combat_unit.name
 
 
+func _selection_detail_lines() -> Array[String]:
+    var lines: Array[String] = []
+
+    var selected_worker = _selected_worker()
+    if selected_worker != null:
+        lines.append(
+            "Selected Worker: %s | hp %d/%d | %s"
+            % [selected_worker.name, int(ceil(selected_worker.health)), int(ceil(selected_worker.max_health)), selected_worker.status_text()]
+        )
+        return lines
+
+    var selected_combat = _selected_combat_unit()
+    if selected_combat != null:
+        lines.append(
+            "Selected Unit: %s | hp %d/%d | %s"
+            % [selected_combat.name, int(ceil(selected_combat.health)), int(ceil(selected_combat.max_health)), selected_combat.status_text()]
+        )
+        return lines
+
+    var selected_building = _selected_building()
+    if selected_building != null:
+        lines.append(
+            "Selected Building: %s | hp %d/%d"
+            % [selected_building.name, int(ceil(selected_building.health)), int(ceil(selected_building.max_health))]
+        )
+        lines.append("Queue: %s" % selected_building.queue_label())
+        return lines
+
+    if selected_site_index >= 0 and selected_site_index < construction_sites.size():
+        var selected_site = construction_sites[selected_site_index]
+        lines.append(
+            "Selected Site: %s | build %d%%"
+            % [selected_site.name, int(round(selected_site.build_ratio() * 100.0))]
+        )
+
+    return lines
+
+
 func _refresh_debug_text() -> void:
     if debug_label == null:
         return
 
     var summary: Dictionary = classic_database.summary()
-    var objective_text := ""
-    if mission_state.objectives.size() >= 2:
-        objective_text = "%s | %s" % [mission_state.objectives[0], mission_state.objectives[1]]
-    elif not mission_state.objectives.is_empty():
-        objective_text = mission_state.objectives[0]
-    else:
-        objective_text = "No objectives loaded"
+    var objective_lines: Array[String] = mission_state.objective_lines()
+    if objective_lines.is_empty():
+        for objective_text in mission_state.objectives:
+            objective_lines.append("[ ] %s" % objective_text)
+    if objective_lines.is_empty():
+        objective_lines.append("[ ] No objectives loaded")
 
     var goal_text: String = "Stockpile: %d/%d food | %d/%d stone" % [
         int(world_state.resources.get("food", 0)),
@@ -1070,17 +1239,23 @@ func _refresh_debug_text() -> void:
         var combat_unit = combat_units[index]
         actor_lines.append("%s: %s" % [combat_unit.name, combat_unit.status_text()])
 
+    var alert_lines: Array[String] = []
+    for alert_entry in alert_log:
+        alert_lines.append("Alert: %s" % alert_entry)
+
     debug_label.text = "\n".join([
         "Rising Lands 2",
         "Godot systems slice",
         "Controls: LMB select/place | RMB assign/move | 1 storehouse | 2 culture | 3 barracks | 4 lab",
         "Systems: Q/W/E/R context | F5 save | F9 load",
         "Mission: %s" % mission_state.title,
-        "Objective: %s" % objective_text,
+        "Objectives:",
+    ] + objective_lines + [
         goal_text,
         selection_text,
         context_hint,
         "Status: %s" % simulation_status,
+    ] + alert_lines + [
         "Mission State: %s" % world_state.mission_status,
         "Food: %s" % str(world_state.resources.get("food", 0)),
         "Stone: %s" % str(world_state.resources.get("stone", 0)),
@@ -1094,7 +1269,7 @@ func _refresh_debug_text() -> void:
             int(summary.get("buildings", 0)),
             int(summary.get("missions", 0))
         ]
-    ] + actor_lines)
+    ] + _selection_detail_lines() + actor_lines)
 
 
 func _ensure_debug_label() -> void:
@@ -1111,3 +1286,10 @@ func _serialize_collection(items: Array) -> Array:
     for item in items:
         payload.append(item.serialize())
     return payload
+
+
+func _push_alert(message: String) -> void:
+    simulation_status = message
+    alert_log.append(message)
+    while alert_log.size() > MAX_ALERT_LOG:
+        alert_log.remove_at(0)

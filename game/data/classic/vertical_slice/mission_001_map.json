@@ -34,9 +34,67 @@
   ],
   "player_start": { "x": 5, "y": 6 },
   "storehouse_goal": { "food": 50, "stone": 50 },
+  "objectives": [
+    {
+      "id": "stockpile_food",
+      "type": "stockpile",
+      "resource": "food",
+      "target": 50,
+      "label": "Stock 50 sacks of food in the cave",
+      "required": true
+    },
+    {
+      "id": "stockpile_stone",
+      "type": "stockpile",
+      "resource": "stone",
+      "target": 50,
+      "label": "Stock 50 sacks of stones in the cave",
+      "required": true
+    },
+    {
+      "id": "repel_raids",
+      "type": "repel_waves",
+      "target": 3,
+      "label": "Repel the first raider attacks",
+      "required": false
+    }
+  ],
   "enemy_spawns": [
     { "x": 16, "y": 2, "unit_id": "basher", "delay": 35.0 },
     { "x": 15, "y": 9, "unit_id": "hurler", "delay": 55.0 },
     { "x": 17, "y": 6, "unit_id": "raptor", "delay": 75.0 }
+  ],
+  "mission_events": [
+    {
+      "id": "intro_scout_report",
+      "trigger": { "type": "time_elapsed", "value": 6.0 },
+      "actions": [
+        { "type": "message", "text": "Scouts report forage in the western forest and stone to the east." }
+      ]
+    },
+    {
+      "id": "food_stockpile_reward",
+      "trigger": { "type": "objective_complete", "objective_id": "stockpile_food" },
+      "actions": [
+        { "type": "message", "text": "Food stores are stable. The elders release extra tools for expansion." },
+        { "type": "grant_resources", "resources": { "parts": 15, "tech": 4 } }
+      ]
+    },
+    {
+      "id": "raid_warning",
+      "trigger": { "type": "enemy_waves_spawned", "value": 1 },
+      "actions": [
+        { "type": "message", "text": "Raiders are probing the frontier. Prepare defenders." }
+      ]
+    },
+    {
+      "id": "repel_raids_reward",
+      "trigger": { "type": "objective_complete", "objective_id": "repel_raids" },
+      "actions": [
+        { "type": "message", "text": "The first raiders are broken. Veteran hunters join the settlement." },
+        { "type": "spawn_unit", "unit_id": "swordsman", "x": 6, "y": 6, "team": "player" },
+        { "type": "spawn_unit", "unit_id": "archer", "x": 6, "y": 7, "team": "player" }
+      ]
+    }
   ]
 }

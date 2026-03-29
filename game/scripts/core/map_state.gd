@@ -11,6 +11,8 @@ var resources: Array = []
 var player_start: Vector2i = Vector2i.ZERO
 var storehouse_goal: Dictionary = {}
 var enemy_spawns: Array = []
+var objectives: Array = []
+var mission_events: Array = []
 
 
 func load_from_file(path: String) -> bool:
@@ -31,6 +33,8 @@ func load_from_file(path: String) -> bool:
     resources = payload.get("resources", [])
     storehouse_goal = payload.get("storehouse_goal", {})
     enemy_spawns = payload.get("enemy_spawns", [])
+    objectives = payload.get("objectives", [])
+    mission_events = payload.get("mission_events", [])
 
     var start_payload: Dictionary = payload.get("player_start", {})
     player_start = Vector2i(int(start_payload.get("x", 0)), int(start_payload.get("y", 0)))
