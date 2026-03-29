@@ -1,0 +1,19 @@
+{
+  "GENERAL": {
+    "GROUPE00": "0",
+    "GROUPE01": "1",
+    "GROUPE02": "2",
+    "GROUPE03": "3",
+    "GROUPE04": "4",
+    "GROUPE05": "5",
+    "GROUPE06": "6",
+    "GROUPE07": "7",
+    "GROUPE08": "0, 1",
+    "GROUPE09": "0, 2",
+    "GROUPE10": "4, 4",
+    "GROUPE11": "4, 6",
+    "GROUPE12": "4, 5, 6",
+    "GROUPE13": "3, 4, 5, 6",
+    "GROUPE14": "0,1,2,3, 4, 5, 6"
+  }
+}

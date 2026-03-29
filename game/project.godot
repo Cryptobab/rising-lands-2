@@ -1,0 +1,26 @@
+; Engine configuration file.
+; Best edited using the Godot editor.
+
+config_version=5
+
+[application]
+
+config/name="Rising Lands 2"
+run/main_scene="res://scenes/main.tscn"
+config/icon="res://icon.svg"
+
+[autoload]
+
+GameConfig="*res://scripts/autoload/game_config.gd"
+
+[display]
+
+window/size/viewport_width=1600
+window/size/viewport_height=900
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+textures/canvas_textures/default_texture_filter=0

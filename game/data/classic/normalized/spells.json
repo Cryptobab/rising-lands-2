@@ -1,0 +1,77 @@
+[
+  {
+    "id": "vision",
+    "source_section": "VISION",
+    "name": "Vision",
+    "radius": 8,
+    "duration": 200,
+    "learn_time": 1500,
+    "range": 20,
+    "cost": {
+      "food": 6,
+      "stone": 4,
+      "parts": 0,
+      "mana": 2
+    }
+  },
+  {
+    "id": "petrification",
+    "source_section": "PETRIFICATION",
+    "name": "Petrification",
+    "radius": 4,
+    "duration": 400,
+    "learn_time": 2000,
+    "range": 10,
+    "cost": {
+      "food": 14,
+      "stone": 10,
+      "parts": 0,
+      "mana": 2
+    }
+  },
+  {
+    "id": "mirror",
+    "source_section": "MIROIR",
+    "name": "Mirror",
+    "radius": 0,
+    "duration": 20,
+    "learn_time": 4000,
+    "range": 10,
+    "cost": {
+      "food": 30,
+      "stone": 16,
+      "parts": 0,
+      "mana": 6
+    }
+  },
+  {
+    "id": "armour",
+    "source_section": "ARMURE",
+    "name": "Armour",
+    "radius": 0,
+    "duration": 400,
+    "learn_time": 3000,
+    "range": 10,
+    "cost": {
+      "food": 20,
+      "stone": 12,
+      "parts": 0,
+      "mana": 4
+    }
+  },
+  {
+    "id": "nova",
+    "source_section": "NOVA",
+    "name": "Nova",
+    "radius": 0,
+    "duration": 10,
+    "learn_time": 2000,
+    "range": 20,
+    "cost": {
+      "food": 16,
+      "stone": 10,
+      "parts": 0,
+      "mana": 8
+    }
+  }
+]

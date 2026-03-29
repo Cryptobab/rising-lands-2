@@ -1,0 +1,15 @@
+{
+  "source_dir": "C:\\Users\\BAB\\PROJECTS\\Rising_land_remake\\Rising Lands Release",
+  "files": {
+    "RISING.INI": "RISING.INI",
+    "MONSTRE.INI": "MONSTRE.INI",
+    "TEXTES.TXT": "TEXTES.TXT",
+    "WORLD": "WORLD"
+  },
+  "summary": {
+    "rising_sections": 136,
+    "monster_sections": 1,
+    "text_entries": 121,
+    "missions": 25
+  }
+}

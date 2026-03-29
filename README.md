@@ -1,36 +1,68 @@
 # Rising Lands 2
 
-A modern HTML5 Canvas remake of the 1997 RTS classic **Rising Lands** by Microïds.
+Rising Lands 2 is a public fan remake of the 1997 RTS **Rising Lands**, with a second phase planned for expanded content, new tech trees, new units, and modern QoL.
 
-**Pure JavaScript, zero dependencies, runs in any browser.**
+The active implementation targets a professional `Godot 4` codebase for PC, using the original game files as reference data and import input.
 
-## Play
+## Active Direction
 
-Open `index.html` in your browser. That's it.
+- Engine: `Godot 4`
+- Language: typed `GDScript`
+- Source data pipeline: `Python`
+- Target platform: `PC`
+- Repo model: public, code-first, no proprietary asset dump
 
-Or play the latest version at: `https://[your-username].github.io/rising-lands-2/`
+## Current Status
 
-## About
+This repo is in `vertical-slice foundation` state.
 
-Rising Lands was a real-time strategy game set in a post-apocalyptic world where a comet knocked civilization back to the stone age. Lead your tribe through 25 missions, research technologies across 4 branches, manage your people's hunger, forge alliances, and conquer the Rising Lands.
+What exists now:
 
-This remake preserves the original's unique mechanics — the hunger system, persistent tech across missions, 4-way research paths, creature taming, and balloon transport — while adding modern quality-of-life features.
+- a new Godot project scaffold in [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game)
+- importer tooling in [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers)
+- planning and continuation docs in [`docs/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs)
+- a deterministic Mission 1 map and first worker/build loop in the Godot slice
 
-## Features
+## Project Layout
 
-- Isometric RTS with 18 player units, 7 creatures, 22 buildings
-- 4 tech tree branches (Agriculture, Military, Engineering, Religious)
-- Hunger system — feed your people or they starve
-- 5 Druid spells (Vision, Petrification, Mirror, Armour, Nova)
-- 25 campaign missions with persistent progression
-- AI opponents with difficulty levels
-- Procedural pixel-art graphics (no asset dependencies)
-- Map editor for custom scenarios
+- [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game): active Godot project
+- [`game/data/classic/raw/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/raw): imported classic data snapshots
+- [`game/data/expanded/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded): new Rising Lands 2 content
+- [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers): scripts that read the original files
+- [`docs/MASTER-PLAN.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/MASTER-PLAN.md): main roadmap
+- [`docs/CONTINUATION.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/CONTINUATION.md): handoff notes for future sessions
 
-## Development
+## Setup
 
-See [docs/PROJECT-PLAN.md](docs/PROJECT-PLAN.md) for the full roadmap.
+1. Install the current stable Godot 4 editor.
+2. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot).
+3. Run the importer to refresh classic source data:
 
-## License
+```powershell
+python tools/importers/extract_classic_data.py `
+  --source "C:\Users\BAB\PROJECTS\Rising_land_remake\Rising Lands Release" `
+  --output "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game\data\classic"
+```
 
-MIT — This is a fan project. No original assets are used.
+This writes both:
+
+- `game/data/classic/raw/`
+- `game/data/classic/normalized/`
+
+## Current Slice Controls
+
+In the current Godot vertical slice:
+
+- left click selects a worker
+- right click on a resource assigns the selected worker to gather it
+- builders can press `1` for `storehouse` build mode
+- builders can press `2` for `culture` build mode
+- left click while in build mode places a construction site
+- right click on a construction site assigns the selected builder to build it
+- `Esc` clears build mode
+
+## Constraints
+
+- Original executable, sprites, videos, sound banks, and binary assets are reference material, not assumed-safe repo content.
+- Classic remake parity comes before expansion content.
+- Expanded tech trees and new units should live in separate data layers from the classic ruleset.

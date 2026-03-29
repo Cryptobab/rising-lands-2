@@ -1,0 +1,366 @@
+[
+  {
+    "id": "lighthouse",
+    "source_section": "PHARE",
+    "source_index": 0,
+    "name": "Lighthouse",
+    "build_time": 200,
+    "housing": 2,
+    "cost": {
+      "food": 12,
+      "stone": 4,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "barracks",
+    "source_section": "CASERNE",
+    "source_index": 1,
+    "name": "Barracks",
+    "build_time": 400,
+    "housing": 8,
+    "cost": {
+      "food": 16,
+      "stone": 14,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "sanctuary",
+    "source_section": "SANCTUAIRE",
+    "source_index": 2,
+    "name": "Sanctuary",
+    "build_time": 600,
+    "housing": 16,
+    "cost": {
+      "food": 50,
+      "stone": 30,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "storehouse",
+    "source_section": "CAVE",
+    "source_index": 3,
+    "name": "Storehouse",
+    "build_time": 100,
+    "housing": 2,
+    "cost": {
+      "food": 10,
+      "stone": 6,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "culture",
+    "source_section": "CULTURE",
+    "source_index": 4,
+    "name": "Culture",
+    "build_time": 200,
+    "housing": 5,
+    "cost": {
+      "food": 12,
+      "stone": 6,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "workshop",
+    "source_section": "ATELIER",
+    "source_index": 5,
+    "name": "Workshop",
+    "build_time": 300,
+    "housing": 8,
+    "cost": {
+      "food": 30,
+      "stone": 20,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "library",
+    "source_section": "BIBLIOTHEQUE",
+    "source_index": 6,
+    "name": "Library",
+    "build_time": 500,
+    "housing": 3,
+    "cost": {
+      "food": 20,
+      "stone": 20,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "laboratory",
+    "source_section": "LABORATOIRE",
+    "source_index": 7,
+    "name": "Laboratory",
+    "build_time": 400,
+    "housing": 2,
+    "cost": {
+      "food": 24,
+      "stone": 12,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "hangar",
+    "source_section": "HANGAR",
+    "source_index": 8,
+    "name": "Hangar",
+    "build_time": 500,
+    "housing": 8,
+    "cost": {
+      "food": 12,
+      "stone": 8,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "wall",
+    "source_section": "MUR",
+    "source_index": 9,
+    "name": "Wall",
+    "build_time": 15,
+    "housing": 0,
+    "cost": {
+      "food": 1,
+      "stone": 2,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "tower_catapult",
+    "source_section": "TOURCATAPULTE",
+    "source_index": 10,
+    "name": "Tower catapult",
+    "build_time": 50,
+    "housing": 1,
+    "cost": {
+      "food": 10,
+      "stone": 4,
+      "parts": 0
+    },
+    "damage_profile": {
+      "swordsman": 30,
+      "scorcher": 20,
+      "captain": 15,
+      "killer": 30,
+      "druid": 25,
+      "farmer": 25,
+      "mechanic": 25,
+      "builder": 25,
+      "archer": 20,
+      "settler": 25,
+      "messenger": 0,
+      "speeder": 20,
+      "boomer": 10,
+      "reaper": 10,
+      "bomber": 10,
+      "hellfire": 20,
+      "heliped": 15,
+      "balloon": 0,
+      "spider": 0,
+      "ant": 0,
+      "basher": 15,
+      "raptor": 20,
+      "hurler": 20,
+      "bukka": 25,
+      "snapper": 5,
+      "stomper": 15,
+      "buildings": 5
+    }
+  },
+  {
+    "id": "tower_cannon",
+    "source_section": "TOURCANON",
+    "source_index": 11,
+    "name": "Tower canon",
+    "build_time": 100,
+    "housing": 2,
+    "cost": {
+      "food": 20,
+      "stone": 6,
+      "parts": 0
+    },
+    "damage_profile": {
+      "swordsman": 15,
+      "scorcher": 15,
+      "captain": 15,
+      "killer": 15,
+      "druid": 15,
+      "farmer": 15,
+      "mechanic": 15,
+      "builder": 15,
+      "archer": 15,
+      "settler": 15,
+      "messenger": 0,
+      "speeder": 20,
+      "boomer": 15,
+      "reaper": 20,
+      "bomber": 10,
+      "hellfire": 6,
+      "heliped": 0,
+      "balloon": 0,
+      "spider": 0,
+      "ant": 0,
+      "basher": 8,
+      "raptor": 10,
+      "hurler": 10,
+      "bukka": 15,
+      "snapper": 4,
+      "stomper": 10,
+      "buildings": 5
+    }
+  },
+  {
+    "id": "portcullis",
+    "source_section": "HERSE",
+    "source_index": 12,
+    "name": "Portcullis",
+    "build_time": 60,
+    "housing": 0,
+    "cost": {
+      "food": 4,
+      "stone": 8,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "circus",
+    "source_section": "CIRQUE",
+    "source_index": 13,
+    "name": "Circus",
+    "build_time": 350,
+    "housing": 6,
+    "cost": {
+      "food": 20,
+      "stone": 6,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "garage",
+    "source_section": "GARAGE",
+    "source_index": 14,
+    "name": "Garage",
+    "build_time": 350,
+    "housing": 4,
+    "cost": {
+      "food": 24,
+      "stone": 16,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "temple",
+    "source_section": "MONASTERE",
+    "source_index": 15,
+    "name": "Temple",
+    "build_time": 400,
+    "housing": 6,
+    "cost": {
+      "food": 20,
+      "stone": 4,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "market",
+    "source_section": "MARCHE",
+    "source_index": 16,
+    "name": "Market",
+    "build_time": 300,
+    "housing": 2,
+    "cost": {
+      "food": 12,
+      "stone": 8,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "crystal",
+    "source_section": "CRISTAL",
+    "source_index": 17,
+    "name": "Crystal",
+    "build_time": 300,
+    "housing": 0,
+    "cost": {
+      "food": 16,
+      "stone": 6,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "heliport",
+    "source_section": "HELIOPORT",
+    "source_index": 18,
+    "name": "Heliport",
+    "build_time": 300,
+    "housing": 4,
+    "cost": {
+      "food": 20,
+      "stone": 8,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "hospital",
+    "source_section": "HOSPI",
+    "source_index": 19,
+    "name": "Hospital",
+    "build_time": 300,
+    "housing": 3,
+    "cost": {
+      "food": 10,
+      "stone": 4,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "fusion_temple",
+    "source_section": "MONASTEREFUSION",
+    "source_index": 20,
+    "name": "Fusion Temple",
+    "build_time": 400,
+    "housing": 6,
+    "cost": {
+      "food": 20,
+      "stone": 4,
+      "parts": 0
+    },
+    "damage_profile": {}
+  },
+  {
+    "id": "campaign_tent",
+    "source_section": "TENTE",
+    "source_index": 21,
+    "name": "Campaign tent",
+    "build_time": 300,
+    "housing": 6,
+    "cost": {
+      "food": 10,
+      "stone": 4,
+      "parts": 0
+    },
+    "damage_profile": {}
+  }
+]

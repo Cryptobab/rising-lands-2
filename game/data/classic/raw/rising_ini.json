@@ -1,0 +1,1215 @@
+{
+  "MINE": {
+    "DEGAT": "100,100,90,70,100,100,100,100,100,100,0,60,60,50,60,60,0,0,0,0,70,80,100,100,10,70,0"
+  },
+  "SOLDAT": {
+    "DEGAT": "20,20,10,10,20,40,40,40,40,40,0,5,5,5,5,5,0,0,0,0,10,20,25,30,5,5,2",
+    "RAYON": "7",
+    "PORTEE": "1",
+    "BLINDAGE": "1",
+    "FATIGUE": "3000",
+    "RECHARGE": "20",
+    "TMPSRECRUTE": "800",
+    "COUTPATATE": "6",
+    "COUTROCHE": "0",
+    "COUTPIECE": "0",
+    "NAME": "Swordsman"
+  },
+  "GARDIEN DU FEU": {
+    "DEGAT": "40,40,35,35,40,40,40,40,40,40,0,25,20,25,25,20,0,0,0,0,20,5,35,40,5,30,15",
+    "RAYON": "7",
+    "PORTEE": "1",
+    "BLINDAGE": "2",
+    "FATIGUE": "3000",
+    "RECHARGE": "50",
+    "TMPSRECRUTE": "1000",
+    "COUTPATATE": "5",
+    "COUTROCHE": "1",
+    "COUTPIECE": "0",
+    "NAME": "Scorcher"
+  },
+  "CAPITAINE": {
+    "DEGAT": "30,20,15,10,25,25,25,25,20,25,0,20,10,20,20,10,15,0,0,0,15,20,20,25,5,15,5",
+    "RAYON": "8",
+    "PORTEE": "8",
+    "BLINDAGE": "2",
+    "FATIGUE": "3000",
+    "RECHARGE": "40",
+    "TMPSRECRUTE": "1500",
+    "COUTPATATE": "10",
+    "COUTROCHE": "3",
+    "COUTPIECE": "0",
+    "NAME": "Captain"
+  },
+  "OURS DE COMBAT": {
+    "DEGAT": "40,40,25,10,40,40,40,40,40,40,0,30,10,10,15,15,0,0,0,0,20,40,30,40,5,20,3",
+    "RAYON": "7",
+    "PORTEE": "4",
+    "BLINDAGE": "3",
+    "FATIGUE": "3000",
+    "RECHARGE": "40",
+    "TMPSRECRUTE": "1000",
+    "COUTPATATE": "10",
+    "COUTROCHE": "2",
+    "COUTPIECE": "0",
+    "NAME": "Killer"
+  },
+  "RHINO": {
+    "DEGAT": "50,50,30,20,50,50,50,50,50,50,0,25,20,25,25,20,0,0,0,0,25,40,40,50,5,20,5",
+    "RAYON": "10",
+    "PORTEE": "8",
+    "BLINDAGE": "3",
+    "FATIGUE": "3000",
+    "RECHARGE": "80",
+    "TMPSRECRUTE": "1500",
+    "COUTPATATE": "15",
+    "COUTROCHE": "5",
+    "COUTPIECE": "0",
+    "NAME": "Stomper"
+  },
+  "PRETRE": {
+    "DEGAT": "10,10,5,5,10,10,10,10,10,10,0,4,3,4,4,3,0,0,0,0,3,5,5,10,10,5,0",
+    "RAYON": "5",
+    "PORTEE": "1",
+    "BLINDAGE": "1",
+    "FATIGUE": "3000",
+    "RECHARGE": "20",
+    "TMPSRECRUTE": "4000",
+    "COUTPATATE": "20",
+    "COUTROCHE": "0",
+    "COUTPIECE": "0",
+    "NAME": "Druid"
+  },
+  "FERMIER": {
+    "DEGAT": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+    "RAYON": "5",
+    "PORTEE": "1",
+    "BLINDAGE": "0",
+    "FATIGUE": "3000",
+    "RECHARGE": "250",
+    "TMPSRECRUTE": "500",
+    "COUTPATATE": "4",
+    "COUTROCHE": "0",
+    "COUTPIECE": "0",
+    "NAME": "Farmer"
+  },
+  "BATISSEUR": {
+    "DEGAT": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+    "RAYON": "5",
+    "PORTEE": "1",
+    "BLINDAGE": "0",
+    "FATIGUE": "3000",
+    "RECHARGE": "100",
+    "TMPSRECRUTE": "1000",
+    "COUTPATATE": "6",
+    "COUTROCHE": "0",
+    "COUTPIECE": "0",
+    "NAME": "Builder"
+  },
+  "MECANO": {
+    "DEGAT": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+    "RAYON": "5",
+    "PORTEE": "1",
+    "BLINDAGE": "0",
+    "FATIGUE": "3000",
+    "RECHARGE": "50",
+    "TMPSRECRUTE": "800",
+    "COUTPATATE": "6",
+    "COUTROCHE": "0",
+    "COUTPIECE": "0",
+    "NAME": "Mechanic"
+  },
+  "VOLEUR": {
+    "DEGAT": "12,15,12,10,17,17,17,17,17,17,0,8,5,8,8,5,12,0,0,0,10,17,12,15,3,10,2",
+    "RAYON": "10",
+    "PORTEE": "10",
+    "BLINDAGE": "1",
+    "FATIGUE": "3000",
+    "RECHARGE": "30",
+    "TMPSRECRUTE": "1000",
+    "COUTPATATE": "8",
+    "COUTROCHE": "0",
+    "COUTPIECE": "0",
+    "NAME": "Archer"
+  },
+  "COLON": {
+    "DEGAT": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+    "RAYON": "5",
+    "PORTEE": "1",
+    "BLINDAGE": "0",
+    "FATIGUE": "3000",
+    "RECHARGE": "1",
+    "TMPSRECRUTE": "100",
+    "COUTPATATE": "2",
+    "COUTROCHE": "0",
+    "COUTPIECE": "0",
+    "NAME": "Settler"
+  },
+  "MESSAGER": {
+    "DEGAT": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+    "RAYON": "5",
+    "PORTEE": "1",
+    "BLINDAGE": "0",
+    "FATIGUE": "3000",
+    "RECHARGE": "1",
+    "TMPSRECRUTE": "150",
+    "COUTPATATE": "2",
+    "COUTROCHE": "0",
+    "COUTPIECE": "0",
+    "NAME": "Messenger"
+  },
+  "SPYDER": {
+    "DEGAT": "30,30,20,15,30,30,30,30,30,30,0,15,5,15,20,5,0,0,0,0,10,30,30,30,5,15,3",
+    "RAYON": "7",
+    "PORTEE": "4",
+    "BLINDAGE": "3",
+    "FATIGUE": "3000",
+    "RECHARGE": "35",
+    "TMPSRECRUTE": "1200",
+    "COUTPATATE": "8",
+    "COUTROCHE": "0",
+    "COUTPIECE": "4",
+    "NAME": "Speeder"
+  },
+  "BUNKER": {
+    "DEGAT": "10,10,7,10,10,10,10,10,10,7,0,10,5,10,5,3,0,0,0,0,4,5,5,7,2,5,5",
+    "RAYON": "10",
+    "PORTEE": "10",
+    "BLINDAGE": "3",
+    "FATIGUE": "3000",
+    "RECHARGE": "100",
+    "TMPSRECRUTE": "2000",
+    "COUTPATATE": "10",
+    "COUTROCHE": "0",
+    "COUTPIECE": "5",
+    "NAME": "Boomer"
+  },
+  "RECOLTEUSE": {
+    "DEGAT": "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0",
+    "RAYON": "5",
+    "PORTEE": "1",
+    "BLINDAGE": "3",
+    "FATIGUE": "3000",
+    "RECHARGE": "100",
+    "TMPSRECRUTE": "1500",
+    "COUTPATATE": "10",
+    "COUTROCHE": "0",
+    "COUTPIECE": "8",
+    "NAME": "Reaper"
+  },
+  "PIEGEUR": {
+    "DEGAT": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+    "RAYON": "5",
+    "PORTEE": "4",
+    "BLINDAGE": "3",
+    "FATIGUE": "3000",
+    "RECHARGE": "50",
+    "TMPSRECRUTE": "1500",
+    "COUTPATATE": "12",
+    "COUTROCHE": "0",
+    "COUTPIECE": "6",
+    "NAME": "Bomber"
+  },
+  "SUN": {
+    "DEGAT": "50,50,40,30,80,80,80,80,50,80,0,30,10,30,30,20,0,0,0,0,20,60,50,80,15,35,5",
+    "RAYON": "8",
+    "PORTEE": "8",
+    "BLINDAGE": "3",
+    "FATIGUE": "3000",
+    "RECHARGE": "45",
+    "TMPSRECRUTE": "2000",
+    "COUTPATATE": "20",
+    "COUTROCHE": "0",
+    "COUTPIECE": "10",
+    "NAME": "Hellfire"
+  },
+  "HELIPEDE": {
+    "DEGAT": "40,40,40,40,40,40,40,40,40,40,0,35,10,30,30,20,0,0,0,0,20,30,70,60,5,40,3",
+    "RAYON": "5",
+    "PORTEE": "4",
+    "BLINDAGE": "3",
+    "FATIGUE": "3000",
+    "RECHARGE": "50",
+    "TMPSRECRUTE": "2500",
+    "COUTPATATE": "20",
+    "COUTROCHE": "0",
+    "COUTPIECE": "5",
+    "NAME": "Heliped"
+  },
+  "ZEEPELIN": {
+    "DEGAT": "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0",
+    "RAYON": "10",
+    "PORTEE": "0",
+    "BLINDAGE": "3",
+    "FATIGUE": "3000",
+    "RECHARGE": "1",
+    "TMPSRECRUTE": "100",
+    "COUTPATATE": "20",
+    "COUTROCHE": "0",
+    "COUTPIECE": "20",
+    "NAME": "Balloon"
+  },
+  "ARAIGNEE": {
+    "DEGAT": "10, 50, 5, 5, 5, 20, 20, 20, 15, 20, 20, 5, 5, 5, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 10, 5, 0",
+    "RAYON": "10",
+    "PORTEE": "10",
+    "BLINDAGE": "1",
+    "FATIGUE": "3000",
+    "RECHARGE": "3",
+    "TMPSRECRUTE": "100",
+    "COUTPATATE": "15",
+    "COUTROCHE": "0",
+    "COUTPIECE": "0",
+    "NAME": "ARAIGNEE"
+  },
+  "FOURMI": {
+    "DEGAT": "10, 50, 5, 5, 5, 20, 20, 20, 15, 20, 20, 5, 5, 5, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 10, 5, 0",
+    "RAYON": "10",
+    "PORTEE": "10",
+    "BLINDAGE": "1",
+    "FATIGUE": "3000",
+    "RECHARGE": "2",
+    "TMPSRECRUTE": "100",
+    "COUTPATATE": "15",
+    "COUTROCHE": "0",
+    "COUTPIECE": "0",
+    "NAME": "FOURMI"
+  },
+  "MASTAAR": {
+    "DEGAT": "30,20,20,15,30,20,20,20,17,25,0,25,10,10,10,15,0,0,0,0,5,5,5,5,5,10,5",
+    "RAYON": "7",
+    "PORTEE": "1",
+    "BLINDAGE": "1",
+    "FATIGUE": "3000",
+    "RECHARGE": "50",
+    "TMPSRECRUTE": "100",
+    "COUTPATATE": "15",
+    "COUTROCHE": "0",
+    "COUTPIECE": "0",
+    "NAME": "Basher"
+  },
+  "LEZARD": {
+    "DEGAT": "20,5,20,10,5,20,20,20,12,20,0,10,5,5,5,5,0,0,0,0,5,5,5,5,5,15,3",
+    "RAYON": "7",
+    "PORTEE": "4",
+    "BLINDAGE": "1",
+    "FATIGUE": "3000",
+    "RECHARGE": "40",
+    "TMPSRECRUTE": "100",
+    "COUTPATATE": "15",
+    "COUTROCHE": "0",
+    "COUTPIECE": "0",
+    "NAME": "Raptor"
+  },
+  "SANGLIER": {
+    "DEGAT": "10,7,12,7,10,12,12,12,10,15,0,7,5,5,5,7,0,0,0,0,5,5,5,5,5,7,2",
+    "RAYON": "8",
+    "PORTEE": "8",
+    "BLINDAGE": "1",
+    "FATIGUE": "3000",
+    "RECHARGE": "20",
+    "TMPSRECRUTE": "100",
+    "COUTPATATE": "15",
+    "COUTROCHE": "0",
+    "COUTPIECE": "0",
+    "NAME": "Hurler"
+  },
+  "FOOTMAN": {
+    "DEGAT": "7,7,5,5,7,12,12,12,10,15,0,7,5,5,5,5,0,0,0,0,5,5,5,5,5,5,2",
+    "RAYON": "7",
+    "PORTEE": "6",
+    "BLINDAGE": "1",
+    "FATIGUE": "3000",
+    "RECHARGE": "15",
+    "TMPSRECRUTE": "100",
+    "COUTPATATE": "15",
+    "COUTROCHE": "0",
+    "COUTPIECE": "0",
+    "NAME": "Bukka"
+  },
+  "TORTUE": {
+    "DEGAT": "5,5,5,5,5,5,5,5,5,5,0,5,5,5,5,5,0,0,0,0,5,5,5,5,5,5,0",
+    "RAYON": "10",
+    "PORTEE": "10",
+    "BLINDAGE": "1",
+    "FATIGUE": "3000",
+    "RECHARGE": "70",
+    "TMPSRECRUTE": "100",
+    "COUTPATATE": "15",
+    "COUTROCHE": "0",
+    "COUTPIECE": "0",
+    "NAME": "Snapper"
+  },
+  "PHARE": {
+    "TMPSCONSTRUCTION": "200",
+    "COUTPATATE": "12",
+    "COUTROCHE": "4",
+    "COUTPIECE": "0",
+    "LOGEMENT": "2",
+    "NAME": "Lighthouse"
+  },
+  "CASERNE": {
+    "TMPSCONSTRUCTION": "400",
+    "COUTPATATE": "16",
+    "COUTROCHE": "14",
+    "COUTPIECE": "0",
+    "LOGEMENT": "8",
+    "NAME": "Barracks"
+  },
+  "SANCTUAIRE": {
+    "TMPSCONSTRUCTION": "600",
+    "COUTPATATE": "50",
+    "COUTROCHE": "30",
+    "COUTPIECE": "0",
+    "LOGEMENT": "16",
+    "NAME": "Sanctuary"
+  },
+  "CAVE": {
+    "TMPSCONSTRUCTION": "100",
+    "COUTPATATE": "10",
+    "COUTROCHE": "6",
+    "COUTPIECE": "0",
+    "LOGEMENT": "2",
+    "NAME": "Storehouse"
+  },
+  "CULTURE": {
+    "TMPSCONSTRUCTION": "200",
+    "COUTPATATE": "12",
+    "COUTROCHE": "6",
+    "COUTPIECE": "0",
+    "LOGEMENT": "5",
+    "NAME": "Culture"
+  },
+  "ATELIER": {
+    "TMPSCONSTRUCTION": "300",
+    "COUTPATATE": "30",
+    "COUTROCHE": "20",
+    "COUTPIECE": "0",
+    "LOGEMENT": "8",
+    "NAME": "Workshop"
+  },
+  "BIBLIOTHEQUE": {
+    "TMPSCONSTRUCTION": "500",
+    "COUTPATATE": "20",
+    "COUTROCHE": "20",
+    "COUTPIECE": "0",
+    "LOGEMENT": "3",
+    "NAME": "Library"
+  },
+  "LABORATOIRE": {
+    "TMPSCONSTRUCTION": "400",
+    "COUTPATATE": "24",
+    "COUTROCHE": "12",
+    "COUTPIECE": "0",
+    "LOGEMENT": "2",
+    "NAME": "Laboratory"
+  },
+  "HANGAR": {
+    "TMPSCONSTRUCTION": "500",
+    "COUTPATATE": "12",
+    "COUTROCHE": "8",
+    "COUTPIECE": "0",
+    "LOGEMENT": "8",
+    "NAME": "Hangar"
+  },
+  "MUR": {
+    "TMPSCONSTRUCTION": "15",
+    "COUTPATATE": "1",
+    "COUTROCHE": "2",
+    "COUTPIECE": "0",
+    "LOGEMENT": "0",
+    "NAME": "Wall"
+  },
+  "TOURCATAPULTE": {
+    "DEGAT": "30,20,15,30,25,25,25,25,20,25,0,20,10,10,10,20,15,0,0,0,15,20,20,25,5,15,5",
+    "TMPSCONSTRUCTION": "50",
+    "COUTPATATE": "10",
+    "COUTROCHE": "4",
+    "COUTPIECE": "0",
+    "LOGEMENT": "1",
+    "NAME": "Tower catapult"
+  },
+  "TOURCANON": {
+    "DEGAT": "15,15,15,15,15,15,15,15,15,15,0,20,15,20,10,6,0,0,0,0,8,10,10,15,4,10,5",
+    "TMPSCONSTRUCTION": "100",
+    "COUTPATATE": "20",
+    "COUTROCHE": "6",
+    "COUTPIECE": "0",
+    "LOGEMENT": "2",
+    "NAME": "Tower canon"
+  },
+  "HERSE": {
+    "TMPSCONSTRUCTION": "60",
+    "COUTPATATE": "4",
+    "COUTROCHE": "8",
+    "COUTPIECE": "0",
+    "LOGEMENT": "0",
+    "NAME": "Portcullis"
+  },
+  "CIRQUE": {
+    "TMPSCONSTRUCTION": "350",
+    "COUTPATATE": "20",
+    "COUTROCHE": "6",
+    "COUTPIECE": "0",
+    "LOGEMENT": "6",
+    "NAME": "Circus"
+  },
+  "GARAGE": {
+    "TMPSCONSTRUCTION": "350",
+    "COUTPATATE": "24",
+    "COUTROCHE": "16",
+    "COUTPIECE": "0",
+    "LOGEMENT": "4",
+    "NAME": "Garage"
+  },
+  "MONASTERE": {
+    "TMPSCONSTRUCTION": "400",
+    "COUTPATATE": "20",
+    "COUTROCHE": "4",
+    "COUTPIECE": "0",
+    "LOGEMENT": "6",
+    "NAME": "Temple"
+  },
+  "MARCHE": {
+    "TMPSCONSTRUCTION": "300",
+    "COUTPATATE": "12",
+    "COUTROCHE": "8",
+    "COUTPIECE": "0",
+    "LOGEMENT": "2",
+    "NAME": "Market"
+  },
+  "CRISTAL": {
+    "TMPSCONSTRUCTION": "300",
+    "COUTPATATE": "16",
+    "COUTROCHE": "6",
+    "COUTPIECE": "0",
+    "LOGEMENT": "0",
+    "NAME": "Crystal"
+  },
+  "HELIOPORT": {
+    "TMPSCONSTRUCTION": "300",
+    "COUTPATATE": "20",
+    "COUTROCHE": "8",
+    "COUTPIECE": "0",
+    "LOGEMENT": "4",
+    "NAME": "Heliport"
+  },
+  "HOSPI": {
+    "TMPSCONSTRUCTION": "300",
+    "COUTPATATE": "10",
+    "COUTROCHE": "4",
+    "COUTPIECE": "0",
+    "LOGEMENT": "3",
+    "NAME": "Hospital"
+  },
+  "MONASTEREFUSION": {
+    "TMPSCONSTRUCTION": "400",
+    "COUTPATATE": "20",
+    "COUTROCHE": "4",
+    "COUTPIECE": "0",
+    "LOGEMENT": "6",
+    "NAME": "Fusion Temple"
+  },
+  "TENTE": {
+    "TMPSCONSTRUCTION": "300",
+    "COUTPATATE": "10",
+    "COUTROCHE": "4",
+    "COUTPIECE": "0",
+    "LOGEMENT": "6",
+    "NAME": "Campaign tent"
+  },
+  "VISION": {
+    "RAYON": "8",
+    "DUREE": "200",
+    "APPRENTISSAGE": "1500",
+    "COUTROCHE": "4",
+    "COUTPATATE": "6",
+    "COUTPIECE": "0",
+    "COUTMANA": "2",
+    "PORTEE": "20",
+    "NAME": "Vision"
+  },
+  "PETRIFICATION": {
+    "RAYON": "4",
+    "DUREE": "400",
+    "APPRENTISSAGE": "2000",
+    "COUTROCHE": "10",
+    "COUTPATATE": "14",
+    "COUTPIECE": "0",
+    "COUTMANA": "2",
+    "PORTEE": "10",
+    "NAME": "Petrification"
+  },
+  "MIROIR": {
+    "RAYON": "0",
+    "DUREE": "20",
+    "APPRENTISSAGE": "4000",
+    "COUTROCHE": "16",
+    "COUTPATATE": "30",
+    "COUTPIECE": "0",
+    "COUTMANA": "6",
+    "PORTEE": "10",
+    "NAME": "Mirror"
+  },
+  "ARMURE": {
+    "RAYON": "0",
+    "DUREE": "400",
+    "APPRENTISSAGE": "3000",
+    "COUTROCHE": "12",
+    "COUTPATATE": "20",
+    "COUTPIECE": "0",
+    "COUTMANA": "4",
+    "PORTEE": "10",
+    "NAME": "Armour"
+  },
+  "NOVA": {
+    "RAYON": "0",
+    "DUREE": "10",
+    "APPRENTISSAGE": "2000",
+    "COUTROCHE": "10",
+    "COUTPATATE": "16",
+    "COUTPIECE": "0",
+    "COUTMANA": "8",
+    "PORTEE": "20",
+    "NAME": "Nova"
+  },
+  "AGRICULTURE0": {
+    "COUT": "1",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "1",
+    "PARAM2": "5",
+    "APPARITION": "1"
+  },
+  "AGRICULTURE1": {
+    "COUT": "1",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "4",
+    "APPARITION": "1"
+  },
+  "AGRICULTURE2": {
+    "COUT": "7500",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "3",
+    "PARAM2": "5",
+    "PARAM3": "15"
+  },
+  "AGRICULTURE3": {
+    "COUT": "7500",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "3",
+    "PARAM2": "5",
+    "PARAM3": "20"
+  },
+  "AGRICULTURE4": {
+    "COUT": "10000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "13"
+  },
+  "AGRICULTURE5": {
+    "COUT": "17000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "2",
+    "PARAM2": "9",
+    "PARAM3": "1"
+  },
+  "AGRICULTURE6": {
+    "COUT": "12500",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "1",
+    "PARAM2": "25"
+  },
+  "AGRICULTURE7": {
+    "COUT": "15000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "1",
+    "PARAM2": "13"
+  },
+  "AGRICULTURE8": {
+    "COUT": "12000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "1",
+    "PARAM2": "5",
+    "PARAM3": "1"
+  },
+  "AGRICULTURE9": {
+    "COUT": "22000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "2",
+    "PARAM2": "3",
+    "PARAM3": "15"
+  },
+  "AGRICULTURE10": {
+    "COUT": "25000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "2",
+    "PARAM2": "25",
+    "PARAM3": "15"
+  },
+  "AGRICULTURE11": {
+    "COUT": "27000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "0",
+    "PARAM2": "3",
+    "PARAM3": "15"
+  },
+  "AGRICULTURE12": {
+    "COUT": "27000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "0",
+    "PARAM2": "25",
+    "PARAM3": "15"
+  },
+  "AGRICULTURE13": {
+    "COUT": "30000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "0",
+    "PARAM2": "30",
+    "PARAM3": "15"
+  },
+  "AGRICULTURE14": {
+    "COUT": "30000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "2",
+    "PARAM2": "9",
+    "PARAM3": "2"
+  },
+  "AGRICULTURE15": {
+    "COUT": "35000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "0",
+    "PARAM2": "3",
+    "PARAM3": "20"
+  },
+  "AGRICULTURE16": {
+    "COUT": "40000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "0",
+    "PARAM2": "25",
+    "PARAM3": "20"
+  },
+  "AGRICULTURE17": {
+    "COUT": "40000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "0",
+    "PARAM2": "30",
+    "PARAM3": "20"
+  },
+  "AGRICULTURE18": {
+    "COUT": "45000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "7",
+    "PARAM2": "5",
+    "PARAM3": "1"
+  },
+  "MILITAIRE0": {
+    "COUT": "200",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "1",
+    "PARAM2": "0",
+    "APPARITION": "1"
+  },
+  "MILITAIRE1": {
+    "COUT": "200",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "1",
+    "APPARITION": "1"
+  },
+  "MILITAIRE2": {
+    "COUT": "15000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "5",
+    "PARAM2": "30",
+    "PARAM3": "1"
+  },
+  "MILITAIRE3": {
+    "COUT": "7500",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "1",
+    "PARAM2": "1"
+  },
+  "MILITAIRE4": {
+    "COUT": "10000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "10"
+  },
+  "MILITAIRE5": {
+    "COUT": "12000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "4",
+    "PARAM2": "30",
+    "PARAM3": "1"
+  },
+  "MILITAIRE6": {
+    "COUT": "12000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "1",
+    "PARAM2": "8"
+  },
+  "MILITAIRE7": {
+    "COUT": "15000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "3",
+    "PARAM2": "30",
+    "PARAM3": "15"
+  },
+  "MILITAIRE8": {
+    "COUT": "17000",
+    "MISSION": "1",
+    "EFFET": "2",
+    "PARAM1": "6",
+    "PARAM2": "30",
+    "PARAM3": "15"
+  },
+  "MILITAIRE9": {
+    "COUT": "22000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "1",
+    "PARAM2": "11"
+  },
+  "MILITAIRE10": {
+    "COUT": "25000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "6",
+    "PARAM2": "30",
+    "PARAM3": "1"
+  },
+  "MILITAIRE11": {
+    "COUT": "27000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "1",
+    "PARAM2": "2"
+  },
+  "MILITAIRE12": {
+    "COUT": "27000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "11"
+  },
+  "MILITAIRE13": {
+    "COUT": "30000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "1",
+    "PARAM2": "14"
+  },
+  "MILITAIRE14": {
+    "COUT": "30000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "5",
+    "PARAM2": "30",
+    "PARAM3": "2"
+  },
+  "MILITAIRE15": {
+    "COUT": "35000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "4",
+    "PARAM2": "30",
+    "PARAM3": "2"
+  },
+  "MILITAIRE16": {
+    "COUT": "40000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "1",
+    "PARAM2": "12"
+  },
+  "MILITAIRE17": {
+    "COUT": "40000",
+    "MISSION": "1",
+    "EFFET": "2",
+    "PARAM1": "6",
+    "PARAM2": "30",
+    "PARAM3": "20"
+  },
+  "MILITAIRE18": {
+    "COUT": "45000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "3",
+    "PARAM2": "30",
+    "PARAM3": "20"
+  },
+  "MILITAIRE19": {
+    "COUT": "45000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "6",
+    "PARAM2": "30",
+    "PARAM3": "2"
+  },
+  "GENIECIVIL0": {
+    "COUT": "200",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "1",
+    "PARAM2": "7",
+    "APPARITION": "1"
+  },
+  "GENIECIVIL1": {
+    "COUT": "200",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "1",
+    "PARAM2": "6",
+    "APPARITION": "1"
+  },
+  "GENIECIVIL2": {
+    "COUT": "200",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "2",
+    "APPARITION": "1"
+  },
+  "GENIECIVIL3": {
+    "COUT": "200",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "3",
+    "APPARITION": "1"
+  },
+  "GENIECIVIL4": {
+    "COUT": "200",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "7",
+    "APPARITION": "3"
+  },
+  "GENIECIVIL5": {
+    "COUT": "200",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "8",
+    "APPARITION": "4"
+  },
+  "GENIECIVIL6": {
+    "COUT": "1",
+    "MISSION": "4",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "16",
+    "APPARITION": "4"
+  },
+  "GENIECIVIL7": {
+    "COUT": "7500",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "9"
+  },
+  "GENIECIVIL8": {
+    "COUT": "10000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "8",
+    "PARAM2": "7",
+    "PARAM3": "15"
+  },
+  "GENIECIVIL9": {
+    "COUT": "12000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "18"
+  },
+  "GENIECIVIL10": {
+    "COUT": "12000",
+    "MISSION": "1",
+    "EFFET": "2",
+    "PARAM1": "1",
+    "PARAM2": "30",
+    "PARAM3": "15"
+  },
+  "GENIECIVIL11": {
+    "COUT": "15000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "1",
+    "PARAM2": "7",
+    "PARAM3": "1"
+  },
+  "GENIECIVIL12": {
+    "COUT": "17000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "3",
+    "PARAM2": "7",
+    "PARAM3": "15"
+  },
+  "GENIECIVIL13": {
+    "COUT": "22000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "0"
+  },
+  "GENIECIVIL14": {
+    "COUT": "25000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "19"
+  },
+  "GENIECIVIL15": {
+    "COUT": "27000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "14"
+  },
+  "GENIECIVIL16": {
+    "COUT": "30000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "12"
+  },
+  "GENIECIVIL17": {
+    "COUT": "30000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "8",
+    "PARAM2": "7",
+    "PARAM3": "20"
+  },
+  "GENIECIVIL18": {
+    "COUT": "30000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "3",
+    "PARAM2": "7",
+    "PARAM3": "15"
+  },
+  "GENIECIVIL19": {
+    "COUT": "35000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "1",
+    "PARAM2": "30",
+    "PARAM3": "1"
+  },
+  "GENIECIVIL20": {
+    "COUT": "40000",
+    "MISSION": "1",
+    "EFFET": "2",
+    "PARAM1": "1",
+    "PARAM2": "30",
+    "PARAM3": "20"
+  },
+  "GENIECIVIL21": {
+    "COUT": "45000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "1",
+    "PARAM2": "16"
+  },
+  "GENIECIVIL22": {
+    "COUT": "40000",
+    "MISSION": "1",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "21"
+  },
+  "GENIECIVIL23": {
+    "COUT": "45000",
+    "MISSION": "1",
+    "EFFET": "1",
+    "PARAM1": "1",
+    "PARAM2": "30",
+    "PARAM3": "2"
+  },
+  "RELIGIEUX0": {
+    "COUT": "5",
+    "MISSION": "7",
+    "EFFET": "0",
+    "PARAM1": "1",
+    "PARAM2": "4",
+    "APPARITION": "7"
+  },
+  "RELIGIEUX1": {
+    "COUT": "5",
+    "MISSION": "7",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "15",
+    "APPARITION": "7"
+  },
+  "RELIGIEUX2": {
+    "COUT": "200",
+    "MISSION": "7",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "6",
+    "APPARITION": "7"
+  },
+  "RELIGIEUX3": {
+    "COUT": "5",
+    "MISSION": "7",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "17",
+    "APPARITION": "7"
+  },
+  "RELIGIEUX4": {
+    "COUT": "12000",
+    "MISSION": "7",
+    "EFFET": "0",
+    "PARAM1": "4",
+    "PARAM2": "0"
+  },
+  "RELIGIEUX5": {
+    "COUT": "20000",
+    "MISSION": "7",
+    "EFFET": "1",
+    "PARAM1": "10",
+    "PARAM2": "4",
+    "PARAM3": "2"
+  },
+  "RELIGIEUX6": {
+    "COUT": "25000",
+    "MISSION": "7",
+    "EFFET": "0",
+    "PARAM1": "4",
+    "PARAM2": "1"
+  },
+  "RELIGIEUX7": {
+    "COUT": "30000",
+    "MISSION": "7",
+    "EFFET": "1",
+    "PARAM1": "11",
+    "PARAM2": "4",
+    "PARAM3": "25"
+  },
+  "RELIGIEUX8": {
+    "COUT": "45000",
+    "MISSION": "7",
+    "EFFET": "0",
+    "PARAM1": "1",
+    "PARAM2": "15"
+  },
+  "RELIGIEUX9": {
+    "COUT": "30000",
+    "MISSION": "7",
+    "EFFET": "0",
+    "PARAM1": "4",
+    "PARAM2": "2"
+  },
+  "RELIGIEUX10": {
+    "COUT": "45000",
+    "MISSION": "7",
+    "EFFET": "0",
+    "PARAM1": "4",
+    "PARAM2": "3"
+  },
+  "RELIGIEUX11": {
+    "COUT": "45000",
+    "MISSION": "7",
+    "EFFET": "1",
+    "PARAM1": "12",
+    "PARAM2": "4",
+    "PARAM3": "15"
+  },
+  "RELIGIEUX12": {
+    "COUT": "25000",
+    "MISSION": "7",
+    "EFFET": "1",
+    "PARAM1": "11",
+    "PARAM2": "4",
+    "PARAM3": "50"
+  },
+  "RELIGIEUX13": {
+    "COUT": "35000",
+    "MISSION": "7",
+    "EFFET": "0",
+    "PARAM1": "4",
+    "PARAM2": "4"
+  },
+  "RELIGIEUX14": {
+    "COUT": "40000",
+    "MISSION": "7",
+    "EFFET": "1",
+    "PARAM1": "12",
+    "PARAM2": "4",
+    "PARAM3": "20"
+  },
+  "RELIGIEUX15": {
+    "COUT": "40000",
+    "MISSION": "7",
+    "EFFET": "0",
+    "PARAM1": "3",
+    "PARAM2": "20"
+  },
+  "RELIGIEUX16": {
+    "COUT": "45000",
+    "MISSION": "7",
+    "EFFET": "1",
+    "PARAM1": "10",
+    "PARAM2": "4",
+    "PARAM3": "20"
+  },
+  "RELIGIEUX17": {
+    "COUT": "45000",
+    "MISSION": "7",
+    "EFFET": "1",
+    "PARAM1": "9",
+    "PARAM2": "4",
+    "PARAM3": "20"
+  },
+  "DIVERS": {
+    "DEGAT_NOVA_PETITE": "40",
+    "DEGAT_NOVA_GRANDE": "60",
+    "COUTNOVAPATATE": "2",
+    "COUTNOVAROCHE": "1",
+    "DEBITTOTALNOVA": "50",
+    "FRAMENOVA": "100",
+    "BONUSCAPITAINE": "2",
+    "VEGETREPOUSSE": "128",
+    "TEMPSPROPOSITION": "100",
+    "TEMPSTRANSACTION": "100",
+    "DELAYRECHARGECANON": "100",
+    "DELAYRECHARGECATAPULTE": "50",
+    "RAYONTOURELLEENGIN": "10",
+    "RAYONTOURELLEBATIMENT": "7",
+    "CD": "S:"
+  }
+}

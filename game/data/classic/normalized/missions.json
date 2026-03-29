@@ -1,0 +1,308 @@
+[
+  {
+    "id": "monde01",
+    "source_file": "MONDE01.TXT",
+    "mission_number": 1,
+    "title": "- Mission 1 -",
+    "chapter": "",
+    "objectives": [
+      "Secure a cave",
+      "Stock 50 sacks of food and",
+      "50 sacks of stones in the cave"
+    ],
+    "briefing": "- PROLOGUE -\n\nThis chronicle is unlike any other:\nIt spans centuries and traces the\nentire history, from the distant past\nto the present... and the possible\nfuture, of your world.\nConferred to the Leader of every\nclan, it will show you what needs\nto be done.\n\n\nRead this journal with care, it will\nserve as your only guide through a\nperilous quest.\n\n\n.../...\nCHAPTER I\nIN THE BEGINNING:\nTHE DAWN OF THE\nNEW WORLD\n\n- Mission 1 -\n\nGreetings mysterious visitor.\nI hope you're not afraid... or do I\ndetect an anxious tear in your eye?\nA word of warning: this venture is\nnot for the faint of heart!\n\nThis world you are about to\nuncover, and the challenges you\nwill meet there, will require you to\nfight fearlessly... and intelligently.\n.../...\nBut I'm getting ahead of myself.\nFor the moment, everything is just\nfine!... Aside from the fact that\nyour clan desperately lacks food\nand ressources... and the Assassins\nGuild terrorizing the region isn't\nmaking life any easier!\n\nIt might be a good idea to amass\na reserve of food and building\nmaterials.\n\n\nSynopsis:\nSecure a cave\nStock 50 sacks of food and\n50 sacks of stones in the cave"
+  },
+  {
+    "id": "monde02",
+    "source_file": "MONDE02.TXT",
+    "mission_number": 2,
+    "title": "- Mission 2 -",
+    "chapter": "",
+    "objectives": [
+      "Build a Sanctuary.",
+      "Build a Barrack.",
+      "Stock 50 sacks of food."
+    ],
+    "briefing": "- Mission 2 -\n\nWell, what do you know?\nYou're back! I guess I was right\nabout you, after all. \nBut I'm still not convinced that\nyour diplomatic skills are up to par!\nAt one point, I thought your\nindecision would put and end to\nour brief friendship. This world is\nnow yours, and the only way\nforward will be to succeed. If you\nare to do so, it is crucial that your\npitiful army learn the meaning of\ncombat.\nBut let's get to the point...\n\n.../...\n\n\nSynopsis:\nBuild a Sanctuary.\nBuild a Barrack.\nStock 50 sacks of food."
+  },
+  {
+    "id": "monde03",
+    "source_file": "MONDE03.TXT",
+    "mission_number": 3,
+    "title": "- Mission 3 -",
+    "chapter": "",
+    "objectives": [
+      "Build a Laboratory.",
+      "Develop a technology."
+    ],
+    "briefing": "- Mission 3 -\n\nThings aren't as simple as they\nseem in the realm you now\npossess!\n\nI can't help but notice that your\npopulace is developing rather\nslowly... If you intend to get\nanywhere in this life, there's an vital\nelement you can't afford to neglect:\nKNOWLEDGE!\n\nIt may not seem important in the\ngrand scope of things, but\nknowledge can bring about\nimpressive results.\n.../...\nTo make the best use of your time,\nI advise you to build a Laboratory\nto carry out your research.\nAs you may have noticed, your\ncave days are over!\n\n\nSynopsis:\nBuild a Laboratory.\nDevelop a technology."
+  },
+  {
+    "id": "monde04",
+    "source_file": "MONDE04.TXT",
+    "mission_number": 4,
+    "title": "- Mission 4 -",
+    "chapter": "",
+    "objectives": [
+      "Build a Market.",
+      "Train a Messenger to forge an",
+      "alliance with the Red Clan.",
+      "Destroy the rival Clan if no alliance",
+      "is possible."
+    ],
+    "briefing": "- Mission 4 -\n\nYou've made your first discovery?\n\nI wouldn't be so cocky if I were\nyou: a confidential report \n(yes, I have my connections...)\ninformed me that you're not alone\nany more.\nA clan not unlike your own is\nestablished nearby.\n\nThe first encounter will probably be\nrough, but it's possible that this\nconfrontation could work to the\nadvantage of both populations.\n\n.../...\n\n\nSynopsis:\nBuild a Market.\nTrain a Messenger to forge an\nalliance with the Red Clan.\nDestroy the rival Clan if no alliance\nis possible."
+  },
+  {
+    "id": "monde05",
+    "source_file": "MONDE05.TXT",
+    "mission_number": 5,
+    "title": "- Mission 5 -",
+    "chapter": "",
+    "objectives": [
+      "Meet the three other Clans",
+      "Eliminate enemy Clans (any Clan",
+      "with whom you are not allied)"
+    ],
+    "briefing": "- Mission 5 -\n\nIt was bound to happen: Other\nClans have entered your realm!\nConsider this piece of advice, as it\nmay bear upon your future:\nFriends can be your key to success,\nbut forming alliances takes talent\nand finesse...\n\nYou'll need to master the art of\ndiplomacy, or suffer the\nconsequences...\n\nSynopsis: \nMeet the three other Clans\nEliminate enemy Clans (any Clan\nwith whom you are not allied)"
+  },
+  {
+    "id": "monde06",
+    "source_file": "MONDE06.TXT",
+    "mission_number": 6,
+    "title": "- Mission 6 -",
+    "chapter": "- CHAPTER II -",
+    "objectives": [
+      "Explore the Mine, where you will",
+      "obtain Spiritual Knowledge."
+    ],
+    "briefing": "- CHAPTER II -\nToday:\n\"MIGHT & TERROR\"\n\n- Mission 6 -\n\nI see you have vanquished\nyour enemy.\nIt is my duty to tell you that your\nevery action from this point on\ncould work for or against you \nBut don't imagine your enemies\nhave forgotten the bitter defeats\nyou dealt them!\nNor should you delude yourself\ninto believing that friendship\n(or enmity) lasts forever...\n.../... \nOr perhaps you've already noticed?\nIf there is one thing you will soon\nunderstand, it is that Knowledge is\nsometimes attained by treading a\nSpiritual path...\nAn ancient parchment mentions a\ncave, or an abandoned Mine, where\narcane and mystical knowledge\nstill resides.\n\nSynopsis:\n- Explore the Mine, where you will\nobtain Spiritual Knowledge."
+  },
+  {
+    "id": "monde07",
+    "source_file": "MONDE07.TXT",
+    "mission_number": 7,
+    "title": "- Mission 7 -",
+    "chapter": "",
+    "objectives": [
+      "Develop two technologies."
+    ],
+    "briefing": "- Mission 7 -\n\nI've just received an alarming\nreport: every other Clan in the\nregion has been annihilated by\nstrange, terrifying creatures.\nYou absolutely must repel these\ncreatures' attacks and develop a\nstable economy in order to leave\nthis accursed domain.\nBut don't let this setback keep your \nClan from growing: you must \ndiscover new technologies if you \nwant to move on to friendlier \nterritory.\n\nSynopsis: \nDevelop two technologies."
+  },
+  {
+    "id": "monde08",
+    "source_file": "MONDE08.TXT",
+    "mission_number": 8,
+    "title": "- Mission 8 -",
+    "chapter": "",
+    "objectives": [
+      "Cross the ocean and build a",
+      "Sanctuary."
+    ],
+    "briefing": "- Mission 8 -\n\nThe crystal has profoundly altered\npeople's convictions.\n\nYou hoped the other Clans would\nnot discover your secret? I believe\nit has already reached enemy ears!\nYou have led your people across\ndesolate lands and have finally\nreached the farthest shores of this\ncontinent. The eastern lands would\nseem to be ideal for the expansion\nyou envisioned.\nThe first Clan to successfully cross\nthe ocean can hope to build a better\nworld.\n.../...\n\n\nSynopsis: \nCross the ocean and build a\nSanctuary."
+  },
+  {
+    "id": "monde09",
+    "source_file": "MONDE09.TXT",
+    "mission_number": 9,
+    "title": "- Mission 9 -",
+    "chapter": "- CHAPTER III -",
+    "objectives": [
+      "Make two discoveries."
+    ],
+    "briefing": "- CHAPTER III -\n\"A New Age\"\n\n- Mission 9 -\n\nCompetition is a necessary evil,\nbut it can have its good points.\nHowever, be advised that sore\nlosers could try to spoil this\nadventure for you.\n\nYou must establish your Clan's\nauthority in this unfamiliar land and\nhelp your people acquire new\nKnowledge. (Don't forget to build\na Laboratory.)\n\n.../...\nI've just received given a most\nhelpful intelligence report on the\nClans of Rising Lands. Only one\nword comes to mind that describes\nthem: pitiful.\nYou surely were able to observe\nthis for yourself: rascals and rogues\nare in the majority.\nYou must prove your courage but\nalso your skill if you want to\nmaintain your command of this\nrealm.\n\n\nSynopsis:\nMake two discoveries."
+  },
+  {
+    "id": "monde10",
+    "source_file": "MONDE10.TXT",
+    "mission_number": 10,
+    "title": "- Mission 10. -",
+    "chapter": "",
+    "objectives": [
+      "Destroy enemy Clans."
+    ],
+    "briefing": "- Mission 10. -\n\nI have just received an urgent\nmissive from one of the clans:\nthey've been mercilessly routed by\nrepulsive and sinister monsters;\nof course, they must mean\nShadow Creatures.\n\nThis news confirms my worst fears:\ndangerous forces are closing in on\nyou. You must show your\nopponents that you are in control.\nThere is only one solution: total\ndestruction of all enemy Clans.\n\nSynopsis:\nDestroy enemy Clans."
+  },
+  {
+    "id": "monde11",
+    "source_file": "MONDE11.TXT",
+    "mission_number": 11,
+    "title": "- Mission 11 -",
+    "chapter": "",
+    "objectives": [
+      "Cross the swamps.",
+      "Produce 50 sacks of food.",
+      "Develop one technology."
+    ],
+    "briefing": "- Mission 11 -\n\nThese blasted Shadow Creatures\nseem to have a talent for being\neverywhere at once! \n(especially where you\ndon't expect them!)\n\nYou astonish me! What nerves of\nsteel! Naturally, those tiny beads of\nsweat running down your forehead\nmust stem from your considerable\nefforts.\nThese physical and mental\nchallenges are teaching your people\nto  \"stand on their own two feet.\"\n\n.../...\nYou are about to cross an\nimpoverished land - a dreary\nquagmire riddled with hidden traps.\nYou must conquer these swamps\nand establish a strong base if you\nhope to move on.\n\n\nSynopsis:\nCross the swamps.\nProduce 50 sacks of food.\nDevelop one technology."
+  },
+  {
+    "id": "monde12",
+    "source_file": "MONDE12.TXT",
+    "mission_number": 12,
+    "title": "- Mission 12 -",
+    "chapter": "",
+    "objectives": [
+      "Break through the enemy blocade.",
+      "Build a Sanctuary in the Northeast.",
+      "Destroy all enemy Clans."
+    ],
+    "briefing": "- Mission 12 -\n\nI am a bit disappointed in you:\ncaught like a real amateur.\nWasn't my advice of any\nuse to you?\n\nYou must take action - and fast!\nYou've got to get out of here and\nestablish a new Sanctuary to the\nNortheast.\n\nSynopsis: \nBreak through the enemy blocade.\nBuild a Sanctuary in the Northeast.\nDestroy all enemy Clans."
+  },
+  {
+    "id": "monde13",
+    "source_file": "MONDE13.TXT",
+    "mission_number": 13,
+    "title": "- Mission 13 -",
+    "chapter": "",
+    "objectives": [
+      "Build a Sanctuary, as quickly as",
+      "possible, in the East."
+    ],
+    "briefing": "- Mission 13 -\n\nYou deserve a holiday!\n\nIt's time for the great annual\nBuilders Race! \nNo one can refuse to participate. \nThe winner gains (or regains) the\nesteem of the other Clans.\n\nIf you emerge the victor, the other\nClans will be more inclined to\nbecome your allies. The result of\nthe race will also determine where\nyou begin the next mission. If you\nloose, your future will be dark\nindeed!\n.../...\n\n\nSynopsis: \nBuild a Sanctuary, as quickly as\npossible, in the East."
+  },
+  {
+    "id": "monde14",
+    "source_file": "MONDE14.TXT",
+    "mission_number": 14,
+    "title": "- Mission 14 -",
+    "chapter": "",
+    "objectives": [
+      "Resist the creatures.",
+      "Build a Sanctuary",
+      "and a Storehouse.",
+      "Produce 50 blocks of stones",
+      "and 100 sacks of food."
+    ],
+    "briefing": "- Mission 14 -\n\nIt seems our enemies deliberately\nchose not to follow us along this\npath... this doesn't bode well...\n\nI came across a parchment, and as I\nread it aloud, I felt an indescribable\nsensation... A horrifying vision\nappeared before me: I'm afraid\nI inadvertently awakened\nShadow Creatures!\nThey didn't even seem to notice\nme, but ran straight in your\ndirection...\n\n\n.../...\n\nThese frenzied creatures are\narriving by the thousands! \nYou'll have to do your best to\nresist them!\n\n\nSynopsis:\nResist the creatures.\nBuild a Sanctuary\nand a Storehouse.\nProduce 50 blocks of stones\nand 100 sacks of food."
+  },
+  {
+    "id": "monde15",
+    "source_file": "MONDE15.TXT",
+    "mission_number": 15,
+    "title": "- Mission 15 -",
+    "chapter": "",
+    "objectives": [
+      "Expand your Clan.",
+      "Destroy the enemy."
+    ],
+    "briefing": "- Mission 15 -\n\nThe vast plains surrounding you\nseem to invite your Clan to expand!\nUnfortunately, the terrain is barren\nand can't provide the stones and\nfood you'll need.\nAlliances will be more difficult to\nsecure, but you'll need friends if\nyou want to achieve your goal.\n\nYou must resolve internal problems\nand manage your development...\n\nSynopsis:\nExpand your Clan.\nDestroy the enemy."
+  },
+  {
+    "id": "monde16",
+    "source_file": "MONDE16.TXT",
+    "mission_number": 16,
+    "title": "- Mission 16 -",
+    "chapter": "",
+    "objectives": [
+      "Destroy enemy Clans",
+      "Develop a new technology"
+    ],
+    "briefing": "- Mission 16 -\n\nThe last place you stopped was\nbarren: you need to replenish your\nsupplies. A local chatterbox\nwarned me that Shadow Creatures\nare roaming the area!\n\nI couldn't help but notice that your\nneighbors seem unusually nervous;\nI wouldn't hesitate to destroy any\nenemy. Oh, and don't forget to\ndevelop a new technology.\n\nSynopsis:\nDestroy enemy Clans\nDevelop a new technology"
+  },
+  {
+    "id": "monde17",
+    "source_file": "MONDE17.TXT",
+    "mission_number": 17,
+    "title": "",
+    "chapter": "",
+    "objectives": [
+      "Escape from prison.",
+      "Return to your Clan.",
+      "Destroy enemy Clans."
+    ],
+    "briefing": "Mission 17 -\n\n\nYou just can't trust anyone these\ndays... The traitor got help from\nthose evil and scheming wretches:\nthe Shadow Creatures...\n\nThey are preparing to annihilate\nyou once and for all, which is why\nyour people are now imprisoned.\nYou absolutely must escape and\nreturn to your village\n(the woods should shield\nyou from  prying eyes).\n\n\n.../...\nOnce you have taken your life into\nyour own hands again you will\nhave to destroy the enemy camp, to\ndiscourage anyone else who would\ndare to commit such an infamous\ncrime.\n\nSynopsis:\nEscape from prison.\nReturn to your Clan.\nDestroy enemy Clans."
+  },
+  {
+    "id": "monde18",
+    "source_file": "MONDE18.TXT",
+    "mission_number": 18,
+    "title": "- Mission 18 -",
+    "chapter": "- CHAPTER IV -",
+    "objectives": [
+      "Find the hidden Sanctuary",
+      "and reactivate it."
+    ],
+    "briefing": "- CHAPTER IV -\n\n- Mission 18 -\n\nIt seems to be getting more and\nmore difficult to form alliances\nwith other Clans. From what my\nspies have told me, the Shadow\nCreatures are behind the chaos that\nreigns among the Clans. Moreover,\nrumors of an abandoned Sanctuary\nholding a fabulous treasure has\nonly sharpened hostilities.\n\nYou'd best heed this old adage:\n\"Persistence can foster\nany alliance\".\n.../...\n\n\nSynopsis:\nFind the hidden Sanctuary\nand reactivate it."
+  },
+  {
+    "id": "monde19",
+    "source_file": "MONDE19.TXT",
+    "mission_number": 19,
+    "title": "- Mission 19 -",
+    "chapter": "",
+    "objectives": [
+      "Build your Sanctuary",
+      "to the Southeast."
+    ],
+    "briefing": "- Mission 19 -\n\nInside the Sanctuary, you\ndiscovered a message saying:\n\"The future lies to the Southeast\".\n\nYou will have to cross this volcanic\nterrain as fast as you can: these\ndesolate lands are under the\nShadow Creatures' dominion.\nI detected the tracks of these\naccursed creatures, along with\nthose of beasts I've never before\nencountered! Exploring these lands\nwon't be easy:\nYour enemies are lurking in the\nshadows, ready to destroy you.\n.../...\n\n\nProceed Southeast with caution\nand you will certainly find\nthe solution to your problems...\n\n\nSynopsis:\nBuild your Sanctuary\nto the Southeast."
+  },
+  {
+    "id": "monde20",
+    "source_file": "MONDE20.TXT",
+    "mission_number": 20,
+    "title": "- Mission 20 -",
+    "chapter": "",
+    "objectives": [
+      "Build a Sanctuary Southeast."
+    ],
+    "briefing": "- Mission 20 -\n\nThis desolate place\nreally isn't for you!\n\nYou must persevere and guide your\nClan across this inhospitable terrain\ntoward Southeast, where you will\nbuild a Sanctuary.\nBut be vigilant! Your enemies are \nas treacherous as ever...\n... one mistake could be your last.\n\nSynopsis:\nBuild a Sanctuary Southeast."
+  },
+  {
+    "id": "monde21",
+    "source_file": "MONDE21.TXT",
+    "mission_number": 21,
+    "title": "- Mission 21 -",
+    "chapter": "",
+    "objectives": [
+      "Build a Sanctuary to the Southeast.",
+      "Destroy all enemy Clans."
+    ],
+    "briefing": "- Mission 21 -\n\nWill this dreary landscape ever\ncome to an end? Nothing but\nmolten rock and lava as far as the\neye can see...\n\nThe further you advance, the more\nviolent and fearless the Creatures\ngrow. The only possible escape is\nto continue Southeast and build a\nSanctuary there.\n\nSynopsis:\nBuild a Sanctuary to the Southeast.\nDestroy all enemy Clans."
+  },
+  {
+    "id": "monde22",
+    "source_file": "MONDE22.TXT",
+    "mission_number": 22,
+    "title": "- Mission 22 -",
+    "chapter": "",
+    "objectives": [
+      "Build a Sanctuary to the Southeast.",
+      "Destroy all enemy Clans."
+    ],
+    "briefing": "- Mission 22 -\n\nIt would seem we have finally\ncome to the end of this Shadow\nCreature-infested hellhole.\nCourage! Just one final push to\nescape these hostile lands! You'll\nstill have to establish a Sanctuary\nSoutheast of this region.\nI'm confident you'll succeed:\nI've had many opportunities to\nappreciate your quick thinking and\nsense of diplomacy.\n\nSynopsis:\nBuild a Sanctuary to the Southeast.\nDestroy all enemy Clans."
+  },
+  {
+    "id": "monde23",
+    "source_file": "MONDE23.TXT",
+    "mission_number": 23,
+    "title": "- Mission 23 -",
+    "chapter": "",
+    "objectives": [
+      "Take over the Great Library",
+      "to the Southeast."
+    ],
+    "briefing": "- Mission 23 -\n\nThere's no doubt about it:\nyour desperate trek is near its end.\n\nYou'll soon be traveling the\nwell-worn paths and green plains\nyou've dreamed of...\nthe Shadow Creatures' domain\nbut a fading memory.\nBut before you can frolic through\nyour lava-free world, you'll have to\nemigrate Southeast and take\npossession of the Library!\n\nSynopsis:\nTake over the Great Library\nto the Southeast."
+  },
+  {
+    "id": "monde24",
+    "source_file": "MONDE24.TXT",
+    "mission_number": 24,
+    "title": "- Mission 24 -",
+    "chapter": "",
+    "objectives": [
+      "Build a Sanctuary to the Southeast."
+    ],
+    "briefing": "- Mission 24 -\n\nI've just received an important\nmessage: the fertile lands you've\ndreamed of since this adventure\nbegan are located...\nto the Southeast!\n\nYou should build a Sanctuary there\nas fast as possible.\nAs you will see for yourself, your\ntask won't be easy: rumors of a\nmassive and hostile presence to the\nSouth East abound...\n\n\nSynopsis:\nBuild a Sanctuary to the Southeast."
+  },
+  {
+    "id": "monde25",
+    "source_file": "MONDE25.TXT",
+    "mission_number": 25,
+    "title": "- Mission 25 -",
+    "chapter": "",
+    "objectives": [
+      "Defeat anyone who opposes you."
+    ],
+    "briefing": "- Mission 25 -\n\nAt last! The Rising Lands you've\ndreamed of for so long are within\nyour grasp!\n \nBut for this adventure to come to\nan end, you must ensure your\nClan's peaceful existence in these\nnew lands…\nBe merciless and annihilate your\nenemies!\n\n\nSynopsis:\n- Defeat anyone who opposes you."
+  }
+]

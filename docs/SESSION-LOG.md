@@ -1,0 +1,61 @@
+# Session Log
+
+## 2026-03-29
+
+### Summary
+
+- switched the project direction from the browser prototype to a Godot 4 rewrite
+- created the Godot project scaffold under `game/`
+- added public repo contribution and issue/PR templates
+- connected local `origin` config to `Cryptobab/rising-lands-2`
+- built importer tooling that reads the original game files
+- exported both raw and normalized classic data JSON
+- wired the Godot bootstrap scene to load normalized classic data and Mission 1 metadata
+- added a deterministic Mission 1 bootstrap map JSON and Godot map loader
+- installed Git and Godot locally with `winget`
+- validated the Godot project with a headless startup run
+- implemented the first real worker economy loop on the Mission 1 map
+- added a Godot smoke-test script for the vertical-slice stockpile goal
+- added selection, right-click assignment, and first construction controls
+- added a builder-construction smoke test
+- removed the old browser prototype from the canonical branch
+- removed the obsolete legacy project-plan file from the active docs set
+
+### Files Added Or Changed
+
+- [`README.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/README.md)
+- [`docs/MASTER-PLAN.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/MASTER-PLAN.md)
+- [`docs/ENGINE-DECISION.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/ENGINE-DECISION.md)
+- [`docs/CONTINUATION.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/CONTINUATION.md)
+- [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot)
+- [`game/scenes/main.tscn`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scenes/main.tscn)
+- [`game/scripts/core/game_root.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/game_root.gd)
+- [`game/scripts/core/world_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/world_state.gd)
+- [`game/scripts/core/mission_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/mission_state.gd)
+- [`game/scripts/core/map_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/map_state.gd)
+- [`game/scripts/data/classic_database.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/data/classic_database.gd)
+- [`game/scripts/simulation/worker_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/worker_unit_state.gd)
+- [`game/scripts/simulation/resource_node_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/resource_node_state.gd)
+- [`game/scripts/simulation/building_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/building_state.gd)
+- [`game/scripts/simulation/construction_site_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/construction_site_state.gd)
+- [`game/scripts/tests/vertical_slice_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/vertical_slice_smoke.gd)
+- [`game/scripts/tests/construction_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/construction_smoke.gd)
+- [`game/data/classic/vertical_slice/mission_001_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/mission_001_map.json)
+- [`tools/importers/extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/extract_classic_data.py)
+- [`tools/importers/tests/test_extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/tests/test_extract_classic_data.py)
+
+### Validation
+
+- importer executed successfully against the original release folder
+- raw and normalized JSON datasets were generated
+- importer module compiled with `py_compile`
+- importer unit tests passed
+- Godot headless startup completed without reported errors
+- Godot headless vertical-slice simulation completed without reported errors
+- Godot headless construction smoke test completed without reported errors
+
+### Outstanding
+
+- validate the project in the interactive Godot editor
+- review the dirty worktree before the first public commit and push
+- add richer command handling, production, combat, and broader entity simulation

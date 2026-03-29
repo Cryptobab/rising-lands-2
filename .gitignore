@@ -4,3 +4,12 @@ Thumbs.db
 *.log
 .env
 dist/
+.godot/
+.import/
+*.translation
+*.tmp
+bin/
+obj/
+exports/
+export_presets.cfg
+__pycache__/
