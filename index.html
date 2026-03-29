@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rising Lands 2</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0a; }
+    canvas { display: block; cursor: default; }
+    #loading {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: #0a0a0a; color: #a0a0a0; font-family: monospace; font-size: 16px;
+      z-index: 100;
+    }
+    #loading h1 { color: #c8a050; font-size: 28px; margin-bottom: 16px; letter-spacing: 4px; }
+    #loading .bar { width: 300px; height: 6px; background: #222; border-radius: 3px; margin-top: 12px; }
+    #loading .fill { height: 100%; width: 0; background: #c8a050; border-radius: 3px; transition: width 0.3s; }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <h1>RISING LANDS 2</h1>
+    <div>Generating world...</div>
+    <div class="bar"><div class="fill" id="loadBar"></div></div>
+  </div>
+  <canvas id="game"></canvas>
+
+  <script type="module">
+    // ── Imports ──
+    import { Camera } from './src/engine/canvas.js';
+    import { InputManager } from './src/engine/input.js';
+    import { buildTileSprites, renderTilemap } from './src/engine/tilemap.js';
+    import { Pathfinder } from './src/engine/pathfinding.js';
+    import { ParticleSystem } from './src/engine/particles.js';
+    import { World } from './src/game/world.js';
+    import { EntityManager, Unit, Building } from './src/game/entities.js';
+    import { PlayerResources } from './src/game/resources.js';
+    import { HUD } from './src/ui/hud.js';
+    import { UnitDefs } from './src/data/units.js';
+    import { BuildingDefs } from './src/data/buildings.js';
+
+    // ── Constants ──
+    const MAP_W = 128;
+    const MAP_H = 128;
+    const TICK_RATE = 1; // dt per frame
+
+    // ── Setup ──
+    const canvas = document.getElementById('game');
+    const camera = new Camera(canvas);
+    const input = new InputManager(canvas);
+    const particles = new ParticleSystem(800);
+    const hud = new HUD(camera.ctx);
+
+    // Show loading progress
+    const loadBar = document.getElementById('loadBar');
+    loadBar.style.width = '20%';
+
+    // Build sprite cache
+    buildTileSprites();
+    loadBar.style.width = '40%';
+
+    // Generate world
+    const world = new World(MAP_W, MAP_H, 12345);
+    loadBar.style.width = '60%';
+
+    // Pathfinder
+    const pathfinder = new Pathfinder(world);
+
+    // Entity manager
+    const entities = new EntityManager();
+
+    // Player resources
+    const playerRes = new PlayerResources();
+
+    // ── Spawn starting units & HQ ──
+    function findStartPosition() {
+      // Find a nice grass area near center
+      const cx = Math.floor(MAP_W / 2);
+      const cy = Math.floor(MAP_H / 2);
+      const site = world.findBuildSite(cx, cy, 2, 2, 20);
+      return site || { x: cx, y: cy };
+    }
+
+    const startPos = findStartPosition();
+
+    // Place HQ
+    const hq = new Building('headquarters', startPos.x, startPos.y, 0);
+    hq.buildProgress = hq.buildTime;
+    hq.hp = hq.maxHp;
+    hq.built = true;
+    entities.addBuilding(hq);
+
+    // Register HQ tiles as occupied
+    for (let dy = 0; dy < hq.size.h; dy++) {
+      for (let dx = 0; dx < hq.size.w; dx++) {
+        world.buildings.set(`${hq.x + dx},${hq.y + dy}`, hq);
+      }
+    }
+
+    // Spawn starting units around HQ
+    const startingUnits = ['farmer', 'farmer', 'farmer', 'builder', 'builder', 'swordsman', 'swordsman'];
+    for (let i = 0; i < startingUnits.length; i++) {
+      const angle = (i / startingUnits.length) * Math.PI * 2;
+      const ux = startPos.x + 1 + Math.cos(angle) * 3;
+      const uy = startPos.y + 1 + Math.sin(angle) * 3;
+      entities.addUnit(new Unit(startingUnits[i], ux, uy, 0));
+    }
+
+    loadBar.style.width = '80%';
+
+    // Center camera on HQ
+    camera.centerOn(startPos.x, startPos.y);
+
+    // ── Selection State ──
+    let selectedUnits = [];
+
+    // ── Input Handlers ──
+
+    // Left click / drag-select
+    input.onClick((box, isClick) => {
+      const shift = input.keys['shift'];
+
+      if (isClick) {
+        // Single click — select unit or building at click
+        const tile = camera.screenToTile(box.x1, box.y1);
+        const unit = entities.getUnitAt(tile.x, tile.y, 1.2);
+        const building = entities.getBuildingAt(Math.floor(tile.x), Math.floor(tile.y));
+
+        if (!shift) {
+          selectedUnits.forEach(u => u.selected = false);
+          selectedUnits = [];
+        }
+
+        if (unit && unit.owner === 0) {
+          unit.selected = true;
+          selectedUnits.push(unit);
+        } else if (building && building.owner === 0) {
+          // Could show building panel — for now just deselect
+        }
+      } else {
+        // Box select — select all player units in box
+        if (!shift) {
+          selectedUnits.forEach(u => u.selected = false);
+          selectedUnits = [];
+        }
+
+        const tl = camera.screenToTile(Math.min(box.x1, box.x2), Math.min(box.y1, box.y2));
+        const br = camera.screenToTile(Math.max(box.x1, box.x2), Math.max(box.y1, box.y2));
+
+        for (const u of entities.units) {
+          if (u.dead || u.owner !== 0) continue;
+          if (u.x >= tl.x && u.x <= br.x && u.y >= tl.y && u.y <= br.y) {
+            u.selected = true;
+            selectedUnits.push(u);
+          }
+        }
+      }
+    });
+
+    // Right click — move / attack
+    input.onRightClick((mx, my) => {
+      if (selectedUnits.length === 0) return;
+
+      const tile = camera.screenToTile(mx, my);
+      const targetUnit = entities.getUnitAt(tile.x, tile.y, 1.2);
+
+      // Check if right-clicking an enemy
+      if (targetUnit && targetUnit.owner !== 0 && !targetUnit.dead) {
+        for (const u of selectedUnits) {
+          if (u.damage && u.damage.base > 0) {
+            u.attack(targetUnit);
+          }
+        }
+        return;
+      }
+
+      // Move command — pathfind each selected unit
+      const tx = Math.round(tile.x);
+      const ty = Math.round(tile.y);
+
+      for (let i = 0; i < selectedUnits.length; i++) {
+        const u = selectedUnits[i];
+        // Offset formation for multiple units
+        const offsetX = (i % 4) - 1.5;
+        const offsetY = Math.floor(i / 4) - 0.5;
+        const destX = Math.round(tx + offsetX);
+        const destY = Math.round(ty + offsetY);
+
+        const path = pathfinder.findPath(
+          Math.round(u.x), Math.round(u.y),
+          destX, destY
+        );
+        if (path) {
+          u.moveTo(path);
+          particles.buildEffect(
+            camera.tileToScreen(destX, destY).x,
+            camera.tileToScreen(destX, destY).y
+          );
+        }
+      }
+    });
+
+    // Zoom
+    input.onWheel((delta, mx, my) => {
+      camera.zoomAt(mx, my, delta > 0 ? -0.1 : 0.1);
+    });
+
+    loadBar.style.width = '100%';
+
+    // Hide loading screen
+    setTimeout(() => {
+      document.getElementById('loading').style.display = 'none';
+    }, 400);
+
+    // ── Render helpers ──
+
+    function renderEntities(ctx) {
+      const z = camera.zoom;
+
+      // Draw buildings
+      for (const b of entities.buildings) {
+        if (b.dead) continue;
+        const s = camera.tileToScreen(b.x + b.size.w / 2, b.y + b.size.h / 2);
+
+        // Building body
+        const bw = b.size.w * 32 * z;
+        const bh = b.def.spriteH * z;
+
+        if (b.built) {
+          ctx.fillStyle = b.owner === 0 ? '#2a4a6a' : '#6a2a2a';
+        } else {
+          ctx.fillStyle = 'rgba(42,74,106,0.5)';
+        }
+
+        // Isometric building shape
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y - bh);
+        ctx.lineTo(s.x + bw / 2, s.y - bh / 2);
+        ctx.lineTo(s.x, s.y);
+        ctx.lineTo(s.x - bw / 2, s.y - bh / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = b.owner === 0 ? '#4a8aca' : '#ca4a4a';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Icon
+        if (z > 0.5) {
+          ctx.font = `${Math.floor(16 * z)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.fillText(b.icon, s.x, s.y - bh / 2);
+        }
+
+        // Build progress bar (if under construction)
+        if (!b.built) {
+          const pw = 30 * z, ph = 4 * z;
+          ctx.fillStyle = '#333';
+          ctx.fillRect(s.x - pw / 2, s.y - bh - 8 * z, pw, ph);
+          ctx.fillStyle = '#4a8';
+          ctx.fillRect(s.x - pw / 2, s.y - bh - 8 * z, pw * (b.buildProgress / b.buildTime), ph);
+        }
+      }
+
+      // Draw units (sorted by Y for proper overlap)
+      const sortedUnits = entities.units.filter(u => !u.dead).sort((a, b) => a.y - b.y);
+
+      for (const u of sortedUnits) {
+        const s = camera.tileToScreen(u.x, u.y);
+        const sz = Math.max(4, 8 * z);
+
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath();
+        ctx.ellipse(s.x, s.y + 2 * z, sz * 0.8, sz * 0.3, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Unit body
+        let color;
+        if (u.owner === 0) {
+          color = u.selected ? '#6ae' : '#3a7aBA';
+        } else if (u.owner > 0) {
+          color = '#ba3a3a';
+        } else {
+          color = '#8a8a3a';
+        }
+
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y - sz * 0.6, sz * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Selection ring
+        if (u.selected) {
+          ctx.strokeStyle = '#4af';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.ellipse(s.x, s.y + 1 * z, sz, sz * 0.4, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // HP bar (only when damaged or selected)
+        if (u.hp < u.maxHp || u.selected) {
+          const hpW = sz * 2, hpH = 2 * z;
+          const hpX = s.x - hpW / 2, hpY = s.y - sz * 1.6;
+          const ratio = u.hp / u.maxHp;
+          ctx.fillStyle = '#222';
+          ctx.fillRect(hpX, hpY, hpW, hpH);
+          ctx.fillStyle = ratio > 0.5 ? '#4a8' : ratio > 0.25 ? '#c84' : '#c44';
+          ctx.fillRect(hpX, hpY, hpW * ratio, hpH);
+        }
+
+        // Hunger warning
+        if (u.hunger > u.maxHunger * 0.7) {
+          ctx.font = `${Math.floor(10 * z)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.fillStyle = u.starving ? '#ff4444' : '#ffaa44';
+          ctx.fillText('\u26A0', s.x, s.y - sz * 2.2);
+        }
+
+        // Icon (when zoomed in enough)
+        if (z > 0.6) {
+          ctx.font = `${Math.floor(12 * z)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.fillText(u.icon, s.x, s.y - sz * 0.3);
+        }
+      }
+    }
+
+    function renderResourceNodes(ctx) {
+      const z = camera.zoom;
+      if (z < 0.4) return; // Too zoomed out
+
+      const bounds = camera.getVisibleBounds();
+      for (const [key, res] of world.resources) {
+        const [rx, ry] = key.split(',').map(Number);
+        if (rx < bounds.minX || rx > bounds.maxX || ry < bounds.minY || ry > bounds.maxY) continue;
+        if (res.amount <= 0) continue;
+
+        const s = camera.tileToScreen(rx, ry);
+        const icons = { food: '\uD83C\uDF3F', stone: '\u26F0', parts: '\uD83D\uDD29' };
+        const colors = { food: '#5a8a2a', stone: '#8a8a8a', parts: '#8a6030' };
+
+        ctx.fillStyle = colors[res.type] || '#aaa';
+        ctx.beginPath();
+        ctx.arc(s.x, s.y - 4 * z, 3 * z, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (z > 0.7) {
+          ctx.font = `${Math.floor(10 * z)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.fillText(icons[res.type] || '?', s.x, s.y - 8 * z);
+        }
+      }
+    }
+
+    // ── Game Loop ──
+
+    let lastTime = 0;
+    let tickAccum = 0;
+    let fps = 0, fpsTimer = 0, frameCount = 0;
+
+    function gameLoop(timestamp) {
+      const deltaMs = timestamp - lastTime;
+      lastTime = timestamp;
+      tickAccum += deltaMs;
+
+      // FPS counter
+      fpsTimer += deltaMs;
+      frameCount++;
+      if (fpsTimer >= 1000) {
+        fps = frameCount;
+        frameCount = 0;
+        fpsTimer = 0;
+      }
+
+      // Fixed-step game ticks (~60 tps)
+      const TICK_MS = 16.67;
+      while (tickAccum >= TICK_MS) {
+        tickAccum -= TICK_MS;
+        gameTick(TICK_RATE);
+      }
+
+      // Render
+      render();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function gameTick(dt) {
+      // Camera movement
+      camera.update(input.mouseX, input.mouseY, input.keys);
+
+      // Update entities
+      for (const u of entities.units) {
+        u.update(world, dt);
+      }
+      for (const b of entities.buildings) {
+        const spawned = b.update(dt);
+        if (spawned) {
+          // Spawn trained unit next to building
+          const nu = new Unit(spawned, b.x + b.size.w, b.y + b.size.h, b.owner);
+          entities.addUnit(nu);
+          particles.buildEffect(
+            camera.tileToScreen(nu.x, nu.y).x,
+            camera.tileToScreen(nu.x, nu.y).y
+          );
+        }
+      }
+
+      // Clean up dead entities
+      entities.cleanup();
+
+      // Update particles
+      particles.update();
+
+      // Update population count
+      playerRes.population = entities.getPlayerUnits(0).length;
+      playerRes.updatePopCap(entities.getPlayerBuildings(0));
+    }
+
+    function render() {
+      const ctx = camera.ctx;
+      camera.clear();
+
+      // Tilemap
+      renderTilemap(ctx, camera, world);
+
+      // Resource nodes
+      renderResourceNodes(ctx);
+
+      // Entities
+      renderEntities(ctx);
+
+      // Particles
+      particles.render(ctx);
+
+      // Selection box
+      if (input.mouseDown && input.selectionBox) {
+        hud.drawSelectionBox(input.selectionBox);
+      }
+
+      // HUD overlays
+      hud.drawResourceBar(playerRes, camera.w);
+      hud.drawSelectionPanel(selectedUnits, camera.w, camera.h);
+      hud.drawMinimap(world, camera, entities, camera.w, camera.h);
+
+      // FPS
+      ctx.font = '11px monospace';
+      ctx.fillStyle = '#555';
+      ctx.textAlign = 'right';
+      ctx.fillText(`${fps} FPS`, camera.w - 170, camera.h - 165);
+      ctx.textAlign = 'left';
+    }
+
+    // ── Keyboard shortcuts ──
+    document.addEventListener('keydown', e => {
+      // Delete/kill selected (for testing)
+      if (e.key === 'Delete') {
+        for (const u of selectedUnits) u.dead = true;
+        selectedUnits = [];
+      }
+      // Select all player units
+      if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        selectedUnits.forEach(u => u.selected = false);
+        selectedUnits = entities.getPlayerUnits(0);
+        selectedUnits.forEach(u => u.selected = true);
+      }
+      // Stop selected units
+      if (e.key === 's' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        // Only if not typing — handled by camera movement in keys
+      }
+      // Escape deselect
+      if (e.key === 'Escape') {
+        selectedUnits.forEach(u => u.selected = false);
+        selectedUnits = [];
+      }
+    });
+
+    // ── Start ──
+    requestAnimationFrame(gameLoop);
+    console.log('Rising Lands 2 — v0.1.0-alpha loaded');
+    console.log(`Map: ${MAP_W}x${MAP_H} | Seed: ${world.seed}`);
+    console.log(`Units: ${entities.units.length} | Buildings: ${entities.buildings.length}`);
+  </script>
+</body>
+</html>
