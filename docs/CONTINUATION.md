@@ -39,10 +39,11 @@ Working now:
 - Mission 1 bootstrap now spawns a storehouse and worker units from imported classic data
 - workers automatically gather, return, and deposit food, stone, and parts
 - left-click selection and right-click worker assignment exist
-- builders can place and complete `storehouse`, `culture`, `barracks`, and `laboratory` construction sites
+- builders can place and complete `storehouse`, `culture`, `barracks`, `laboratory`, `library`, `sanctuary`, `workshop`, `garage`, `hangar`, `tower_catapult`, `tower_cannon`, and `wall` construction sites
 - newly built storehouses become deposit targets
-- completed `culture` and `barracks` buildings now support training queues
-- completed `laboratory` buildings now support branch-based research queues
+- completed `culture`, `barracks`, `sanctuary`, `workshop`, `garage`, and `hangar` buildings now support broader training queues
+- completed `library` and `laboratory` buildings now support branch-based research queues
+- completed `tower_catapult` and `tower_cannon` buildings now auto-fire on nearby enemies
 - player combat units and enemy units now run through the same lightweight combat runtime
 - Mission 1 map includes scripted enemy pressure data
 - save/load exists for the current runtime state
@@ -54,15 +55,17 @@ Working now:
 - a third Godot smoke-test script exists for production, research, combat, and save/load
 - a fourth Godot smoke-test script exists for runtime objectives
 - a fifth Godot smoke-test script exists for mission events and mission-event save/load persistence
+- a sixth Godot smoke-test script exists for the expanded roster and advanced-production save/load path
+- a seventh Godot smoke-test script exists for defensive towers and tower-combat save/load path
 - issue and PR templates exist for public repo workflow
 - the old browser prototype files have been removed from the active codebase
 
 Not done yet:
 
-- more complete unit rosters, buildings, and faction rules
 - stronger command queueing, selection UX, and HUD feedback
 - diplomacy, campaign progression, and save-slot UX
 - broader mission scripting coverage across additional scenarios and campaign flow
+- additional faction-specific buildings, support effects, and deeper unit parity beyond the current advanced roster slice
 - expanded-content ruleset layered cleanly on top of the classic remake
 
 ## Important Paths
@@ -77,19 +80,22 @@ Not done yet:
 - Mission-event runtime: [`game/scripts/core/mission_event_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/mission_event_state.gd)
 - Worker runtime: [`game/scripts/simulation/worker_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/worker_unit_state.gd)
 - Combat runtime: [`game/scripts/simulation/combat_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/combat_unit_state.gd)
+- Building runtime: [`game/scripts/simulation/building_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/building_state.gd)
 - Resource runtime: [`game/scripts/simulation/resource_node_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/resource_node_state.gd)
 - Smoke test: [`game/scripts/tests/vertical_slice_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/vertical_slice_smoke.gd)
 - Construction smoke test: [`game/scripts/tests/construction_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/construction_smoke.gd)
 - Systems smoke test: [`game/scripts/tests/systems_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/systems_smoke.gd)
 - Objective smoke test: [`game/scripts/tests/mission_objectives_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mission_objectives_smoke.gd)
 - Mission-events smoke test: [`game/scripts/tests/mission_events_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mission_events_smoke.gd)
+- Expanded-roster smoke test: [`game/scripts/tests/expanded_roster_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/expanded_roster_smoke.gd)
+- Tower-defense smoke test: [`game/scripts/tests/tower_defense_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/tower_defense_smoke.gd)
 
 ## Next Session Start Here
 
-1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate the mission alerts, objective progress, and reinforcement events visually.
-2. Expand the playable ruleset beyond the current `culture` / `barracks` / `laboratory` slice.
-3. Add better selection UX, command feedback, and HUD surfacing for queues and research.
-4. Extend the mission-event system from Mission 1 into reusable scenario scripting for later missions.
+1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate the new build palette, advanced training roster, and tower behavior visually.
+2. Add better selection UX, command feedback, and HUD surfacing for queues and research.
+3. Extend the mission-event system from Mission 1 into reusable scenario scripting for later missions.
+4. Start a campaign-state layer with mission completion tracking and cleaner save-slot UX.
 5. Keep the repo trace clean by updating this file and the session log whenever systems behavior changes.
 
 ## Commands
@@ -153,6 +159,24 @@ Run the mission-events smoke test:
   --headless `
   --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
   --script res://scripts/tests/mission_events_smoke.gd
+```
+
+Run the expanded-roster smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/expanded_roster_smoke.gd
+```
+
+Run the tower-defense smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/tower_defense_smoke.gd
 ```
 
 ## Blockers

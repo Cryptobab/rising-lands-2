@@ -560,6 +560,11 @@ func _update_buildings(delta: float) -> void:
         for completed_job in completed_jobs:
             _handle_completed_building_job(building, completed_job)
 
+        if building.team == "player":
+            building.update_combat(delta, world_state, enemy_units)
+        else:
+            building.update_combat(delta, world_state, combat_units)
+
 
 func _handle_completed_building_job(building, completed_job: Dictionary) -> void:
     var job_kind: String = str(completed_job.get("kind", ""))
@@ -945,8 +950,24 @@ func _building_color(building_id: String) -> Color:
             return Color("8ab648")
         "barracks":
             return Color("ca7753")
+        "sanctuary", "temple":
+            return Color("55d6b7")
+        "workshop":
+            return Color("8d7c69")
+        "garage":
+            return Color("c85d4f")
+        "hangar", "heliport":
+            return Color("7ebde8")
+        "library":
+            return Color("d9c27b")
         "laboratory":
             return Color("d98be0")
+        "tower_catapult":
+            return Color("908a78")
+        "tower_cannon":
+            return Color("a7a3a0")
+        "wall", "portcullis":
+            return Color("6d747c")
         _:
             return Color("70b8e8")
 
@@ -997,6 +1018,12 @@ func _unhandled_input(event: InputEvent) -> void:
             return
 
     if event is InputEventKey and event.pressed and not event.echo:
+        var requested_build_mode: String = _build_mode_for_key(event.keycode)
+        if not requested_build_mode.is_empty() and _selected_worker_is_builder():
+            build_mode = requested_build_mode
+            simulation_status = "build mode: %s" % _building_display_name(requested_build_mode)
+            return
+
         match event.keycode:
             KEY_ESCAPE:
                 build_mode = ""
@@ -1005,22 +1032,6 @@ func _unhandled_input(event: InputEvent) -> void:
                 selected_building_index = -1
                 selected_site_index = -1
                 simulation_status = "selection cleared"
-            KEY_1:
-                if _selected_worker_is_builder():
-                    build_mode = "storehouse"
-                    simulation_status = "build mode: storehouse"
-            KEY_2:
-                if _selected_worker_is_builder():
-                    build_mode = "culture"
-                    simulation_status = "build mode: culture"
-            KEY_3:
-                if _selected_worker_is_builder():
-                    build_mode = "barracks"
-                    simulation_status = "build mode: barracks"
-            KEY_4:
-                if _selected_worker_is_builder():
-                    build_mode = "laboratory"
-                    simulation_status = "build mode: laboratory"
             KEY_Q:
                 _handle_context_action(1)
             KEY_W:
@@ -1029,6 +1040,10 @@ func _unhandled_input(event: InputEvent) -> void:
                 _handle_context_action(3)
             KEY_R:
                 _handle_context_action(4)
+            KEY_T:
+                _handle_context_action(5)
+            KEY_Y:
+                _handle_context_action(6)
             KEY_F5:
                 if not save_game_state():
                     simulation_status = "save failed"
@@ -1042,33 +1057,117 @@ func _handle_context_action(slot: int) -> void:
     if building == null:
         return
 
-    match building.building_id:
+    for action in _building_actions(building.building_id):
+        if int(action.get("slot", 0)) != slot:
+            continue
+
+        var action_kind: String = str(action.get("kind", ""))
+        var action_id: String = str(action.get("id", ""))
+        match action_kind:
+            "train":
+                queue_training_for_building(selected_building_index, action_id)
+            "research":
+                queue_research_for_building(selected_building_index, action_id)
+            _:
+                pass
+        return
+
+
+func _build_mode_for_key(keycode: Key) -> String:
+    match keycode:
+        KEY_1:
+            return "storehouse"
+        KEY_2:
+            return "culture"
+        KEY_3:
+            return "barracks"
+        KEY_4:
+            return "laboratory"
+        KEY_5:
+            return "library"
+        KEY_6:
+            return "sanctuary"
+        KEY_7:
+            return "workshop"
+        KEY_8:
+            return "garage"
+        KEY_9:
+            return "hangar"
+        KEY_0:
+            return "tower_catapult"
+        KEY_MINUS:
+            return "tower_cannon"
+        KEY_EQUAL:
+            return "wall"
+        _:
+            return ""
+
+
+func _building_actions(building_id: String) -> Array:
+    match building_id:
         "culture":
-            match slot:
-                1:
-                    queue_training_for_building(selected_building_index, "farmer")
-                2:
-                    queue_training_for_building(selected_building_index, "builder")
-                3:
-                    queue_training_for_building(selected_building_index, "mechanic")
+            return [
+                {"slot": 1, "key": "Q", "kind": "train", "id": "farmer", "label": "farmer"},
+                {"slot": 2, "key": "W", "kind": "train", "id": "builder", "label": "builder"},
+                {"slot": 3, "key": "E", "kind": "train", "id": "mechanic", "label": "mechanic"},
+                {"slot": 4, "key": "R", "kind": "train", "id": "settler", "label": "settler"},
+                {"slot": 5, "key": "T", "kind": "train", "id": "messenger", "label": "messenger"},
+            ]
         "barracks":
-            match slot:
-                1:
-                    queue_training_for_building(selected_building_index, "swordsman")
-                2:
-                    queue_training_for_building(selected_building_index, "captain")
-                3:
-                    queue_training_for_building(selected_building_index, "archer")
-        "laboratory":
-            match slot:
-                1:
-                    queue_research_for_building(selected_building_index, "agriculture")
-                2:
-                    queue_research_for_building(selected_building_index, "military")
-                3:
-                    queue_research_for_building(selected_building_index, "civil_engineering")
-                4:
-                    queue_research_for_building(selected_building_index, "religious")
+            return [
+                {"slot": 1, "key": "Q", "kind": "train", "id": "swordsman", "label": "swordsman"},
+                {"slot": 2, "key": "W", "kind": "train", "id": "captain", "label": "captain"},
+                {"slot": 3, "key": "E", "kind": "train", "id": "archer", "label": "archer"},
+                {"slot": 4, "key": "R", "kind": "train", "id": "scorcher", "label": "scorcher"},
+            ]
+        "sanctuary", "temple":
+            return [
+                {"slot": 1, "key": "Q", "kind": "train", "id": "druid", "label": "druid"},
+            ]
+        "workshop":
+            return [
+                {"slot": 1, "key": "Q", "kind": "train", "id": "stomper", "label": "stomper"},
+            ]
+        "garage":
+            return [
+                {"slot": 1, "key": "Q", "kind": "train", "id": "speeder", "label": "speeder"},
+                {"slot": 2, "key": "W", "kind": "train", "id": "boomer", "label": "boomer"},
+                {"slot": 3, "key": "E", "kind": "train", "id": "reaper", "label": "reaper"},
+                {"slot": 4, "key": "R", "kind": "train", "id": "bomber", "label": "bomber"},
+                {"slot": 5, "key": "T", "kind": "train", "id": "hellfire", "label": "hellfire"},
+            ]
+        "hangar", "heliport":
+            return [
+                {"slot": 1, "key": "Q", "kind": "train", "id": "heliped", "label": "heliped"},
+                {"slot": 2, "key": "W", "kind": "train", "id": "balloon", "label": "balloon"},
+            ]
+        "laboratory", "library":
+            return [
+                {"slot": 1, "key": "Q", "kind": "research", "id": "agriculture", "label": "agriculture"},
+                {"slot": 2, "key": "W", "kind": "research", "id": "military", "label": "military"},
+                {"slot": 3, "key": "E", "kind": "research", "id": "civil_engineering", "label": "civil"},
+                {"slot": 4, "key": "R", "kind": "research", "id": "religious", "label": "religious"},
+            ]
+        _:
+            return []
+
+
+func _context_hint_for_building(building) -> String:
+    var actions: Array = _building_actions(building.building_id)
+    if actions.is_empty():
+        return "Context: %s" % building.queue_label()
+
+    var hints: Array[String] = []
+    for action in actions:
+        hints.append("%s %s" % [str(action.get("key", "")), str(action.get("label", action.get("id", "")))])
+    return "Context: %s" % " | ".join(hints)
+
+
+func _building_display_name(building_id: String) -> String:
+    var building_record: Dictionary = classic_database.find_building(building_id)
+    if not building_record.is_empty():
+        return str(building_record.get("name", building_id))
+    return building_id
 
 
 func _handle_left_click(screen_position: Vector2) -> void:
@@ -1176,6 +1275,8 @@ func _selection_detail_lines() -> Array[String]:
             % [selected_building.name, int(ceil(selected_building.health)), int(ceil(selected_building.max_health))]
         )
         lines.append("Queue: %s" % selected_building.queue_label())
+        if selected_building.can_attack():
+            lines.append("Defense: %dm range | %s" % [int(round(selected_building.attack_range)), selected_building.last_action])
         return lines
 
     if selected_site_index >= 0 and selected_site_index < construction_sites.size():
@@ -1220,15 +1321,7 @@ func _refresh_debug_text() -> void:
     var context_hint: String = "Context: none"
     var selected_building = _selected_building()
     if selected_building != null:
-        match selected_building.building_id:
-            "culture":
-                context_hint = "Context: Q farmer | W builder | E mechanic"
-            "barracks":
-                context_hint = "Context: Q swordsman | W captain | E archer"
-            "laboratory":
-                context_hint = "Context: Q agriculture | W military | E civil | R religious"
-            _:
-                context_hint = "Context: %s" % selected_building.queue_label()
+        context_hint = _context_hint_for_building(selected_building)
 
     var actor_lines: Array[String] = []
     for index in range(mini(3, workers.size())):
@@ -1245,9 +1338,9 @@ func _refresh_debug_text() -> void:
 
     debug_label.text = "\n".join([
         "Rising Lands 2",
-        "Godot systems slice",
-        "Controls: LMB select/place | RMB assign/move | 1 storehouse | 2 culture | 3 barracks | 4 lab",
-        "Systems: Q/W/E/R context | F5 save | F9 load",
+        "Godot mission systems slice",
+        "Controls: LMB select/place | RMB assign/move | 1-9,0,-,= build palette",
+        "Systems: Q/W/E/R/T/Y context | F5 save | F9 load",
         "Mission: %s" % mission_state.title,
         "Objectives:",
     ] + objective_lines + [

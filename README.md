@@ -21,7 +21,7 @@ What exists now:
 - a new Godot project scaffold in [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game)
 - importer tooling in [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers)
 - planning and continuation docs in [`docs/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs)
-- a deterministic Mission 1 map with worker economy, first construction, production, research, combat, save/load, runtime objectives, and scripted mission events
+- a deterministic Mission 1 map with worker economy, expanded production buildings, defensive towers, research, combat, save/load, runtime objectives, and scripted mission events
 
 ## Project Layout
 
@@ -60,11 +60,14 @@ In the current Godot vertical slice:
 - builders can press `2` for `culture` build mode
 - builders can press `3` for `barracks` build mode
 - builders can press `4` for `laboratory` build mode
+- builders can press `5` for `library`, `6` for `sanctuary`, `7` for `workshop`, `8` for `garage`, and `9` for `hangar`
+- builders can press `0` for `tower_catapult`, `-` for `tower_cannon`, and `=` for `wall`
 - left click while in build mode places a construction site
 - right click on a construction site assigns the selected builder to build it
-- selected `culture` buildings use `Q/W/E` to train `farmer`, `builder`, and `mechanic`
-- selected `barracks` buildings use `Q/W/E` to train `swordsman`, `captain`, and `archer`
-- selected `laboratory` buildings use `Q/W/E/R` to research `agriculture`, `military`, `civil_engineering`, and `religious`
+- selected buildings use `Q/W/E/R/T/Y` for context actions
+- `culture`, `barracks`, `sanctuary`, `workshop`, `garage`, and `hangar` now expose broader trainable rosters
+- `library` and `laboratory` both support branch-based research
+- `tower_catapult` and `tower_cannon` auto-fire on nearby enemies
 - `F5` saves to `user://save_slot_1.json`
 - `F9` loads from `user://save_slot_1.json`
 - `Esc` clears build mode

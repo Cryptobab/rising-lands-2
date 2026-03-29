@@ -25,6 +25,9 @@
 - added runtime mission objectives and objective-driven victory evaluation
 - added a mission-event runtime with scripted alerts, rewards, reinforcements, and save/load persistence
 - added mission-objective and mission-event smoke tests
+- expanded the playable roster with sanctuary, workshop, garage, hangar, and library production/research support
+- added defensive tower runtime behavior plus a larger builder build palette
+- added expanded-roster and tower-defense smoke tests
 
 ### Files Added Or Changed
 
@@ -50,6 +53,8 @@
 - [`game/scripts/tests/systems_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/systems_smoke.gd)
 - [`game/scripts/tests/mission_objectives_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mission_objectives_smoke.gd)
 - [`game/scripts/tests/mission_events_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mission_events_smoke.gd)
+- [`game/scripts/tests/expanded_roster_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/expanded_roster_smoke.gd)
+- [`game/scripts/tests/tower_defense_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/tower_defense_smoke.gd)
 - [`game/data/classic/vertical_slice/mission_001_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/mission_001_map.json)
 - [`tools/importers/extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/extract_classic_data.py)
 - [`tools/importers/tests/test_extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/tests/test_extract_classic_data.py)
@@ -66,6 +71,8 @@
 - Godot headless systems smoke test completed without reported errors
 - Godot headless mission-objectives smoke test completed without reported errors
 - Godot headless mission-events smoke test completed without reported errors
+- Godot headless expanded-roster smoke test completed without reported errors
+- Godot headless tower-defense smoke test completed without reported errors
 
 ### Outstanding
 
