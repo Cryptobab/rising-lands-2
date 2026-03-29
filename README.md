@@ -21,7 +21,7 @@ What exists now:
 - a new Godot project scaffold in [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game)
 - importer tooling in [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers)
 - planning and continuation docs in [`docs/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs)
-- a deterministic Mission 1 map with worker economy, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, and scripted mission events
+- playable Mission 1, Mission 2, and Mission 3 scenario maps with worker economy, mission-scoped build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, and scripted mission events
 
 ## Project Layout
 
@@ -65,6 +65,7 @@ In the current Godot vertical slice:
 - left click while in build mode places a construction site
 - right click on a construction site assigns the selected builder to build it
 - selected buildings use `Q/W/E/R/T/Y` for context actions
+- the available build palette is now mission-scoped, so early missions only expose the structures that scenario allows
 - `culture`, `barracks`, `sanctuary`, `workshop`, `garage`, and `hangar` now expose broader trainable rosters
 - `library` and `laboratory` both support branch-based research
 - `tower_catapult` and `tower_cannon` auto-fire on nearby enemies

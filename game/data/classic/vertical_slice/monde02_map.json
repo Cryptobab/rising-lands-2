@@ -1,0 +1,103 @@
+{
+  "id": "monde02_map",
+  "name": "Mission 2 - First Stronghold",
+  "width": 18,
+  "height": 12,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "WWSSGGGGGGGGGGGFFF",
+    "WSSGGGGGGGGGGGGFFF",
+    "SSGGGGGGDGGGGGFFFR",
+    "SGGGGFGGDDGGGGFFRR",
+    "SGGGFFGGDDGGGFFRRR",
+    "SGGGFGGGGDDGGGRRRR",
+    "SGGGFGGGGDDGGGRRRR",
+    "SGGGGGGGGGDGGGGRRR",
+    "SSGGGGGGGGGGGGGRRR",
+    "WSSGGGGFGGGGGGGRRR",
+    "WWSSGGGFGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 5, "type": "food", "amount": 120 },
+    { "x": 3, "y": 8, "type": "food", "amount": 100 },
+    { "x": 13, "y": 4, "type": "stone", "amount": 120 },
+    { "x": 14, "y": 7, "type": "stone", "amount": 120 },
+    { "x": 15, "y": 2, "type": "parts", "amount": 35 }
+  ],
+  "player_start": { "x": 5, "y": 6 },
+  "starting_resources": { "food": 18, "stone": 18, "parts": 0, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 5, "y": 6, "team": "player" },
+    { "building_id": "culture", "x": 7, "y": 6, "team": "player" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 4, "y": 5, "team": "player" },
+    { "unit_id": "farmer", "x": 4, "y": 7, "team": "player" },
+    { "unit_id": "builder", "x": 6, "y": 5, "team": "player" },
+    { "unit_id": "builder", "x": 6, "y": 7, "team": "player" },
+    { "unit_id": "mechanic", "x": 5, "y": 8, "team": "player" }
+  ],
+  "build_palette": ["storehouse", "culture", "barracks", "sanctuary"],
+  "storehouse_goal": { "food": 50, "stone": 0 },
+  "objectives": [
+    {
+      "id": "build_sanctuary",
+      "type": "build",
+      "building_id": "sanctuary",
+      "target": 1,
+      "label": "Build a Sanctuary",
+      "required": true
+    },
+    {
+      "id": "build_barracks",
+      "type": "build",
+      "building_id": "barracks",
+      "target": 1,
+      "label": "Build a Barrack",
+      "required": true
+    },
+    {
+      "id": "stockpile_food",
+      "type": "stockpile",
+      "resource": "food",
+      "target": 50,
+      "label": "Stock 50 sacks of food",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [
+    { "x": 16, "y": 3, "unit_id": "basher", "delay": 65.0 },
+    { "x": 15, "y": 8, "unit_id": "hurler", "delay": 95.0 }
+  ],
+  "mission_events": [
+    {
+      "id": "mission_2_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "The clan must found a Sanctuary and train for war." }
+      ]
+    },
+    {
+      "id": "mission_2_sanctuary",
+      "trigger": { "type": "objective_complete", "objective_id": "build_sanctuary" },
+      "actions": [
+        { "type": "message", "text": "The Sanctuary stands. The elders demand a proper barracks next." }
+      ]
+    },
+    {
+      "id": "mission_2_raid_warning",
+      "trigger": { "type": "enemy_waves_spawned", "value": 1 },
+      "actions": [
+        { "type": "message", "text": "Scouts spotted raiders near the frontier." }
+      ]
+    }
+  ]
+}

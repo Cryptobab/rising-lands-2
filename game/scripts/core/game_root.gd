@@ -19,6 +19,21 @@ const DEFAULT_MAP_PATH: String = "res://data/classic/vertical_slice/mission_001_
 const DEFAULT_SAVE_PATH: String = "user://save_slot_1.json"
 const MAX_ALERT_LOG: int = 6
 
+const BUILD_KEY_ORDER: Array = [
+    {"keycode": KEY_1, "building_id": "storehouse"},
+    {"keycode": KEY_2, "building_id": "culture"},
+    {"keycode": KEY_3, "building_id": "barracks"},
+    {"keycode": KEY_4, "building_id": "laboratory"},
+    {"keycode": KEY_5, "building_id": "library"},
+    {"keycode": KEY_6, "building_id": "sanctuary"},
+    {"keycode": KEY_7, "building_id": "workshop"},
+    {"keycode": KEY_8, "building_id": "garage"},
+    {"keycode": KEY_9, "building_id": "hangar"},
+    {"keycode": KEY_0, "building_id": "tower_catapult"},
+    {"keycode": KEY_MINUS, "building_id": "tower_cannon"},
+    {"keycode": KEY_EQUAL, "building_id": "wall"},
+]
+
 var world_state
 var campaign_state
 var mission_state
@@ -112,6 +127,9 @@ func _bootstrap_runtime_state() -> void:
 
     if map_state.width > 0 and map_state.height > 0:
         world_state.map_size = Vector2i(map_state.width, map_state.height)
+
+    for resource_type in map_state.starting_resources.keys():
+        world_state.resources[resource_type] = int(map_state.starting_resources.get(resource_type, 0))
 
     _load_mission_record()
     _load_mission_events_from_map()
@@ -531,6 +549,7 @@ func _build_mission_snapshot() -> Dictionary:
         "resources": world_state.resources.duplicate(true),
         "building_counts": building_counts,
         "branch_levels": world_state.branch_levels.duplicate(true),
+        "unlocked_tech_count": world_state.unlocked_techs.size(),
         "elapsed_time": world_state.elapsed_time,
         "enemy_waves_spawned": world_state.enemy_waves_spawned,
         "enemy_units_alive": enemy_units.size(),
@@ -682,9 +701,31 @@ func _spawn_vertical_slice_entities() -> void:
         resource_node.configure_from_payload(resource_payload)
         resource_nodes.append(resource_node)
 
-    spawn_completed_building("storehouse", map_state.player_start)
+    if not map_state.starting_buildings.is_empty():
+        for building_payload in map_state.starting_buildings:
+            var tile := Vector2i(int(building_payload.get("x", map_state.player_start.x)), int(building_payload.get("y", map_state.player_start.y)))
+            spawn_completed_building(
+                str(building_payload.get("building_id", "storehouse")),
+                tile,
+                str(building_payload.get("team", "player"))
+            )
+    else:
+        spawn_completed_building("storehouse", map_state.player_start)
 
     var home_position := Vector2(map_state.player_start) + Vector2(0.5, 0.5)
+    if not map_state.starting_units.is_empty():
+        for unit_payload in map_state.starting_units:
+            var unit_position := Vector2(
+                float(unit_payload.get("x", home_position.x)),
+                float(unit_payload.get("y", home_position.y))
+            ) + Vector2(0.5, 0.5)
+            spawn_unit(
+                str(unit_payload.get("unit_id", "farmer")),
+                unit_position,
+                str(unit_payload.get("team", "player"))
+            )
+        return
+
     var worker_specs: Array = [
         {"unit_id": "farmer", "offset": Vector2(-0.25, -0.25)},
         {"unit_id": "farmer", "offset": Vector2(1.15, -0.10)},
@@ -1271,33 +1312,41 @@ func _handle_context_action(slot: int) -> void:
 
 
 func _build_mode_for_key(keycode: Key) -> String:
-    match keycode:
-        KEY_1:
-            return "storehouse"
-        KEY_2:
-            return "culture"
-        KEY_3:
-            return "barracks"
-        KEY_4:
-            return "laboratory"
-        KEY_5:
-            return "library"
-        KEY_6:
-            return "sanctuary"
-        KEY_7:
-            return "workshop"
-        KEY_8:
-            return "garage"
-        KEY_9:
-            return "hangar"
-        KEY_0:
-            return "tower_catapult"
-        KEY_MINUS:
-            return "tower_cannon"
-        KEY_EQUAL:
-            return "wall"
-        _:
+    for binding in BUILD_KEY_ORDER:
+        if int(binding.get("keycode", -1)) != int(keycode):
+            continue
+
+        var building_id: String = str(binding.get("building_id", ""))
+        if not _build_palette_allows(building_id):
             return ""
+        return building_id
+    return ""
+
+
+func _build_palette_allows(building_id: String) -> bool:
+    if map_state == null or map_state.build_palette.is_empty():
+        return true
+    return map_state.build_palette.has(building_id)
+
+
+func _build_palette_label() -> String:
+    var labels: Array[String] = []
+    for binding in BUILD_KEY_ORDER:
+        var building_id: String = str(binding.get("building_id", ""))
+        if not _build_palette_allows(building_id):
+            continue
+        labels.append("%s %s" % [_key_label(int(binding.get("keycode", -1))), _building_display_name(building_id)])
+    return "Build: %s" % " | ".join(labels)
+
+
+func _key_label(keycode: int) -> String:
+    match keycode:
+        KEY_MINUS:
+            return "-"
+        KEY_EQUAL:
+            return "="
+        _:
+            return OS.get_keycode_string(keycode)
 
 
 func _building_actions(building_id: String) -> Array:
@@ -1545,6 +1594,7 @@ func _refresh_debug_text() -> void:
         "Godot mission systems slice",
         "Controls: LMB select/place | RMB assign/move | 1-9,0,-,= build palette",
         "Systems: Q/W/E/R/T/Y context | F5 save | F9 load",
+        _build_palette_label(),
         "Mission: %s" % mission_state.title,
         campaign_text,
         "Active Mission: %s | Save Slot: %s" % [current_mission_id, active_save_slot_id],

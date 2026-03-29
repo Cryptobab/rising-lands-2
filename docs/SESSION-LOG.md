@@ -31,6 +31,9 @@
 - added a campaign-state runtime for mission completion and unlock persistence
 - added named save-slot support with profile-backed slot metadata
 - added campaign-progression and save-slots smoke tests
+- extended the map schema with starting resources, starting buildings, starting units, and scenario-scoped build palettes
+- authored actual Mission 2 and Mission 3 scenario maps on top of the campaign shell
+- added a multi-mission content smoke test covering Mission 1 through Mission 3 progression
 
 ### Files Added Or Changed
 
@@ -61,7 +64,10 @@
 - [`game/scripts/tests/tower_defense_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/tower_defense_smoke.gd)
 - [`game/scripts/tests/campaign_progression_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_progression_smoke.gd)
 - [`game/scripts/tests/save_slots_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/save_slots_smoke.gd)
+- [`game/scripts/tests/multi_mission_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/multi_mission_content_smoke.gd)
 - [`game/data/classic/vertical_slice/mission_001_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/mission_001_map.json)
+- [`game/data/classic/vertical_slice/monde02_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde02_map.json)
+- [`game/data/classic/vertical_slice/monde03_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde03_map.json)
 - [`tools/importers/extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/extract_classic_data.py)
 - [`tools/importers/tests/test_extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/tests/test_extract_classic_data.py)
 
@@ -81,6 +87,7 @@
 - Godot headless tower-defense smoke test completed without reported errors
 - Godot headless campaign-progression smoke test completed without reported errors
 - Godot headless save-slots smoke test completed without reported errors
+- Godot headless multi-mission content smoke test completed without reported errors
 
 ### Outstanding
 

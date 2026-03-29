@@ -66,6 +66,9 @@ func evaluate(snapshot: Dictionary) -> Array[String]:
             "build":
                 current_value = int(snapshot.get("building_counts", {}).get(str(objective.get("building_id", "")), 0))
                 completed = current_value >= target_value
+            "tech_count":
+                current_value = int(snapshot.get("unlocked_tech_count", 0))
+                completed = current_value >= target_value
             "research_branch":
                 current_value = int(snapshot.get("branch_levels", {}).get(str(objective.get("branch", "")), 0))
                 completed = current_value >= target_value

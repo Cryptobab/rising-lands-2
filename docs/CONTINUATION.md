@@ -35,8 +35,9 @@ Working now:
 - importer exports both `raw/` and `normalized/` classic JSON
 - normalized data includes units, buildings, spells, tech tree, strings, missions, and misc settings
 - Godot bootstrap scene now loads normalized classic data counts and Mission 1 metadata
-- deterministic Mission 1 bootstrap map exists and is loaded from JSON
+- deterministic Mission 1, Mission 2, and Mission 3 scenario maps exist and are loaded from JSON
 - Mission 1 bootstrap now spawns a storehouse and worker units from imported classic data
+- scenario maps can now define starting resources, starting buildings, starting units, and a mission-scoped build palette
 - workers automatically gather, return, and deposit food, stone, and parts
 - left-click selection and right-click worker assignment exist
 - builders can place and complete `storehouse`, `culture`, `barracks`, `laboratory`, `library`, `sanctuary`, `workshop`, `garage`, `hangar`, `tower_catapult`, `tower_cannon`, and `wall` construction sites
@@ -51,6 +52,7 @@ Working now:
 - named save slots now persist runtime state plus slot metadata through a campaign profile
 - runtime mission objectives now drive victory state instead of only the old stockpile fallback
 - Mission 1 map now includes scripted mission-event beats, rewards, and reinforcements
+- Mission 2 and Mission 3 now have actual scenario maps with build, stockpile, and research-driven objectives
 - the debug HUD now surfaces objective progress, recent mission alerts, and deeper selection detail
 - a Godot smoke-test script exists for the vertical-slice resource loop
 - a second Godot smoke-test script exists for builder construction
@@ -61,6 +63,7 @@ Working now:
 - a seventh Godot smoke-test script exists for defensive towers and tower-combat save/load path
 - an eighth Godot smoke-test script exists for campaign progression and mission unlock persistence
 - a ninth Godot smoke-test script exists for named save slots and slot-metadata persistence
+- a tenth Godot smoke-test script exists for actual Mission 1 -> Mission 2 -> Mission 3 campaign content progression
 - issue and PR templates exist for public repo workflow
 - the old browser prototype files have been removed from the active codebase
 
@@ -69,6 +72,7 @@ Not done yet:
 - stronger command queueing, selection UX, and HUD feedback
 - diplomacy and broader meta-layer behavior beyond the current campaign/save-slot shell
 - broader mission scripting coverage across additional scenarios and campaign flow
+- more authored scenario maps beyond the first three campaign missions
 - additional faction-specific buildings, support effects, and deeper unit parity beyond the current advanced roster slice
 - expanded-content ruleset layered cleanly on top of the classic remake
 
@@ -81,6 +85,8 @@ Not done yet:
 - Campaign runtime: [`game/scripts/core/campaign_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/campaign_state.gd)
 - Godot classic loader: [`game/scripts/data/classic_database.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/data/classic_database.gd)
 - Vertical-slice map: [`game/data/classic/vertical_slice/mission_001_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/mission_001_map.json)
+- Mission 2 map: [`game/data/classic/vertical_slice/monde02_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde02_map.json)
+- Mission 3 map: [`game/data/classic/vertical_slice/monde03_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde03_map.json)
 - Godot map loader: [`game/scripts/core/map_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/map_state.gd)
 - Mission-event runtime: [`game/scripts/core/mission_event_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/mission_event_state.gd)
 - Worker runtime: [`game/scripts/simulation/worker_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/worker_unit_state.gd)
@@ -96,13 +102,14 @@ Not done yet:
 - Tower-defense smoke test: [`game/scripts/tests/tower_defense_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/tower_defense_smoke.gd)
 - Campaign-progression smoke test: [`game/scripts/tests/campaign_progression_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_progression_smoke.gd)
 - Save-slots smoke test: [`game/scripts/tests/save_slots_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/save_slots_smoke.gd)
+- Multi-mission content smoke test: [`game/scripts/tests/multi_mission_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/multi_mission_content_smoke.gd)
 
 ## Next Session Start Here
 
-1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate campaign progress, slot save/load, and the new HUD lines visually.
+1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate Mission 2 / Mission 3 map bootstrapping, build palettes, and campaign handoff visually.
 2. Add better selection UX, command feedback, and HUD surfacing for queues and research.
 3. Extend the mission-event system from Mission 1 into reusable scenario scripting for later missions.
-4. Add more actual mission-map content so unlocked missions become playable instead of metadata-only progression.
+4. Author more actual mission-map content so the first campaign chapter extends beyond the current three playable scenarios.
 5. Keep the repo trace clean by updating this file and the session log whenever systems behavior changes.
 
 ## Commands
@@ -202,6 +209,15 @@ Run the save-slots smoke test:
   --headless `
   --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
   --script res://scripts/tests/save_slots_smoke.gd
+```
+
+Run the multi-mission content smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/multi_mission_content_smoke.gd
 ```
 
 ## Blockers

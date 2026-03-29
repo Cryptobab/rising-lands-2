@@ -1,0 +1,88 @@
+{
+  "id": "monde03_map",
+  "name": "Mission 3 - First Discovery",
+  "width": 18,
+  "height": 12,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "WSSSGGGGGGGGGGFFFF",
+    "SSGGGGGGGGGGGGFFFF",
+    "SGGGGGGGDGGGGGFFFR",
+    "SGGGGFGGDDGGGGFFRR",
+    "SGGGFFGGDDGGGGFRRR",
+    "SGGGFGGGGDDGGGRRRR",
+    "SGGGFGGGGDDGGGRRRR",
+    "SGGGGGGGGGDGGGGRRR",
+    "SSGGGGGGGGGGGGGRRR",
+    "WSSGGGGFGGGGGGGRRR",
+    "WWSSGGGFGGGGGGRRRR",
+    "WWWSSGGGGGGGGGRRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 4, "type": "food", "amount": 110 },
+    { "x": 3, "y": 8, "type": "food", "amount": 110 },
+    { "x": 13, "y": 3, "type": "stone", "amount": 120 },
+    { "x": 14, "y": 6, "type": "stone", "amount": 120 },
+    { "x": 15, "y": 4, "type": "parts", "amount": 60 }
+  ],
+  "player_start": { "x": 5, "y": 6 },
+  "starting_resources": { "food": 26, "stone": 18, "parts": 8, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 5, "y": 6, "team": "player" },
+    { "building_id": "culture", "x": 7, "y": 6, "team": "player" },
+    { "building_id": "sanctuary", "x": 6, "y": 4, "team": "player" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 4, "y": 5, "team": "player" },
+    { "unit_id": "farmer", "x": 4, "y": 7, "team": "player" },
+    { "unit_id": "builder", "x": 6, "y": 5, "team": "player" },
+    { "unit_id": "builder", "x": 6, "y": 7, "team": "player" },
+    { "unit_id": "mechanic", "x": 5, "y": 8, "team": "player" }
+  ],
+  "build_palette": ["storehouse", "culture", "barracks", "sanctuary", "laboratory", "library"],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "build_laboratory",
+      "type": "build",
+      "building_id": "laboratory",
+      "target": 1,
+      "label": "Build a Laboratory",
+      "required": true
+    },
+    {
+      "id": "discover_technology",
+      "type": "tech_count",
+      "target": 1,
+      "label": "Develop a technology",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [
+    { "x": 16, "y": 5, "unit_id": "basher", "delay": 80.0 }
+  ],
+  "mission_events": [
+    {
+      "id": "mission_3_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "Knowledge will decide the future of the clan. Build a Laboratory." }
+      ]
+    },
+    {
+      "id": "mission_3_lab_reward",
+      "trigger": { "type": "objective_complete", "objective_id": "build_laboratory" },
+      "actions": [
+        { "type": "message", "text": "The laboratory is ready. Scholars deliver the first research notes." },
+        { "type": "grant_resources", "resources": { "tech": 2 } }
+      ]
+    }
+  ]
+}
