@@ -47,6 +47,8 @@ Working now:
 - player combat units and enemy units now run through the same lightweight combat runtime
 - Mission 1 map includes scripted enemy pressure data
 - save/load exists for the current runtime state
+- campaign progression now tracks unlocked and completed missions from imported classic metadata
+- named save slots now persist runtime state plus slot metadata through a campaign profile
 - runtime mission objectives now drive victory state instead of only the old stockpile fallback
 - Mission 1 map now includes scripted mission-event beats, rewards, and reinforcements
 - the debug HUD now surfaces objective progress, recent mission alerts, and deeper selection detail
@@ -57,13 +59,15 @@ Working now:
 - a fifth Godot smoke-test script exists for mission events and mission-event save/load persistence
 - a sixth Godot smoke-test script exists for the expanded roster and advanced-production save/load path
 - a seventh Godot smoke-test script exists for defensive towers and tower-combat save/load path
+- an eighth Godot smoke-test script exists for campaign progression and mission unlock persistence
+- a ninth Godot smoke-test script exists for named save slots and slot-metadata persistence
 - issue and PR templates exist for public repo workflow
 - the old browser prototype files have been removed from the active codebase
 
 Not done yet:
 
 - stronger command queueing, selection UX, and HUD feedback
-- diplomacy, campaign progression, and save-slot UX
+- diplomacy and broader meta-layer behavior beyond the current campaign/save-slot shell
 - broader mission scripting coverage across additional scenarios and campaign flow
 - additional faction-specific buildings, support effects, and deeper unit parity beyond the current advanced roster slice
 - expanded-content ruleset layered cleanly on top of the classic remake
@@ -74,6 +78,7 @@ Not done yet:
 - Raw classic data: [`game/data/classic/raw/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/raw)
 - Normalized classic data: [`game/data/classic/normalized/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/normalized)
 - Godot bootstrap script: [`game/scripts/core/game_root.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/game_root.gd)
+- Campaign runtime: [`game/scripts/core/campaign_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/campaign_state.gd)
 - Godot classic loader: [`game/scripts/data/classic_database.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/data/classic_database.gd)
 - Vertical-slice map: [`game/data/classic/vertical_slice/mission_001_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/mission_001_map.json)
 - Godot map loader: [`game/scripts/core/map_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/map_state.gd)
@@ -89,13 +94,15 @@ Not done yet:
 - Mission-events smoke test: [`game/scripts/tests/mission_events_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mission_events_smoke.gd)
 - Expanded-roster smoke test: [`game/scripts/tests/expanded_roster_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/expanded_roster_smoke.gd)
 - Tower-defense smoke test: [`game/scripts/tests/tower_defense_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/tower_defense_smoke.gd)
+- Campaign-progression smoke test: [`game/scripts/tests/campaign_progression_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_progression_smoke.gd)
+- Save-slots smoke test: [`game/scripts/tests/save_slots_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/save_slots_smoke.gd)
 
 ## Next Session Start Here
 
-1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate the new build palette, advanced training roster, and tower behavior visually.
+1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate campaign progress, slot save/load, and the new HUD lines visually.
 2. Add better selection UX, command feedback, and HUD surfacing for queues and research.
 3. Extend the mission-event system from Mission 1 into reusable scenario scripting for later missions.
-4. Start a campaign-state layer with mission completion tracking and cleaner save-slot UX.
+4. Add more actual mission-map content so unlocked missions become playable instead of metadata-only progression.
 5. Keep the repo trace clean by updating this file and the session log whenever systems behavior changes.
 
 ## Commands
@@ -177,6 +184,24 @@ Run the tower-defense smoke test:
   --headless `
   --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
   --script res://scripts/tests/tower_defense_smoke.gd
+```
+
+Run the campaign-progression smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/campaign_progression_smoke.gd
+```
+
+Run the save-slots smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/save_slots_smoke.gd
 ```
 
 ## Blockers

@@ -21,7 +21,7 @@ What exists now:
 - a new Godot project scaffold in [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game)
 - importer tooling in [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers)
 - planning and continuation docs in [`docs/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs)
-- a deterministic Mission 1 map with worker economy, expanded production buildings, defensive towers, research, combat, save/load, runtime objectives, and scripted mission events
+- a deterministic Mission 1 map with worker economy, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, and scripted mission events
 
 ## Project Layout
 
@@ -69,9 +69,11 @@ In the current Godot vertical slice:
 - `library` and `laboratory` both support branch-based research
 - `tower_catapult` and `tower_cannon` auto-fire on nearby enemies
 - `F5` saves to `user://save_slot_1.json`
+- `F6` saves the active named slot profile
+- `F7` loads the active named slot profile
 - `F9` loads from `user://save_slot_1.json`
 - `Esc` clears build mode
-- the HUD now shows objective progress, recent mission alerts, and selection detail
+- the HUD now shows campaign progress, the active save slot, objective progress, recent mission alerts, and selection detail
 
 ## Constraints
 

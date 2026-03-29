@@ -2,6 +2,7 @@ class_name GameRoot
 extends Node2D
 
 const WorldStateScript = preload("res://scripts/core/world_state.gd")
+const CampaignStateScript = preload("res://scripts/core/campaign_state.gd")
 const MissionStateScript = preload("res://scripts/core/mission_state.gd")
 const MissionEventStateScript = preload("res://scripts/core/mission_event_state.gd")
 const MapStateScript = preload("res://scripts/core/map_state.gd")
@@ -19,6 +20,7 @@ const DEFAULT_SAVE_PATH: String = "user://save_slot_1.json"
 const MAX_ALERT_LOG: int = 6
 
 var world_state
+var campaign_state
 var mission_state
 var map_state
 var classic_database
@@ -42,6 +44,12 @@ var hover_tile: Vector2i = Vector2i(-1, -1)
 var runtime_initialized: bool = false
 var ui_enabled: bool = false
 var auto_enemy_pressure_enabled: bool = true
+var current_mission_id: String = "monde01"
+var current_map_path: String = DEFAULT_MAP_PATH
+var active_save_slot_id: String = "slot_1"
+var campaign_profile_path: String = "user://campaign_profile.json"
+var save_slot_directory: String = "user://save_slots"
+var mission_resolution_recorded: bool = false
 
 
 func _ready() -> void:
@@ -58,23 +66,10 @@ func initialize_runtime(show_ui: bool = true) -> void:
         set_process_unhandled_input(show_ui)
         return
 
-    world_state = WorldStateScript.new()
-    mission_state = MissionStateScript.new()
-    map_state = MapStateScript.new()
     classic_database = ClassicDatabaseScript.new()
-
     classic_database.load_from_dir()
-    world_state.bootstrap_classic_vertical_slice()
-    map_state.load_from_file(DEFAULT_MAP_PATH)
-    if map_state.width > 0 and map_state.height > 0:
-        world_state.map_size = Vector2i(map_state.width, map_state.height)
-
-    _load_mission_record()
-    _load_mission_events_from_map()
-    _spawn_vertical_slice_entities()
-    pending_enemy_spawns = map_state.enemy_spawns.duplicate(true)
-    mission_state.evaluate(_build_mission_snapshot())
-    simulation_status = "systems online"
+    _initialize_campaign_state(show_ui)
+    _bootstrap_runtime_state()
     runtime_initialized = true
 
     if show_ui:
@@ -93,6 +88,62 @@ func run_simulation_steps(step_count: int, delta: float = 1.0 / 60.0) -> void:
 
     for _step in range(step_count):
         advance_simulation(delta)
+
+
+func _initialize_campaign_state(auto_load_profile: bool) -> void:
+    campaign_state = CampaignStateScript.new()
+    campaign_state.bootstrap_from_missions(classic_database.missions)
+    current_mission_id = campaign_state.active_mission_id
+    current_map_path = _map_path_for_mission(current_mission_id)
+
+    if auto_load_profile and FileAccess.file_exists(campaign_profile_path):
+        load_campaign_profile(campaign_profile_path)
+
+
+func _bootstrap_runtime_state() -> void:
+    world_state = WorldStateScript.new()
+    mission_state = MissionStateScript.new()
+    map_state = MapStateScript.new()
+
+    world_state.bootstrap_classic_vertical_slice()
+    if not map_state.load_from_file(current_map_path):
+        current_map_path = DEFAULT_MAP_PATH
+        map_state.load_from_file(current_map_path)
+
+    if map_state.width > 0 and map_state.height > 0:
+        world_state.map_size = Vector2i(map_state.width, map_state.height)
+
+    _load_mission_record()
+    _load_mission_events_from_map()
+    _spawn_vertical_slice_entities()
+    pending_enemy_spawns = map_state.enemy_spawns.duplicate(true)
+    alert_log = []
+    build_mode = ""
+    _clear_selection()
+    mission_resolution_recorded = false
+    mission_state.evaluate(_build_mission_snapshot())
+    simulation_status = "systems online"
+
+
+func start_mission(mission_id: String, map_path: String = "") -> bool:
+    if classic_database == null:
+        initialize_runtime(false)
+
+    if campaign_state == null:
+        _initialize_campaign_state(false)
+
+    if not campaign_state.is_mission_unlocked(mission_id):
+        return false
+
+    current_mission_id = mission_id
+    current_map_path = map_path if not map_path.is_empty() else _map_path_for_mission(mission_id)
+    campaign_state.set_active_mission(mission_id)
+    save_campaign_profile()
+    _bootstrap_runtime_state()
+    _refresh_debug_text()
+    if is_inside_tree():
+        queue_redraw()
+    return true
 
 
 func advance_simulation(delta: float) -> void:
@@ -210,6 +261,95 @@ func queue_research_for_building(building_index: int, branch: String) -> bool:
     return true
 
 
+func save_campaign_profile(path: String = campaign_profile_path) -> bool:
+    if classic_database == null:
+        return false
+
+    if campaign_state == null:
+        _initialize_campaign_state(false)
+
+    var file := FileAccess.open(path, FileAccess.WRITE)
+    if file == null:
+        return false
+
+    file.store_string(JSON.stringify({
+        "campaign_state": campaign_state.serialize(),
+        "active_save_slot_id": active_save_slot_id,
+        "current_mission_id": current_mission_id,
+        "current_map_path": current_map_path
+    }, "\t"))
+    file.close()
+    return true
+
+
+func load_campaign_profile(path: String = campaign_profile_path) -> bool:
+    if classic_database == null or not FileAccess.file_exists(path):
+        return false
+
+    var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+    if typeof(parsed) != TYPE_DICTIONARY:
+        return false
+
+    var payload: Dictionary = parsed
+    if campaign_state == null:
+        campaign_state = CampaignStateScript.new()
+
+    campaign_state.load_from_payload(payload.get("campaign_state", {}), classic_database.missions)
+    active_save_slot_id = str(payload.get("active_save_slot_id", active_save_slot_id))
+    current_mission_id = str(payload.get("current_mission_id", campaign_state.active_mission_id))
+    if current_mission_id.is_empty():
+        current_mission_id = campaign_state.active_mission_id
+    current_map_path = str(payload.get("current_map_path", _map_path_for_mission(current_mission_id)))
+    campaign_state.set_active_mission(current_mission_id)
+    return true
+
+
+func save_to_slot(slot_id: String = active_save_slot_id) -> bool:
+    if slot_id.is_empty():
+        return false
+
+    if not _ensure_save_slot_dir():
+        return false
+
+    active_save_slot_id = slot_id
+    var slot_path: String = _slot_save_path(slot_id)
+    if not save_game_state(slot_path):
+        return false
+
+    if campaign_state != null:
+        campaign_state.set_slot_metadata(slot_id, {
+            "mission_id": current_mission_id,
+            "mission_title": mission_state.title,
+            "map_path": current_map_path,
+            "updated_at": int(Time.get_unix_time_from_system()),
+            "tick_count": world_state.tick_count,
+            "mission_status": world_state.mission_status,
+            "resources": world_state.resources.duplicate(true)
+        })
+    save_campaign_profile()
+    _push_alert("saved slot: %s" % slot_id)
+    return true
+
+
+func load_from_slot(slot_id: String = active_save_slot_id) -> bool:
+    if slot_id.is_empty():
+        return false
+
+    var slot_path: String = _slot_save_path(slot_id)
+    active_save_slot_id = slot_id
+    var loaded: bool = load_game_state(slot_path)
+    if loaded:
+        save_campaign_profile()
+        _push_alert("loaded slot: %s" % slot_id)
+    return loaded
+
+
+func list_save_slots() -> Array:
+    if campaign_state == null:
+        return []
+    return campaign_state.list_slot_metadata()
+
+
 func _process(delta: float) -> void:
     advance_simulation(delta)
 
@@ -243,15 +383,18 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
     var payload: Dictionary = parsed
     world_state = WorldStateScript.new()
     world_state.load_from_payload(payload.get("world_state", {}))
+    current_map_path = str(payload.get("map_path", DEFAULT_MAP_PATH))
+    current_mission_id = str(payload.get("mission_id", current_mission_id))
+    active_save_slot_id = str(payload.get("save_slot_id", active_save_slot_id))
 
     map_state = MapStateScript.new()
-    if not map_state.load_from_file(str(payload.get("map_path", DEFAULT_MAP_PATH))):
+    if not map_state.load_from_file(current_map_path):
         return false
 
     mission_state = MissionStateScript.new()
-    var mission_record: Dictionary = classic_database.find_mission(str(payload.get("mission_id", "")))
+    var mission_record: Dictionary = classic_database.find_mission(current_mission_id)
     if mission_record.is_empty():
-        mission_state.load_stub_mission(str(payload.get("mission_id", "mission_001")))
+        mission_state.load_stub_mission(current_mission_id)
     else:
         mission_state.load_from_record(mission_record)
     mission_state.configure_runtime_objectives(_objective_payloads_from_map())
@@ -314,12 +457,12 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
     for alert_entry in payload.get("alert_log", []):
         alert_log.append(str(alert_entry))
     simulation_status = str(payload.get("simulation_status", "loaded save"))
-    selected_worker_index = -1
-    selected_combat_index = -1
-    selected_building_index = -1
-    selected_site_index = -1
+    _clear_selection()
     build_mode = ""
     runtime_initialized = true
+    mission_resolution_recorded = bool(payload.get("mission_resolution_recorded", false))
+    if campaign_state != null:
+        campaign_state.set_active_mission(current_mission_id)
     _refresh_player_modifiers()
     _update_worker_home_positions()
     mission_state.evaluate(_build_mission_snapshot())
@@ -331,8 +474,9 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
 
 func serialize_runtime() -> Dictionary:
     return {
-        "map_path": DEFAULT_MAP_PATH,
-        "mission_id": mission_state.mission_id,
+        "map_path": current_map_path,
+        "mission_id": current_mission_id,
+        "save_slot_id": active_save_slot_id,
         "world_state": world_state.serialize(),
         "resource_nodes": _serialize_collection(resource_nodes),
         "buildings": _serialize_collection(buildings),
@@ -343,6 +487,7 @@ func serialize_runtime() -> Dictionary:
         "pending_enemy_spawns": pending_enemy_spawns.duplicate(true),
         "mission_events": _serialize_collection(mission_events),
         "alert_log": alert_log.duplicate(true),
+        "mission_resolution_recorded": mission_resolution_recorded,
         "simulation_status": simulation_status
     }
 
@@ -498,12 +643,14 @@ func _draw() -> void:
 
 
 func _load_mission_record() -> void:
-    var mission_record: Dictionary = classic_database.find_mission("monde01")
+    var mission_record: Dictionary = classic_database.find_mission(current_mission_id)
     if mission_record.is_empty():
-        mission_state.load_stub_mission("mission_001")
+        mission_state.load_stub_mission(current_mission_id)
     else:
         mission_state.load_from_record(mission_record)
     mission_state.configure_runtime_objectives(_objective_payloads_from_map())
+    if campaign_state != null:
+        campaign_state.set_active_mission(current_mission_id)
 
 
 func _load_mission_events_from_map() -> void:
@@ -695,11 +842,13 @@ func _update_mission_state() -> void:
     if _goal_complete():
         world_state.mission_status = "victory"
         simulation_status = "mission goal complete"
+        _register_campaign_outcome(true)
         return
 
     if _player_defeated():
         world_state.mission_status = "defeat"
         simulation_status = "mission failed"
+        _register_campaign_outcome(false)
         return
 
     world_state.mission_status = "active"
@@ -713,6 +862,22 @@ func _player_defeated() -> bool:
             break
 
     return not has_storehouse or (workers.is_empty() and combat_units.is_empty())
+
+
+func _register_campaign_outcome(victory: bool) -> void:
+    if mission_resolution_recorded or campaign_state == null:
+        return
+
+    mission_resolution_recorded = true
+    var outcome: Dictionary = campaign_state.record_mission_result(current_mission_id, victory, world_state.elapsed_time)
+    save_campaign_profile()
+
+    if victory:
+        var next_mission_id: String = str(outcome.get("next_mission_id", ""))
+        if not next_mission_id.is_empty():
+            _push_alert("campaign unlocked: %s" % _mission_display_name(next_mission_id))
+    else:
+        _push_alert("campaign setback recorded")
 
 
 func _update_mission_events(snapshot: Dictionary) -> void:
@@ -763,6 +928,35 @@ func _goal_complete() -> bool:
         var stone_target: int = int(map_state.storehouse_goal.get("stone", 0))
         return int(world_state.resources.get("food", 0)) >= food_target and int(world_state.resources.get("stone", 0)) >= stone_target
     return mission_state.required_objectives_complete()
+
+
+func _map_path_for_mission(mission_id: String) -> String:
+    var candidate_path: String = "res://data/classic/vertical_slice/%s_map.json" % mission_id
+    if FileAccess.file_exists(candidate_path):
+        return candidate_path
+    return DEFAULT_MAP_PATH
+
+
+func _slot_save_path(slot_id: String) -> String:
+    return "%s/%s.json" % [save_slot_directory, slot_id]
+
+
+func _ensure_save_slot_dir() -> bool:
+    return DirAccess.make_dir_recursive_absolute(save_slot_directory) == OK
+
+
+func _clear_selection() -> void:
+    selected_worker_index = -1
+    selected_combat_index = -1
+    selected_building_index = -1
+    selected_site_index = -1
+
+
+func _mission_display_name(mission_id: String) -> String:
+    var mission_record: Dictionary = classic_database.find_mission(mission_id)
+    if not mission_record.is_empty():
+        return str(mission_record.get("title", mission_id))
+    return mission_id
 
 
 func _map_origin(viewport_size: Vector2) -> Vector2:
@@ -1027,10 +1221,7 @@ func _unhandled_input(event: InputEvent) -> void:
         match event.keycode:
             KEY_ESCAPE:
                 build_mode = ""
-                selected_worker_index = -1
-                selected_combat_index = -1
-                selected_building_index = -1
-                selected_site_index = -1
+                _clear_selection()
                 simulation_status = "selection cleared"
             KEY_Q:
                 _handle_context_action(1)
@@ -1047,6 +1238,12 @@ func _unhandled_input(event: InputEvent) -> void:
             KEY_F5:
                 if not save_game_state():
                     simulation_status = "save failed"
+            KEY_F6:
+                if not save_to_slot(active_save_slot_id):
+                    simulation_status = "slot save failed"
+            KEY_F7:
+                if not load_from_slot(active_save_slot_id):
+                    simulation_status = "slot load failed"
             KEY_F9:
                 if not load_game_state():
                     simulation_status = "load failed"
@@ -1294,6 +1491,13 @@ func _refresh_debug_text() -> void:
         return
 
     var summary: Dictionary = classic_database.summary()
+    var campaign_text: String = "Campaign: offline"
+    if campaign_state != null:
+        campaign_text = "Campaign: %d/%d complete | %d unlocked" % [
+            campaign_state.completed_count(),
+            campaign_state.mission_count(),
+            campaign_state.unlocked_missions.size()
+        ]
     var objective_lines: Array[String] = mission_state.objective_lines()
     if objective_lines.is_empty():
         for objective_text in mission_state.objectives:
@@ -1342,6 +1546,8 @@ func _refresh_debug_text() -> void:
         "Controls: LMB select/place | RMB assign/move | 1-9,0,-,= build palette",
         "Systems: Q/W/E/R/T/Y context | F5 save | F9 load",
         "Mission: %s" % mission_state.title,
+        campaign_text,
+        "Active Mission: %s | Save Slot: %s" % [current_mission_id, active_save_slot_id],
         "Objectives:",
     ] + objective_lines + [
         goal_text,
