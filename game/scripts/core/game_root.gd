@@ -19,6 +19,9 @@ const MAP_TOP_MARGIN: float = 160.0
 const DEFAULT_MAP_PATH: String = "res://data/classic/vertical_slice/mission_001_map.json"
 const DEFAULT_SAVE_PATH: String = "user://save_slot_1.json"
 const MAX_ALERT_LOG: int = 6
+const COMMAND_MARKER_DURATION: float = 1.1
+const SELECTION_DRAG_THRESHOLD: float = 12.0
+const MINIMAP_SIZE: Vector2 = Vector2(220.0, 144.0)
 
 const BUILD_KEY_ORDER: Array = [
     {"keycode": KEY_1, "building_id": "storehouse"},
@@ -56,10 +59,16 @@ var allied_clans: Array[String] = []
 var simulation_status: String = "bootstrapping"
 var selected_worker_index: int = -1
 var selected_combat_index: int = -1
+var selected_worker_indices: Array[int] = []
+var selected_combat_indices: Array[int] = []
 var selected_building_index: int = -1
 var selected_site_index: int = -1
 var build_mode: String = ""
+var command_markers: Array = []
 var hover_tile: Vector2i = Vector2i(-1, -1)
+var selection_drag_active: bool = false
+var selection_drag_origin: Vector2 = Vector2.ZERO
+var selection_drag_current: Vector2 = Vector2.ZERO
 var runtime_initialized: bool = false
 var ui_enabled: bool = false
 var auto_enemy_pressure_enabled: bool = true
@@ -140,8 +149,10 @@ func _bootstrap_runtime_state() -> void:
     _spawn_vertical_slice_entities()
     pending_enemy_spawns = map_state.enemy_spawns.duplicate(true)
     alert_log = []
+    command_markers = []
     build_mode = ""
     _clear_selection()
+    _clear_drag_selection()
     mission_resolution_recorded = false
     mission_state.evaluate(_build_mission_snapshot())
     simulation_status = "systems online"
@@ -173,6 +184,7 @@ func advance_simulation(delta: float) -> void:
         initialize_runtime(false)
 
     world_state.tick(delta)
+    _update_command_markers(delta)
     _update_enemy_spawns()
     _update_buildings(delta)
     _update_worker_home_positions()
@@ -490,6 +502,8 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
     simulation_status = str(payload.get("simulation_status", "loaded save"))
     _clear_selection()
     build_mode = ""
+    command_markers = []
+    _clear_drag_selection()
     runtime_initialized = true
     mission_resolution_recorded = bool(payload.get("mission_resolution_recorded", false))
     if campaign_state != null:
@@ -665,7 +679,7 @@ func _draw() -> void:
         var unit_screen_pos: Vector2 = origin + (worker.position * TILE_SIZE)
         draw_circle(unit_screen_pos, 9.0, worker.unit_color)
         draw_circle(unit_screen_pos, 3.0, Color("11161c"))
-        if worker_index == selected_worker_index:
+        if selected_worker_indices.has(worker_index):
             draw_arc(unit_screen_pos, 14.0, 0.0, TAU, 24, Color("70b8e8"), 2.0)
         if worker.carry_amount > 0:
             draw_circle(unit_screen_pos + Vector2(10.0, -8.0), 4.0, _resource_color(worker.carry_type))
@@ -675,7 +689,7 @@ func _draw() -> void:
         var combat_pos: Vector2 = origin + (combat_unit.position * TILE_SIZE)
         draw_circle(combat_pos, 10.0, combat_unit.unit_color)
         draw_circle(combat_pos, 3.0, Color("11161c"))
-        if combat_index == selected_combat_index:
+        if selected_combat_indices.has(combat_index):
             draw_arc(combat_pos, 15.0, 0.0, TAU, 24, Color("f6d36b"), 2.0)
 
     for enemy_unit in enemy_units:
@@ -693,6 +707,71 @@ func _draw() -> void:
         var ghost_color := _building_color(build_mode)
         ghost_color.a = 0.35 if _can_place_building(hover_tile) else 0.15
         draw_rect(Rect2(_tile_origin(hover_tile, origin) + Vector2(4.0, 4.0), Vector2(TILE_SIZE - 8.0, TILE_SIZE - 8.0)), ghost_color, true)
+
+    for marker in command_markers:
+        var marker_position_payload: Dictionary = marker.get("position", {})
+        var marker_position := Vector2(
+            float(marker_position_payload.get("x", 0.0)),
+            float(marker_position_payload.get("y", 0.0))
+        )
+        var marker_color: Color = _command_marker_color(str(marker.get("kind", "")))
+        var marker_screen_pos: Vector2 = origin + (marker_position * TILE_SIZE)
+        draw_arc(marker_screen_pos, 11.0, 0.0, TAU, 20, marker_color, 2.0)
+        draw_circle(marker_screen_pos, 3.0, marker_color)
+
+    if selection_drag_active and build_mode.is_empty():
+        var selection_rect := Rect2(selection_drag_origin, selection_drag_current - selection_drag_origin).abs()
+        var selection_fill := Color("70b8e8")
+        selection_fill.a = 0.12
+        draw_rect(selection_rect, selection_fill, true)
+        draw_rect(selection_rect, Color("70b8e8"), false, 2.0)
+
+    _draw_minimap(viewport_size)
+
+
+func _draw_minimap(viewport_size: Vector2) -> void:
+    var minimap_origin := Vector2(viewport_size.x - MINIMAP_SIZE.x - 28.0, 24.0)
+    var frame_rect := Rect2(minimap_origin - Vector2(6.0, 6.0), MINIMAP_SIZE + Vector2(12.0, 12.0))
+    draw_rect(frame_rect, Color("10161c"), true)
+    draw_rect(frame_rect, Color("31404f"), false, 2.0)
+
+    var cell_size := Vector2(MINIMAP_SIZE.x / float(map_state.width), MINIMAP_SIZE.y / float(map_state.height))
+    for y in range(map_state.height):
+        for x in range(map_state.width):
+            var terrain: Color = _terrain_color(map_state.terrain_at(x, y)).darkened(0.18)
+            draw_rect(
+                Rect2(minimap_origin + Vector2(float(x) * cell_size.x, float(y) * cell_size.y), cell_size + Vector2.ONE),
+                terrain,
+                true
+            )
+
+    for resource_node in resource_nodes:
+        draw_circle(_minimap_point(Vector2(resource_node.tile) + Vector2(0.5, 0.5), minimap_origin), 2.4, _resource_color(resource_node.resource_type))
+
+    for building in buildings:
+        var building_color: Color = _building_color(building.building_id)
+        if building.team != "player":
+            building_color = Color("e15c55")
+        draw_rect(Rect2(_minimap_point(building.center_position(), minimap_origin) - Vector2.ONE, Vector2(3.0, 3.0)), building_color, true)
+
+    for diplomacy_target in diplomacy_targets:
+        draw_circle(_minimap_point(diplomacy_target.center_position(), minimap_origin), 2.5, diplomacy_target.display_color())
+
+    for worker in workers:
+        draw_circle(_minimap_point(worker.position, minimap_origin), 2.0, worker.unit_color)
+
+    for combat_unit in combat_units:
+        draw_circle(_minimap_point(combat_unit.position, minimap_origin), 2.4, combat_unit.unit_color)
+
+    for enemy_unit in enemy_units:
+        draw_circle(_minimap_point(enemy_unit.position, minimap_origin), 2.4, enemy_unit.unit_color)
+
+
+func _minimap_point(world_position: Vector2, minimap_origin: Vector2) -> Vector2:
+    return minimap_origin + Vector2(
+        (world_position.x / maxf(1.0, float(map_state.width))) * MINIMAP_SIZE.x,
+        (world_position.y / maxf(1.0, float(map_state.height))) * MINIMAP_SIZE.y
+    )
 
 
 func _load_mission_record() -> void:
@@ -861,21 +940,29 @@ func _finalize_construction_sites() -> void:
 
 
 func _cleanup_destroyed_entities() -> void:
+    var worker_index_map: Dictionary = {}
     var surviving_workers: Array = []
-    for worker in workers:
+    for old_worker_index in range(workers.size()):
+        var worker = workers[old_worker_index]
         if worker.is_alive():
+            worker_index_map[old_worker_index] = surviving_workers.size()
             surviving_workers.append(worker)
         else:
             world_state.casualties["player"] = int(world_state.casualties.get("player", 0)) + 1
     workers = surviving_workers
+    selected_worker_indices = _remap_selection_indices(selected_worker_indices, worker_index_map)
 
+    var combat_index_map: Dictionary = {}
     var surviving_combat_units: Array = []
-    for combat_unit in combat_units:
+    for old_combat_index in range(combat_units.size()):
+        var combat_unit = combat_units[old_combat_index]
         if combat_unit.is_alive():
+            combat_index_map[old_combat_index] = surviving_combat_units.size()
             surviving_combat_units.append(combat_unit)
         else:
             world_state.casualties["player"] = int(world_state.casualties.get("player", 0)) + 1
     combat_units = surviving_combat_units
+    selected_combat_indices = _remap_selection_indices(selected_combat_indices, combat_index_map)
 
     var surviving_enemy_units: Array = []
     for enemy_unit in enemy_units:
@@ -894,10 +981,22 @@ func _cleanup_destroyed_entities() -> void:
             simulation_status = "%s destroyed" % building.name
     buildings = surviving_buildings
 
-    selected_worker_index = _normalize_index(selected_worker_index, workers.size())
-    selected_combat_index = _normalize_index(selected_combat_index, combat_units.size())
+    _sync_primary_selection_indices()
     selected_building_index = _normalize_index(selected_building_index, buildings.size())
     selected_site_index = _normalize_index(selected_site_index, construction_sites.size())
+
+
+func _update_command_markers(delta: float) -> void:
+    if command_markers.is_empty():
+        return
+
+    var remaining_markers: Array = []
+    for marker in command_markers:
+        var updated_marker: Dictionary = marker.duplicate(true)
+        updated_marker["ttl"] = float(updated_marker.get("ttl", 0.0)) - delta
+        if float(updated_marker.get("ttl", 0.0)) > 0.0:
+            remaining_markers.append(updated_marker)
+    command_markers = remaining_markers
 
 
 func _update_diplomacy_state() -> void:
@@ -1071,10 +1170,31 @@ func _ensure_save_slot_dir() -> bool:
 
 
 func _clear_selection() -> void:
+    selected_worker_indices = []
+    selected_combat_indices = []
     selected_worker_index = -1
     selected_combat_index = -1
     selected_building_index = -1
     selected_site_index = -1
+
+
+func _clear_drag_selection() -> void:
+    selection_drag_active = false
+    selection_drag_origin = Vector2.ZERO
+    selection_drag_current = Vector2.ZERO
+
+
+func _sync_primary_selection_indices() -> void:
+    selected_worker_index = selected_worker_indices[0] if not selected_worker_indices.is_empty() else -1
+    selected_combat_index = selected_combat_indices[0] if not selected_combat_indices.is_empty() else -1
+
+
+func _remap_selection_indices(indices: Array[int], index_map: Dictionary) -> Array[int]:
+    var remapped: Array[int] = []
+    for index in indices:
+        if index_map.has(index):
+            remapped.append(int(index_map[index]))
+    return remapped
 
 
 func _mission_display_name(mission_id: String) -> String:
@@ -1097,6 +1217,12 @@ func _screen_to_tile(screen_position: Vector2) -> Vector2i:
     var origin := _map_origin(get_viewport_rect().size)
     var local := screen_position - origin
     return Vector2i(int(floor(local.x / TILE_SIZE)), int(floor(local.y / TILE_SIZE)))
+
+
+func _screen_to_world(screen_position: Vector2) -> Vector2:
+    var origin := _map_origin(get_viewport_rect().size)
+    var local := screen_position - origin
+    return local / TILE_SIZE
 
 
 func _resource_index_at_tile(tile: Vector2i) -> int:
@@ -1191,10 +1317,26 @@ func _selected_worker():
     return workers[selected_worker_index]
 
 
+func _selected_workers() -> Array:
+    var results: Array = []
+    for index in selected_worker_indices:
+        if index >= 0 and index < workers.size():
+            results.append(workers[index])
+    return results
+
+
 func _selected_combat_unit():
     if selected_combat_index < 0 or selected_combat_index >= combat_units.size():
         return null
     return combat_units[selected_combat_index]
+
+
+func _selected_combat_units() -> Array:
+    var results: Array = []
+    for index in selected_combat_indices:
+        if index >= 0 and index < combat_units.size():
+            results.append(combat_units[index])
+    return results
 
 
 func _selected_building():
@@ -1204,8 +1346,38 @@ func _selected_building():
 
 
 func _selected_worker_is_builder() -> bool:
-    var worker = _selected_worker()
-    return worker != null and worker.unit_id == "builder"
+    for worker in _selected_workers():
+        if worker.unit_id == "builder":
+            return true
+    return false
+
+
+func select_units_in_world_rect(selection_rect: Rect2) -> int:
+    var normalized_rect := selection_rect.abs()
+    selected_worker_indices = []
+    selected_combat_indices = []
+    selected_building_index = -1
+    selected_site_index = -1
+
+    for worker_index in range(workers.size()):
+        if normalized_rect.has_point(workers[worker_index].position):
+            selected_worker_indices.append(worker_index)
+
+    for combat_index in range(combat_units.size()):
+        if normalized_rect.has_point(combat_units[combat_index].position):
+            selected_combat_indices.append(combat_index)
+
+    _sync_primary_selection_indices()
+    var selected_count: int = selected_worker_indices.size() + selected_combat_indices.size()
+    if selected_count <= 0:
+        simulation_status = "nothing selected"
+    else:
+        simulation_status = _selection_status_text(selected_worker_indices.size(), selected_combat_indices.size())
+    return selected_count
+
+
+func issue_order_to_tile(tile: Vector2i) -> void:
+    _issue_order_to_tile(tile)
 
 
 func _place_construction_site(tile: Vector2i, building_id: String) -> void:
@@ -1342,13 +1514,34 @@ func _resource_color(resource_type: String) -> Color:
 func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventMouseMotion:
         hover_tile = _screen_to_tile(event.position)
+        if selection_drag_active:
+            selection_drag_current = event.position
+            if is_inside_tree():
+                queue_redraw()
         return
 
-    if event is InputEventMouseButton and event.pressed:
+    if event is InputEventMouseButton:
         if event.button_index == MOUSE_BUTTON_LEFT:
-            _handle_left_click(event.position)
+            if event.pressed:
+                selection_drag_active = true
+                selection_drag_origin = event.position
+                selection_drag_current = event.position
+                return
+
+            if selection_drag_active:
+                selection_drag_current = event.position
+                var drag_start: Vector2 = selection_drag_origin
+                var drag_distance: float = drag_start.distance_to(selection_drag_current)
+                _clear_drag_selection()
+                if build_mode.is_empty() and drag_distance >= SELECTION_DRAG_THRESHOLD:
+                    _handle_drag_selection(drag_start, event.position)
+                else:
+                    _handle_left_click(event.position)
+                if is_inside_tree():
+                    queue_redraw()
             return
-        if event.button_index == MOUSE_BUTTON_RIGHT:
+
+        if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
             _handle_right_click(event.position)
             return
 
@@ -1363,6 +1556,7 @@ func _unhandled_input(event: InputEvent) -> void:
             KEY_ESCAPE:
                 build_mode = ""
                 _clear_selection()
+                _clear_drag_selection()
                 simulation_status = "selection cleared"
             KEY_Q:
                 _handle_context_action(1)
@@ -1520,6 +1714,12 @@ func _building_display_name(building_id: String) -> String:
     return building_id
 
 
+func _handle_drag_selection(start_position: Vector2, end_position: Vector2) -> void:
+    var start_world := _screen_to_world(start_position)
+    var end_world := _screen_to_world(end_position)
+    select_units_in_world_rect(Rect2(start_world, end_world - start_world).abs().grow(0.2))
+
+
 func _handle_left_click(screen_position: Vector2) -> void:
     var tile := _screen_to_tile(screen_position)
     hover_tile = tile
@@ -1530,84 +1730,236 @@ func _handle_left_click(screen_position: Vector2) -> void:
         build_mode = ""
         return
 
-    selected_worker_index = _worker_index_at_tile(tile)
-    selected_combat_index = _combat_unit_index_at_tile(tile)
+    var clicked_worker_index: int = _worker_index_at_tile(tile)
+    var clicked_combat_index: int = _combat_unit_index_at_tile(tile)
     selected_building_index = _building_index_at_tile(tile)
     selected_site_index = _construction_index_at_tile(tile)
 
-    if selected_worker_index >= 0:
-        selected_combat_index = -1
+    if clicked_worker_index >= 0:
+        selected_worker_indices = [clicked_worker_index]
+        selected_combat_indices = []
+        _sync_primary_selection_indices()
         selected_building_index = -1
         selected_site_index = -1
-        simulation_status = "selected %s" % workers[selected_worker_index].name
-    elif selected_combat_index >= 0:
-        selected_worker_index = -1
+        simulation_status = "selected %s" % workers[clicked_worker_index].name
+    elif clicked_combat_index >= 0:
+        selected_worker_indices = []
+        selected_combat_indices = [clicked_combat_index]
+        _sync_primary_selection_indices()
         selected_building_index = -1
         selected_site_index = -1
-        simulation_status = "selected %s" % combat_units[selected_combat_index].name
+        simulation_status = "selected %s" % combat_units[clicked_combat_index].name
     elif selected_building_index >= 0:
-        selected_worker_index = -1
-        selected_combat_index = -1
+        selected_worker_indices = []
+        selected_combat_indices = []
+        _sync_primary_selection_indices()
         selected_site_index = -1
         simulation_status = "selected %s" % buildings[selected_building_index].name
     elif selected_site_index >= 0:
-        selected_worker_index = -1
-        selected_combat_index = -1
+        selected_worker_indices = []
+        selected_combat_indices = []
+        _sync_primary_selection_indices()
         selected_building_index = -1
         simulation_status = "selected construction site"
     else:
+        _clear_selection()
         simulation_status = "nothing selected"
 
 
 func _handle_right_click(screen_position: Vector2) -> void:
     var tile := _screen_to_tile(screen_position)
     hover_tile = tile
+    _issue_order_to_tile(tile)
 
-    var worker = _selected_worker()
-    if worker != null:
+
+func _issue_order_to_tile(tile: Vector2i) -> void:
+    var selected_workers := _selected_workers()
+    var selected_combat := _selected_combat_units()
+
+    if not selected_workers.is_empty():
         var resource_index := _resource_index_at_tile(tile)
         if resource_index >= 0:
             var resource_node = resource_nodes[resource_index]
-            if resource_node.resource_type == worker.job_resource_type:
+            var assigned_workers: int = 0
+            for worker in selected_workers:
+                if worker.job_resource_type != resource_node.resource_type:
+                    continue
                 worker.assign_resource_target(resource_index)
-                simulation_status = "%s assigned to %s" % [worker.name, resource_node.resource_type]
+                assigned_workers += 1
+
+            if assigned_workers > 0:
+                _push_command_marker(Vector2(tile) + Vector2(0.5, 0.5), "gather")
+                simulation_status = "%d workers assigned to %s" % [assigned_workers, resource_node.resource_type]
             else:
-                simulation_status = "%s cannot gather %s" % [worker.name, resource_node.resource_type]
+                simulation_status = "selected workers cannot gather %s" % resource_node.resource_type
             return
 
         var construction_index := _construction_index_at_tile(tile)
-        if construction_index >= 0 and worker.unit_id == "builder":
-            worker.assign_construction_target(construction_index)
-            selected_site_index = construction_index
-            simulation_status = "%s assigned to build" % worker.name
+        if construction_index >= 0:
+            var assigned_builders: int = 0
+            for worker in selected_workers:
+                if worker.unit_id != "builder":
+                    continue
+                worker.assign_construction_target(construction_index)
+                assigned_builders += 1
+
+            if assigned_builders > 0:
+                selected_site_index = construction_index
+                selected_building_index = -1
+                _push_command_marker(Vector2(tile) + Vector2(0.5, 0.5), "build")
+                simulation_status = "%d builders assigned to build" % assigned_builders
+            else:
+                simulation_status = "no builder selected"
             return
 
-        worker.clear_orders()
-        worker.home_position = Vector2(tile) + Vector2(0.5, 0.5)
-        simulation_status = "%s moved" % worker.name
-        return
-
-    var combat_unit = _selected_combat_unit()
-    if combat_unit != null:
+    if not selected_combat.is_empty():
         var diplomacy_index := _diplomacy_target_index_at_tile(tile)
-        if combat_unit.unit_id == "messenger" and diplomacy_index >= 0:
+        if diplomacy_index >= 0:
             var diplomacy_target = diplomacy_targets[diplomacy_index]
-            combat_unit.assign_diplomacy_target(diplomacy_target.clan_id, diplomacy_target.center_position())
-            simulation_status = "%s dispatched to %s" % [combat_unit.name, diplomacy_target.clan_name]
+            var messenger_count: int = 0
+            for combat_unit in selected_combat:
+                if combat_unit.unit_id != "messenger":
+                    continue
+                combat_unit.assign_diplomacy_target(diplomacy_target.clan_id, diplomacy_target.center_position())
+                messenger_count += 1
+
+            if messenger_count > 0:
+                _push_command_marker(diplomacy_target.center_position(), "diplomacy")
+                simulation_status = "%d messengers dispatched to %s" % [messenger_count, diplomacy_target.clan_name]
+            else:
+                simulation_status = "no messenger selected"
             return
 
         var enemy_index := _enemy_unit_index_at_tile(tile)
         if enemy_index >= 0:
-            combat_unit.assign_attack_target(enemy_units[enemy_index], "enemy")
-            simulation_status = "%s attacking" % combat_unit.name
+            for combat_unit in selected_combat:
+                combat_unit.assign_attack_target(enemy_units[enemy_index], "enemy")
+            _push_command_marker(Vector2(tile) + Vector2(0.5, 0.5), "attack")
+            simulation_status = _attack_status_text(selected_combat.size())
             return
 
-        combat_unit.assign_move_target(Vector2(tile) + Vector2(0.5, 0.5))
-        simulation_status = "%s moving" % combat_unit.name
+    var target_position := Vector2(tile) + Vector2(0.5, 0.5)
+    if not selected_workers.is_empty():
+        _issue_worker_move_orders(selected_workers, target_position)
+    if not selected_combat.is_empty():
+        _issue_combat_move_orders(selected_combat, target_position)
+
+    if not selected_workers.is_empty() or not selected_combat.is_empty():
+        _push_command_marker(target_position, "move")
+        simulation_status = _movement_status_text(selected_workers.size(), selected_combat.size())
+
+
+func _issue_worker_move_orders(selected_workers: Array, target_position: Vector2) -> void:
+    var offsets: Array = _formation_offsets(selected_workers.size(), 0.85)
+    for index in range(selected_workers.size()):
+        var worker = selected_workers[index]
+        worker.assign_move_target(target_position + offsets[index])
+
+
+func _issue_combat_move_orders(selected_combat: Array, target_position: Vector2) -> void:
+    var offsets: Array = _formation_offsets(selected_combat.size(), 0.95)
+    for index in range(selected_combat.size()):
+        var combat_unit = selected_combat[index]
+        combat_unit.assign_move_target(target_position + offsets[index])
+
+
+func _formation_offsets(count: int, spacing: float) -> Array:
+    var offsets: Array = []
+    if count <= 0:
+        return offsets
+
+    var columns: int = maxi(1, int(ceil(sqrt(float(count)))))
+    var rows: int = int(ceil(float(count) / float(columns)))
+    var total_width: float = float(columns - 1) * spacing
+    var total_height: float = float(rows - 1) * spacing
+
+    for index in range(count):
+        var row: int = int(index / columns)
+        var column: int = int(index % columns)
+        offsets.append(Vector2(
+            (float(column) * spacing) - (total_width * 0.5),
+            (float(row) * spacing) - (total_height * 0.5)
+        ))
+    return offsets
+
+
+func _push_command_marker(position: Vector2, kind: String) -> void:
+    command_markers.append({
+        "position": {"x": position.x, "y": position.y},
+        "kind": kind,
+        "ttl": COMMAND_MARKER_DURATION
+    })
+
+
+func _selection_status_text(worker_count: int, combat_count: int) -> String:
+    var fragments: Array[String] = []
+    if worker_count > 0:
+        fragments.append("%d workers" % worker_count)
+    if combat_count > 0:
+        fragments.append("%d units" % combat_count)
+    return "selected %s" % " + ".join(fragments)
+
+
+func _movement_status_text(worker_count: int, combat_count: int) -> String:
+    var fragments: Array[String] = []
+    if worker_count > 0:
+        fragments.append("%d workers moving" % worker_count)
+    if combat_count > 0:
+        fragments.append("%d units moving" % combat_count)
+    return " | ".join(fragments)
+
+
+func _attack_status_text(combat_count: int) -> String:
+    return "%d units attacking" % combat_count
+
+
+func _count_selected_builders() -> int:
+    var builder_count: int = 0
+    for worker in _selected_workers():
+        if worker.unit_id == "builder":
+            builder_count += 1
+    return builder_count
+
+
+func _selected_role_summary(selected_units: Array) -> String:
+    var role_counts: Dictionary = {}
+    for unit in selected_units:
+        var role_id: String = str(unit.unit_id)
+        role_counts[role_id] = int(role_counts.get(role_id, 0)) + 1
+
+    var fragments: Array[String] = []
+    for role_id in role_counts.keys():
+        fragments.append("%s x%d" % [role_id, int(role_counts.get(role_id, 0))])
+    return ", ".join(fragments)
+
+
+func _command_marker_color(kind: String) -> Color:
+    match kind:
+        "gather":
+            return Color("8ab648")
+        "build":
+            return Color("f0c58a")
+        "attack":
+            return Color("e15c55")
+        "diplomacy":
+            return Color("d9a259")
+        _:
+            return Color("70b8e8")
 
 
 func _selection_detail_lines() -> Array[String]:
     var lines: Array[String] = []
+    var selected_workers := _selected_workers()
+    var selected_combat := _selected_combat_units()
+    var selected_total: int = selected_workers.size() + selected_combat.size()
+
+    if selected_total > 1:
+        lines.append("Selected Units: %d" % selected_total)
+        if not selected_workers.is_empty():
+            lines.append("Workers: %d | Builders: %d" % [selected_workers.size(), _count_selected_builders()])
+        if not selected_combat.is_empty():
+            lines.append("Combat: %d | %s" % [selected_combat.size(), _selected_role_summary(selected_combat)])
+        return lines
 
     var selected_worker = _selected_worker()
     if selected_worker != null:
@@ -1617,11 +1969,16 @@ func _selection_detail_lines() -> Array[String]:
         )
         return lines
 
-    var selected_combat = _selected_combat_unit()
-    if selected_combat != null:
+    var selected_combat_unit = _selected_combat_unit()
+    if selected_combat_unit != null:
         lines.append(
             "Selected Unit: %s | hp %d/%d | %s"
-            % [selected_combat.name, int(ceil(selected_combat.health)), int(ceil(selected_combat.max_health)), selected_combat.status_text()]
+            % [
+                selected_combat_unit.name,
+                int(ceil(selected_combat_unit.health)),
+                int(ceil(selected_combat_unit.max_health)),
+                selected_combat_unit.status_text()
+            ]
         )
         return lines
 
@@ -1674,10 +2031,8 @@ func _refresh_debug_text() -> void:
     ]
 
     var selection_text := "Selection: none"
-    if selected_worker_index >= 0 and selected_worker_index < workers.size():
-        selection_text = "Selection: %s" % workers[selected_worker_index].name
-    elif selected_combat_index >= 0 and selected_combat_index < combat_units.size():
-        selection_text = "Selection: %s" % combat_units[selected_combat_index].name
+    if not selected_worker_indices.is_empty() or not selected_combat_indices.is_empty():
+        selection_text = "Selection: %s" % _selection_status_text(selected_worker_indices.size(), selected_combat_indices.size())
     elif selected_building_index >= 0 and selected_building_index < buildings.size():
         selection_text = "Selection: %s" % buildings[selected_building_index].name
     elif selected_site_index >= 0 and selected_site_index < construction_sites.size():
@@ -1703,8 +2058,8 @@ func _refresh_debug_text() -> void:
 
     debug_label.text = "\n".join([
         "Rising Lands 2",
-        "Godot mission systems slice",
-        "Controls: LMB select/place | RMB assign/move | 1-9, M, 0, -, = build palette",
+        "Godot campaign UX slice",
+        "Controls: LMB click/select | drag box-select | RMB assign/move | 1-9, M, 0, -, = build palette",
         "Systems: Q/W/E/R/T/Y context | F5 save | F9 load",
         _build_palette_label(),
         "Mission: %s" % mission_state.title,

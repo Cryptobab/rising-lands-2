@@ -35,7 +35,7 @@ Working now:
 - importer exports both `raw/` and `normalized/` classic JSON
 - normalized data includes units, buildings, spells, tech tree, strings, missions, and misc settings
 - Godot bootstrap scene now loads normalized classic data counts and Mission 1 metadata
-- deterministic Mission 1, Mission 2, and Mission 3 scenario maps exist and are loaded from JSON
+- deterministic Mission 1 through Mission 4 scenario maps exist and are loaded from JSON
 - Mission 1 bootstrap now spawns a storehouse and worker units from imported classic data
 - scenario maps can now define starting resources, starting buildings, starting units, and a mission-scoped build palette
 - workers automatically gather, return, and deposit food, stone, and parts
@@ -55,6 +55,8 @@ Working now:
 - Mission 2, Mission 3, and Mission 4 now have actual scenario maps with build, stockpile, research, and diplomacy-driven objectives
 - Mission 4 now introduces diplomacy targets, messenger alliance orders, alliance-tracking runtime state, and diplomacy-aware save/load
 - `market` is now part of the runtime build palette and trains `messenger`
+- the command layer now supports drag box-selection, grouped worker/combat orders, and durable worker move-hold behavior
+- command markers and a minimap overlay now provide basic RTS spatial feedback in the active HUD
 - the debug HUD now surfaces objective progress, recent mission alerts, and deeper selection detail
 - a Godot smoke-test script exists for the vertical-slice resource loop
 - a second Godot smoke-test script exists for builder construction
@@ -67,6 +69,7 @@ Working now:
 - a ninth Godot smoke-test script exists for named save slots and slot-metadata persistence
 - a tenth Godot smoke-test script exists for actual Mission 1 -> Mission 2 -> Mission 3 campaign content progression
 - an eleventh Godot smoke-test script exists for diplomacy order persistence and Mission 4 alliance completion
+- a twelfth Godot smoke-test script exists for grouped selection and grouped order behavior
 - issue and PR templates exist for public repo workflow
 - the old browser prototype files have been removed from the active codebase
 
@@ -109,11 +112,12 @@ Not done yet:
 - Save-slots smoke test: [`game/scripts/tests/save_slots_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/save_slots_smoke.gd)
 - Multi-mission content smoke test: [`game/scripts/tests/multi_mission_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/multi_mission_content_smoke.gd)
 - Diplomacy smoke test: [`game/scripts/tests/diplomacy_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/diplomacy_smoke.gd)
+- Selection-orders smoke test: [`game/scripts/tests/selection_orders_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/selection_orders_smoke.gd)
 
 ## Next Session Start Here
 
-1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate Mission 4 diplomacy markers, `market` build access, and messenger order flow visually.
-2. Add better selection UX, command feedback, and HUD surfacing for diplomacy targets, queues, and research.
+1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate drag-selection feel, command markers, and minimap readability visually.
+2. Push the UI shell forward from debug-label mode into proper RTS panels, command cards, and menu flow.
 3. Extend the mission-event system and map authoring from Mission 1 through Mission 4 into reusable scenario scripting for later missions.
 4. Author more actual mission-map content so the first campaign chapter extends beyond the current four playable scenarios.
 5. Keep the repo trace clean by updating this file and the session log whenever systems behavior changes.
@@ -233,6 +237,15 @@ Run the diplomacy smoke test:
   --headless `
   --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
   --script res://scripts/tests/diplomacy_smoke.gd
+```
+
+Run the selection-orders smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/selection_orders_smoke.gd
 ```
 
 ## Blockers

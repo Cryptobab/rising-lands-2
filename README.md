@@ -14,14 +14,14 @@ The active implementation targets a professional `Godot 4` codebase for PC, usin
 
 ## Current Status
 
-This repo is in `campaign diplomacy slice` state.
+This repo is in `campaign command UX slice` state.
 
 What exists now:
 
 - a new Godot project scaffold in [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game)
 - importer tooling in [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers)
 - planning and continuation docs in [`docs/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs)
-- playable Mission 1 through Mission 4 scenario maps with worker economy, mission-scoped build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, and first-pass diplomacy
+- playable Mission 1 through Mission 4 scenario maps with worker economy, mission-scoped build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, first-pass diplomacy, and better RTS control UX
 
 ## Project Layout
 
@@ -53,9 +53,10 @@ This writes both:
 
 In the current Godot vertical slice:
 
-- left click selects a worker, combat unit, or building
+- left click selects a worker, combat unit, building, or construction site
+- left click drag box-selects groups of player units
 - right click on a resource assigns the selected worker to gather it
-- right click with a selected combat unit issues move or attack orders
+- right click with selected units issues grouped move, attack, build, gather, or diplomacy orders
 - right click with a selected `messenger` on a clan marker sends it to negotiate
 - builders can press `1` for `storehouse` build mode
 - builders can press `2` for `culture` build mode
@@ -72,6 +73,9 @@ In the current Godot vertical slice:
 - `market` now trains `messenger` for diplomacy scenarios
 - `library` and `laboratory` both support branch-based research
 - `tower_catapult` and `tower_cannon` auto-fire on nearby enemies
+- worker move orders now hold position properly instead of collapsing straight back into auto-gather
+- move, gather, build, attack, and diplomacy orders now create visible command markers
+- a minimap overlay now shows terrain, resources, buildings, units, enemies, and diplomacy targets
 - `F5` saves to `user://save_slot_1.json`
 - `F6` saves the active named slot profile
 - `F7` loads the active named slot profile

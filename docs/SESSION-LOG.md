@@ -40,6 +40,10 @@
 - authored an actual Mission 4 diplomacy scenario map
 - extended the multi-mission content smoke test through Mission 4 and Mission 5 unlock
 - added a dedicated diplomacy smoke test covering messenger-order persistence and alliance completion
+- added drag box-selection and grouped worker/combat order handling to the Godot runtime
+- fixed worker move orders so manual repositioning holds instead of immediately collapsing back into auto-gather
+- added command markers and a minimap overlay to the active HUD
+- added a selection-orders smoke test for grouped selection and formation movement
 
 ### Files Added Or Changed
 
@@ -73,6 +77,7 @@
 - [`game/scripts/tests/save_slots_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/save_slots_smoke.gd)
 - [`game/scripts/tests/multi_mission_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/multi_mission_content_smoke.gd)
 - [`game/scripts/tests/diplomacy_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/diplomacy_smoke.gd)
+- [`game/scripts/tests/selection_orders_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/selection_orders_smoke.gd)
 - [`game/data/classic/vertical_slice/mission_001_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/mission_001_map.json)
 - [`game/data/classic/vertical_slice/monde02_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde02_map.json)
 - [`game/data/classic/vertical_slice/monde03_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde03_map.json)
@@ -98,8 +103,9 @@
 - Godot headless save-slots smoke test completed without reported errors
 - Godot headless multi-mission content smoke test completed without reported errors through Mission 4
 - Godot headless diplomacy smoke test completed without reported errors
+- Godot headless selection-orders smoke test completed without reported errors
 
 ### Outstanding
 
 - validate the project in the interactive Godot editor
-- extend the current campaign diplomacy slice into broader content parity, campaign flow, and stronger UX
+- extend the current command-UX campaign slice into broader content parity, campaign flow, and stronger menu/UI shells

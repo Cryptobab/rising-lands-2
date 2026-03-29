@@ -6,6 +6,8 @@ var unit_id: String = ""
 var name: String = ""
 var role: String = ""
 var position: Vector2 = Vector2.ZERO
+var move_target: Vector2 = Vector2.ZERO
+var has_move_target: bool = false
 var home_position: Vector2 = Vector2.ZERO
 var job_resource_type: String = ""
 var state: String = "idle"
@@ -18,6 +20,7 @@ var base_speed: float = 3.0
 var armor: float = 0.0
 var max_health: float = 60.0
 var health: float = 60.0
+var manual_hold: bool = false
 var target_resource_index: int = -1
 var target_construction_index: int = -1
 var unit_color: Color = Color.WHITE
@@ -30,6 +33,8 @@ func configure_from_record(record: Dictionary, spawn_position: Vector2, new_home
     name = str(record.get("name", unit_id))
     role = str(record.get("role", ""))
     position = spawn_position
+    move_target = spawn_position
+    has_move_target = false
     home_position = new_home_position
     armor = float(record.get("armor", 0))
 
@@ -80,6 +85,21 @@ func update(
 
     if job_resource_type.is_empty():
         state = "idle"
+        return
+
+    if has_move_target:
+        if position.distance_to(move_target) > 0.1:
+            state = "moving"
+            _move_towards(move_target, delta, world_state)
+            return
+        has_move_target = false
+        manual_hold = true
+        state = "holding"
+        last_action = "holding position"
+        return
+
+    if manual_hold and carry_amount <= 0 and target_resource_index < 0 and target_construction_index < 0:
+        state = "holding"
         return
 
     if target_construction_index >= 0:
@@ -139,6 +159,8 @@ func status_text() -> String:
 
 
 func assign_resource_target(resource_index: int) -> void:
+    manual_hold = false
+    has_move_target = false
     target_resource_index = resource_index
     target_construction_index = -1
     carry_amount = 0
@@ -151,6 +173,8 @@ func assign_resource_target(resource_index: int) -> void:
 func assign_construction_target(site_index: int) -> void:
     if unit_id != "builder":
         return
+    manual_hold = false
+    has_move_target = false
     target_construction_index = site_index
     target_resource_index = -1
     carry_amount = 0
@@ -160,12 +184,27 @@ func assign_construction_target(site_index: int) -> void:
     last_action = "ordered to build"
 
 
-func clear_orders() -> void:
+func assign_move_target(new_target: Vector2) -> void:
+    manual_hold = true
+    move_target = new_target
+    has_move_target = true
     target_resource_index = -1
     target_construction_index = -1
     carry_amount = 0
     carry_type = ""
     work_timer = 0.0
+    state = "moving"
+    last_action = "moving"
+
+
+func clear_orders() -> void:
+    target_resource_index = -1
+    target_construction_index = -1
+    has_move_target = false
+    carry_amount = 0
+    carry_type = ""
+    work_timer = 0.0
+    manual_hold = false
     state = "idle"
     last_action = "orders cleared"
 
@@ -214,6 +253,8 @@ func serialize() -> Dictionary:
         "name": name,
         "role": role,
         "position": {"x": position.x, "y": position.y},
+        "move_target": {"x": move_target.x, "y": move_target.y},
+        "has_move_target": has_move_target,
         "home_position": {"x": home_position.x, "y": home_position.y},
         "job_resource_type": job_resource_type,
         "state": state,
@@ -226,6 +267,7 @@ func serialize() -> Dictionary:
         "armor": armor,
         "max_health": max_health,
         "health": health,
+        "manual_hold": manual_hold,
         "target_resource_index": target_resource_index,
         "target_construction_index": target_construction_index,
         "last_action": last_action
@@ -240,8 +282,11 @@ func load_from_payload(payload: Dictionary, record: Dictionary) -> void:
         Vector2(float(spawn_position_payload.get("x", 0.0)), float(spawn_position_payload.get("y", 0.0))),
         Vector2(float(home_position_payload.get("x", 0.0)), float(home_position_payload.get("y", 0.0)))
     )
+    var move_target_payload: Dictionary = payload.get("move_target", {})
     team = str(payload.get("team", "player"))
     name = str(payload.get("name", name))
+    move_target = Vector2(float(move_target_payload.get("x", position.x)), float(move_target_payload.get("y", position.y)))
+    has_move_target = bool(payload.get("has_move_target", false))
     job_resource_type = str(payload.get("job_resource_type", job_resource_type))
     state = str(payload.get("state", "idle"))
     carry_type = str(payload.get("carry_type", ""))
@@ -253,6 +298,7 @@ func load_from_payload(payload: Dictionary, record: Dictionary) -> void:
     armor = float(payload.get("armor", armor))
     max_health = float(payload.get("max_health", max_health))
     health = float(payload.get("health", health))
+    manual_hold = bool(payload.get("manual_hold", false))
     target_resource_index = int(payload.get("target_resource_index", -1))
     target_construction_index = int(payload.get("target_construction_index", -1))
     last_action = str(payload.get("last_action", last_action))
