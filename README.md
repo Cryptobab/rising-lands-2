@@ -14,14 +14,14 @@ The active implementation targets a professional `Godot 4` codebase for PC, usin
 
 ## Current Status
 
-This repo is in `campaign command UX slice` state.
+This repo is in `campaign UI shell slice` state.
 
 What exists now:
 
 - a new Godot project scaffold in [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game)
 - importer tooling in [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers)
 - planning and continuation docs in [`docs/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs)
-- playable Mission 1 through Mission 4 scenario maps with worker economy, mission-scoped build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, first-pass diplomacy, and better RTS control UX
+- playable Mission 1 through Mission 4 scenario maps with worker economy, mission-scoped build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, first-pass diplomacy, better RTS control UX, and a real menu/HUD shell
 
 ## Project Layout
 
@@ -36,7 +36,8 @@ What exists now:
 
 1. Install the current stable Godot 4 editor.
 2. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot).
-3. Run the importer to refresh classic source data:
+3. The game now boots into the shell scene in [`game/scenes/main.tscn`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scenes/main.tscn), which hosts the mission board, save-slot panel, and in-game HUD on top of the RTS runtime.
+4. Run the importer to refresh classic source data:
 
 ```powershell
 python tools/importers/extract_classic_data.py `
@@ -51,8 +52,10 @@ This writes both:
 
 ## Current Slice Controls
 
-In the current Godot vertical slice:
+In the current Godot shell:
 
+- the main menu opens on boot with a mission board, save-slot controls, and the current briefing
+- `Start Campaign` launches Mission 1, `Continue Active Session` resumes the active slot when present, and the mission board can launch any unlocked mission directly
 - left click selects a worker, combat unit, building, or construction site
 - left click drag box-selects groups of player units
 - right click on a resource assigns the selected worker to gather it
@@ -76,12 +79,14 @@ In the current Godot vertical slice:
 - worker move orders now hold position properly instead of collapsing straight back into auto-gather
 - move, gather, build, attack, and diplomacy orders now create visible command markers
 - a minimap overlay now shows terrain, resources, buildings, units, enemies, and diplomacy targets
+- the in-game HUD now has a top command bar, left objective/alert stack, right selection/command card, and bottom command surface
+- the `Menu`, `Save Slot`, `Load Slot`, and `Restart` buttons are now available in the top HUD bar
 - `F5` saves to `user://save_slot_1.json`
 - `F6` saves the active named slot profile
 - `F7` loads the active named slot profile
 - `F9` loads from `user://save_slot_1.json`
 - `Esc` clears build mode
-- the HUD now shows campaign progress, the active save slot, objective progress, alliance count, recent mission alerts, and selection detail
+- the shell HUD now shows campaign progress, the active save slot, objective progress, alliance count, recent mission alerts, and selection detail
 
 ## Constraints
 

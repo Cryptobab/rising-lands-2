@@ -2003,10 +2003,22 @@ func _selection_detail_lines() -> Array[String]:
     return lines
 
 
-func _refresh_debug_text() -> void:
-    if debug_label == null:
-        return
+func set_interactive_runtime(enabled: bool) -> void:
+    set_process(enabled)
+    set_process_unhandled_input(enabled)
 
+
+func mission_record_for_id(mission_id: String = "") -> Dictionary:
+    if classic_database == null:
+        return {}
+
+    var resolved_id: String = mission_id
+    if resolved_id.is_empty():
+        resolved_id = current_mission_id
+    return classic_database.find_mission(resolved_id)
+
+
+func build_ui_snapshot() -> Dictionary:
     var summary: Dictionary = classic_database.summary()
     var campaign_text: String = "Campaign: offline"
     if campaign_state != null:
@@ -2015,6 +2027,7 @@ func _refresh_debug_text() -> void:
             campaign_state.mission_count(),
             campaign_state.unlocked_missions.size()
         ]
+
     var objective_lines: Array[String] = mission_state.objective_lines()
     if objective_lines.is_empty():
         for objective_text in mission_state.objectives:
@@ -2052,40 +2065,78 @@ func _refresh_debug_text() -> void:
         var combat_unit = combat_units[index]
         actor_lines.append("%s: %s" % [combat_unit.name, combat_unit.status_text()])
 
+    return {
+        "campaign_text": campaign_text,
+        "objective_lines": objective_lines,
+        "goal_text": goal_text,
+        "selection_text": selection_text,
+        "context_hint": context_hint,
+        "status_text": simulation_status,
+        "alert_lines": alert_log.duplicate(true),
+        "actor_lines": actor_lines,
+        "selection_detail_lines": _selection_detail_lines(),
+        "mission_title": mission_state.title,
+        "mission_state": world_state.mission_status,
+        "current_mission_id": current_mission_id,
+        "active_save_slot_id": active_save_slot_id,
+        "build_palette_label": _build_palette_label(),
+        "forces_text": "%d workers | %d units | %d enemies" % [workers.size(), combat_units.size(), enemy_units.size()],
+        "research_text": "%d unlocked" % world_state.unlocked_techs.size(),
+        "tick_text": str(world_state.tick_count),
+        "summary": summary.duplicate(true),
+        "resources": {
+            "food": int(world_state.resources.get("food", 0)),
+            "stone": int(world_state.resources.get("stone", 0)),
+            "parts": int(world_state.resources.get("parts", 0)),
+            "tech": int(world_state.resources.get("tech", 0)),
+            "allies": allied_clans.size()
+        }
+    }
+
+
+func _refresh_debug_text() -> void:
+    if debug_label == null:
+        return
+
+    var snapshot: Dictionary = build_ui_snapshot()
+    var summary: Dictionary = snapshot.get("summary", {})
     var alert_lines: Array[String] = []
-    for alert_entry in alert_log:
-        alert_lines.append("Alert: %s" % alert_entry)
+    for alert_entry in snapshot.get("alert_lines", []):
+        alert_lines.append("Alert: %s" % str(alert_entry))
 
     debug_label.text = "\n".join([
         "Rising Lands 2",
         "Godot campaign UX slice",
         "Controls: LMB click/select | drag box-select | RMB assign/move | 1-9, M, 0, -, = build palette",
         "Systems: Q/W/E/R/T/Y context | F5 save | F9 load",
-        _build_palette_label(),
-        "Mission: %s" % mission_state.title,
-        campaign_text,
-        "Active Mission: %s | Save Slot: %s" % [current_mission_id, active_save_slot_id],
+        str(snapshot.get("build_palette_label", "")),
+        "Mission: %s" % str(snapshot.get("mission_title", "")),
+        str(snapshot.get("campaign_text", "")),
+        "Active Mission: %s | Save Slot: %s" % [
+            str(snapshot.get("current_mission_id", "")),
+            str(snapshot.get("active_save_slot_id", ""))
+        ],
         "Objectives:",
-    ] + objective_lines + [
-        goal_text,
-        selection_text,
-        context_hint,
-        "Status: %s" % simulation_status,
+    ] + snapshot.get("objective_lines", []) + [
+        str(snapshot.get("goal_text", "")),
+        str(snapshot.get("selection_text", "")),
+        str(snapshot.get("context_hint", "")),
+        "Status: %s" % str(snapshot.get("status_text", "")),
     ] + alert_lines + [
-        "Mission State: %s" % world_state.mission_status,
-        "Food: %s" % str(world_state.resources.get("food", 0)),
-        "Stone: %s" % str(world_state.resources.get("stone", 0)),
-        "Parts: %s" % str(world_state.resources.get("parts", 0)),
-        "Tech: %s" % str(world_state.resources.get("tech", 0)),
-        "Research: %d unlocked" % world_state.unlocked_techs.size(),
-        "Forces: %d workers | %d units | %d enemies" % [workers.size(), combat_units.size(), enemy_units.size()],
-        "Tick: %d" % world_state.tick_count,
+        "Mission State: %s" % str(snapshot.get("mission_state", "")),
+        "Food: %s" % str(snapshot.get("resources", {}).get("food", 0)),
+        "Stone: %s" % str(snapshot.get("resources", {}).get("stone", 0)),
+        "Parts: %s" % str(snapshot.get("resources", {}).get("parts", 0)),
+        "Tech: %s" % str(snapshot.get("resources", {}).get("tech", 0)),
+        "Research: %s" % str(snapshot.get("research_text", "")),
+        "Forces: %s" % str(snapshot.get("forces_text", "")),
+        "Tick: %s" % str(snapshot.get("tick_text", "")),
         "Classic data: %d units, %d buildings, %d missions" % [
             int(summary.get("units", 0)),
             int(summary.get("buildings", 0)),
             int(summary.get("missions", 0))
         ]
-    ] + _selection_detail_lines() + actor_lines)
+    ] + snapshot.get("selection_detail_lines", []) + snapshot.get("actor_lines", []))
 
 
 func _ensure_debug_label() -> void:
