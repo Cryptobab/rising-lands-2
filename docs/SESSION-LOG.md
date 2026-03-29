@@ -20,6 +20,8 @@
 - added a builder-construction smoke test
 - removed the old browser prototype from the canonical branch
 - removed the obsolete legacy project-plan file from the active docs set
+- added production queues, research queues, enemy combat pressure, and runtime save/load
+- added a dedicated combat-unit simulation script and systems smoke test
 
 ### Files Added Or Changed
 
@@ -38,8 +40,10 @@
 - [`game/scripts/simulation/resource_node_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/resource_node_state.gd)
 - [`game/scripts/simulation/building_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/building_state.gd)
 - [`game/scripts/simulation/construction_site_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/construction_site_state.gd)
+- [`game/scripts/simulation/combat_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/combat_unit_state.gd)
 - [`game/scripts/tests/vertical_slice_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/vertical_slice_smoke.gd)
 - [`game/scripts/tests/construction_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/construction_smoke.gd)
+- [`game/scripts/tests/systems_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/systems_smoke.gd)
 - [`game/data/classic/vertical_slice/mission_001_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/mission_001_map.json)
 - [`tools/importers/extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/extract_classic_data.py)
 - [`tools/importers/tests/test_extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/tests/test_extract_classic_data.py)
@@ -53,9 +57,10 @@
 - Godot headless startup completed without reported errors
 - Godot headless vertical-slice simulation completed without reported errors
 - Godot headless construction smoke test completed without reported errors
+- Godot headless systems smoke test completed without reported errors
 
 ### Outstanding
 
 - validate the project in the interactive Godot editor
-- review the dirty worktree before the first public commit and push
-- add richer command handling, production, combat, and broader entity simulation
+- review the new gameplay-systems tranche before the next commit
+- extend the current systems slice into richer objectives, UI feedback, and broader content parity

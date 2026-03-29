@@ -54,6 +54,34 @@ func find_building(building_id: String) -> Dictionary:
     return {}
 
 
+func find_tech(tech_id: String) -> Dictionary:
+    for tech in tech_tree:
+        if str(tech.get("id", "")) == tech_id:
+            return tech
+    return {}
+
+
+func techs_for_branch(branch: String) -> Array:
+    var branch_techs: Array = []
+    for tech in tech_tree:
+        if str(tech.get("branch", "")) == branch:
+            branch_techs.append(tech)
+    return branch_techs
+
+
+func next_tech_for_branch(branch: String, unlocked_techs: Array) -> Dictionary:
+    for tech in tech_tree:
+        if str(tech.get("branch", "")) != branch:
+            continue
+
+        var tech_id: String = str(tech.get("id", ""))
+        if unlocked_techs.has(tech_id):
+            continue
+        return tech
+
+    return {}
+
+
 func _load_json_file(path: String, fallback: Variant) -> Variant:
     if not FileAccess.file_exists(path):
         return fallback

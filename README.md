@@ -14,14 +14,14 @@ The active implementation targets a professional `Godot 4` codebase for PC, usin
 
 ## Current Status
 
-This repo is in `vertical-slice foundation` state.
+This repo is in `systems slice` state.
 
 What exists now:
 
 - a new Godot project scaffold in [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game)
 - importer tooling in [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers)
 - planning and continuation docs in [`docs/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs)
-- a deterministic Mission 1 map and first worker/build loop in the Godot slice
+- a deterministic Mission 1 map with worker economy, first construction, production, research, combat, and save/load support
 
 ## Project Layout
 
@@ -53,12 +53,20 @@ This writes both:
 
 In the current Godot vertical slice:
 
-- left click selects a worker
+- left click selects a worker, combat unit, or building
 - right click on a resource assigns the selected worker to gather it
+- right click with a selected combat unit issues move or attack orders
 - builders can press `1` for `storehouse` build mode
 - builders can press `2` for `culture` build mode
+- builders can press `3` for `barracks` build mode
+- builders can press `4` for `laboratory` build mode
 - left click while in build mode places a construction site
 - right click on a construction site assigns the selected builder to build it
+- selected `culture` buildings use `Q/W/E` to train `farmer`, `builder`, and `mechanic`
+- selected `barracks` buildings use `Q/W/E` to train `swordsman`, `captain`, and `archer`
+- selected `laboratory` buildings use `Q/W/E/R` to research `agriculture`, `military`, `civil_engineering`, and `religious`
+- `F5` saves to `user://save_slot_1.json`
+- `F9` loads from `user://save_slot_1.json`
 - `Esc` clears build mode
 
 ## Constraints

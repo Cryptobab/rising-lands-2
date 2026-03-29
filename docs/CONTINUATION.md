@@ -39,21 +39,26 @@ Working now:
 - Mission 1 bootstrap now spawns a storehouse and worker units from imported classic data
 - workers automatically gather, return, and deposit food, stone, and parts
 - left-click selection and right-click worker assignment exist
-- builders can place and complete `storehouse` and `culture` construction sites
+- builders can place and complete `storehouse`, `culture`, `barracks`, and `laboratory` construction sites
 - newly built storehouses become deposit targets
+- completed `culture` and `barracks` buildings now support training queues
+- completed `laboratory` buildings now support branch-based research queues
+- player combat units and enemy units now run through the same lightweight combat runtime
+- Mission 1 map includes scripted enemy pressure data
+- save/load exists for the current runtime state
 - a Godot smoke-test script exists for the vertical-slice resource loop
 - a second Godot smoke-test script exists for builder construction
+- a third Godot smoke-test script exists for production, research, combat, and save/load
 - issue and PR templates exist for public repo workflow
 - the old browser prototype files have been removed from the active codebase
 
 Not done yet:
 
-- broader unit simulation beyond workers and construction
-- production and training
-- research runtime
-- save/load
-- combat and hostile AI
-- stronger command queueing and player UI
+- richer mission scripting and objective logic beyond the bootstrap stockpile goal
+- more complete unit rosters, buildings, and faction rules
+- stronger command queueing, selection UX, and HUD feedback
+- diplomacy, campaign progression, and save-slot UX
+- expanded-content ruleset layered cleanly on top of the classic remake
 
 ## Important Paths
 
@@ -65,17 +70,19 @@ Not done yet:
 - Vertical-slice map: [`game/data/classic/vertical_slice/mission_001_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/mission_001_map.json)
 - Godot map loader: [`game/scripts/core/map_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/map_state.gd)
 - Worker runtime: [`game/scripts/simulation/worker_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/worker_unit_state.gd)
+- Combat runtime: [`game/scripts/simulation/combat_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/combat_unit_state.gd)
 - Resource runtime: [`game/scripts/simulation/resource_node_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/resource_node_state.gd)
 - Smoke test: [`game/scripts/tests/vertical_slice_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/vertical_slice_smoke.gd)
 - Construction smoke test: [`game/scripts/tests/construction_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/construction_smoke.gd)
+- Systems smoke test: [`game/scripts/tests/systems_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/systems_smoke.gd)
 
 ## Next Session Start Here
 
-1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the installed Godot 4 editor and validate the current selection, assignment, and construction interactions.
-2. Expand runtime simulation beyond workers, resources, construction sites, and the first deposit buildings.
-3. Add production, training, and additional building behavior.
-4. Add combat, hostile units, and mission-failure logic.
-5. Keep the public baseline clean by reviewing the worktree before each commit and push.
+1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate the new training, research, combat, and save/load interactions visually.
+2. Expand the playable ruleset beyond the current `culture` / `barracks` / `laboratory` slice.
+3. Add better selection UX, command feedback, and HUD surfacing for queues and research.
+4. Push mission scripting forward so combat, production, and research tie into explicit objectives.
+5. Keep the repo trace clean by updating this file and the session log whenever systems behavior changes.
 
 ## Commands
 
@@ -113,8 +120,17 @@ Run the construction smoke test:
   --script res://scripts/tests/construction_smoke.gd
 ```
 
+Run the systems smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/systems_smoke.gd
+```
+
 ## Blockers
 
 - `.NET SDK` is not installed, so a Godot C# workflow is not practical right now
 - current shell PATH may need a refresh before bare `git` or `godot` commands resolve without full paths
-- the repo worktree is dirty, so the first public commit should be reviewed instead of pushed blindly
+- the repo worktree now contains the next gameplay-systems tranche and should be reviewed before the next commit

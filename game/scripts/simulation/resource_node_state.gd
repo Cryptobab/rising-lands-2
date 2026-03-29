@@ -28,3 +28,20 @@ func fill_ratio() -> float:
     if initial_amount <= 0:
         return 0.0
     return float(amount) / float(initial_amount)
+
+
+func serialize() -> Dictionary:
+    return {
+        "type": resource_type,
+        "x": tile.x,
+        "y": tile.y,
+        "amount": amount,
+        "initial_amount": initial_amount
+    }
+
+
+func load_from_payload(payload: Dictionary) -> void:
+    resource_type = str(payload.get("type", ""))
+    tile = Vector2i(int(payload.get("x", 0)), int(payload.get("y", 0)))
+    amount = int(payload.get("amount", 0))
+    initial_amount = int(payload.get("initial_amount", amount))

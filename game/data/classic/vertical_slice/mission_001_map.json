@@ -33,5 +33,10 @@
     { "x": 16, "y": 3, "type": "parts", "amount": 40 }
   ],
   "player_start": { "x": 5, "y": 6 },
-  "storehouse_goal": { "food": 50, "stone": 50 }
+  "storehouse_goal": { "food": 50, "stone": 50 },
+  "enemy_spawns": [
+    { "x": 16, "y": 2, "unit_id": "basher", "delay": 35.0 },
+    { "x": 15, "y": 9, "unit_id": "hurler", "delay": 55.0 },
+    { "x": 17, "y": 6, "unit_id": "raptor", "delay": 75.0 }
+  ]
 }

@@ -1,0 +1,317 @@
+class_name CombatUnitState
+extends RefCounted
+
+const WorkerUnitType = preload("res://scripts/simulation/worker_unit_state.gd")
+const BuildingType = preload("res://scripts/simulation/building_state.gd")
+
+var team: String = "player"
+var unit_id: String = ""
+var name: String = ""
+var role: String = ""
+var position: Vector2 = Vector2.ZERO
+var move_target: Vector2 = Vector2.ZERO
+var has_move_target: bool = false
+var attack_range: float = 1.0
+var vision: float = 6.0
+var base_attack_interval: float = 0.8
+var attack_timer: float = 0.0
+var armor: float = 0.0
+var base_speed: float = 2.8
+var base_max_health: float = 75.0
+var max_health: float = 75.0
+var health: float = 75.0
+var damage_profile: Dictionary = {}
+var unit_color: Color = Color.WHITE
+var state: String = "idle"
+var target_ref: Variant = null
+var target_kind: String = ""
+var last_action: String = "spawned"
+
+
+func configure_from_record(record: Dictionary, spawn_position: Vector2, new_team: String = "player") -> void:
+    team = new_team
+    unit_id = str(record.get("id", ""))
+    name = str(record.get("name", unit_id))
+    role = str(record.get("role", ""))
+    position = spawn_position
+    move_target = spawn_position
+    has_move_target = false
+    attack_range = maxf(1.0, float(record.get("range", 1)))
+    vision = maxf(4.0, float(record.get("vision", 6)))
+    base_attack_interval = maxf(0.35, float(record.get("recharge", 30)) / 30.0)
+    armor = float(record.get("armor", 0))
+    damage_profile = record.get("damage_profile", {}).duplicate(true)
+
+    var total_cost: int = 0
+    for resource_value in record.get("cost", {}).values():
+        total_cost += int(resource_value)
+
+    base_speed = 2.1 + minf(0.9, vision * 0.05)
+    base_max_health = float(maxi(55, 65 + int(armor * 20.0) + (total_cost * 4)))
+    max_health = base_max_health
+    health = max_health
+    attack_timer = 0.0
+    target_ref = null
+    target_kind = ""
+    state = "idle"
+    last_action = "awaiting orders"
+
+    if team == "enemy":
+        unit_color = Color("e15c55")
+    else:
+        match role:
+            "ranged":
+                unit_color = Color("70b8e8")
+            "magic":
+                unit_color = Color("55d6b7")
+            _:
+                unit_color = Color("ca7753")
+
+
+func refresh_modifiers(world_state) -> void:
+    if team != "player":
+        return
+
+    var previous_max: float = maxf(1.0, max_health)
+    max_health = base_max_health * float(world_state.modifiers.get("combat_health", 1.0))
+    health = clampf((health / previous_max) * max_health, 1.0 if health > 0.0 else 0.0, max_health)
+
+
+func update(
+    delta: float,
+    world_state,
+    hostile_units: Array,
+    hostile_workers: Array = [],
+    hostile_buildings: Array = []
+) -> void:
+    if not is_alive():
+        state = "dead"
+        return
+
+    _regenerate(delta, world_state)
+
+    if not _is_target_valid(target_ref):
+        target_ref = null
+        target_kind = ""
+
+    if target_ref == null:
+        var target_payload: Dictionary = _find_nearest_target(hostile_units, hostile_workers, hostile_buildings)
+        target_ref = target_payload.get("target", null)
+        target_kind = str(target_payload.get("kind", ""))
+
+    if target_ref != null:
+        var target_position: Vector2 = _target_position(target_ref)
+        if position.distance_to(target_position) > attack_range:
+            state = "engaging"
+            _move_towards(target_position, delta)
+            return
+
+        state = "attacking"
+        attack_timer += delta
+        if attack_timer < base_attack_interval:
+            return
+
+        attack_timer = 0.0
+        var damage_amount: float = _damage_against_target(target_ref)
+        if team == "player":
+            damage_amount *= float(world_state.modifiers.get("combat_damage", 1.0))
+
+        if target_ref is CombatUnitState:
+            target_ref.apply_damage(damage_amount)
+        elif target_ref is WorkerUnitType:
+            target_ref.apply_damage(damage_amount)
+        elif target_ref is BuildingType:
+            target_ref.apply_damage(damage_amount)
+
+        last_action = "hit %s" % target_kind
+        if not _is_target_valid(target_ref):
+            target_ref = null
+            target_kind = ""
+        return
+
+    if has_move_target:
+        if position.distance_to(move_target) > 0.15:
+            state = "moving"
+            _move_towards(move_target, delta)
+        else:
+            has_move_target = false
+            state = "holding"
+    else:
+        state = "holding"
+
+
+func assign_move_target(new_target: Vector2) -> void:
+    move_target = new_target
+    has_move_target = true
+    target_ref = null
+    target_kind = ""
+    state = "moving"
+    last_action = "moving"
+
+
+func assign_attack_target(target: Variant, kind: String) -> void:
+    target_ref = target
+    target_kind = kind
+    has_move_target = false
+    attack_timer = 0.0
+    state = "engaging"
+    last_action = "engaging %s" % kind
+
+
+func apply_damage(amount: float) -> bool:
+    var mitigated: float = maxf(1.0, amount - (armor * 1.4))
+    health = maxf(0.0, health - mitigated)
+    if health <= 0.0:
+        state = "dead"
+        target_ref = null
+        target_kind = ""
+        last_action = "destroyed"
+        return true
+    return false
+
+
+func is_alive() -> bool:
+    return health > 0.0
+
+
+func status_text() -> String:
+    return "%s %d hp" % [state, int(ceil(health))]
+
+
+func serialize() -> Dictionary:
+    return {
+        "team": team,
+        "unit_id": unit_id,
+        "name": name,
+        "role": role,
+        "position": {"x": position.x, "y": position.y},
+        "move_target": {"x": move_target.x, "y": move_target.y},
+        "has_move_target": has_move_target,
+        "attack_range": attack_range,
+        "vision": vision,
+        "base_attack_interval": base_attack_interval,
+        "attack_timer": attack_timer,
+        "armor": armor,
+        "base_speed": base_speed,
+        "base_max_health": base_max_health,
+        "max_health": max_health,
+        "health": health,
+        "damage_profile": damage_profile.duplicate(true),
+        "state": state,
+        "last_action": last_action
+    }
+
+
+func load_from_payload(payload: Dictionary, record: Dictionary) -> void:
+    var position_payload: Dictionary = payload.get("position", {})
+    configure_from_record(
+        record,
+        Vector2(float(position_payload.get("x", 0.0)), float(position_payload.get("y", 0.0))),
+        str(payload.get("team", "player"))
+    )
+
+    name = str(payload.get("name", name))
+    role = str(payload.get("role", role))
+
+    var move_target_payload: Dictionary = payload.get("move_target", {})
+    move_target = Vector2(float(move_target_payload.get("x", position.x)), float(move_target_payload.get("y", position.y)))
+    has_move_target = bool(payload.get("has_move_target", false))
+    attack_range = float(payload.get("attack_range", attack_range))
+    vision = float(payload.get("vision", vision))
+    base_attack_interval = float(payload.get("base_attack_interval", base_attack_interval))
+    attack_timer = float(payload.get("attack_timer", 0.0))
+    armor = float(payload.get("armor", armor))
+    base_speed = float(payload.get("base_speed", base_speed))
+    base_max_health = float(payload.get("base_max_health", base_max_health))
+    max_health = float(payload.get("max_health", max_health))
+    health = float(payload.get("health", health))
+    damage_profile = payload.get("damage_profile", damage_profile).duplicate(true)
+    state = str(payload.get("state", state))
+    last_action = str(payload.get("last_action", last_action))
+    target_ref = null
+    target_kind = ""
+
+
+func _move_towards(target_position: Vector2, delta: float) -> void:
+    position = position.move_toward(target_position, base_speed * delta)
+
+
+func _find_nearest_target(hostile_units: Array, hostile_workers: Array, hostile_buildings: Array) -> Dictionary:
+    var best_target: Variant = null
+    var best_kind: String = ""
+    var best_distance: float = INF
+
+    for hostile_unit in hostile_units:
+        if hostile_unit == null or not hostile_unit.is_alive():
+            continue
+
+        var distance_to_target: float = position.distance_to(hostile_unit.position)
+        if distance_to_target < best_distance and distance_to_target <= vision:
+            best_distance = distance_to_target
+            best_target = hostile_unit
+            best_kind = "unit"
+
+    for hostile_worker in hostile_workers:
+        if hostile_worker == null or not hostile_worker.is_alive():
+            continue
+
+        var distance_to_target: float = position.distance_to(hostile_worker.position)
+        if distance_to_target < best_distance and distance_to_target <= vision:
+            best_distance = distance_to_target
+            best_target = hostile_worker
+            best_kind = "worker"
+
+    for hostile_building in hostile_buildings:
+        if hostile_building == null or not hostile_building.is_alive():
+            continue
+
+        var distance_to_target: float = position.distance_to(hostile_building.center_position())
+        if distance_to_target < best_distance and distance_to_target <= vision:
+            best_distance = distance_to_target
+            best_target = hostile_building
+            best_kind = "building"
+
+    return {"target": best_target, "kind": best_kind}
+
+
+func _target_position(target: Variant) -> Vector2:
+    if target is CombatUnitState:
+        return target.position
+    if target is WorkerUnitType:
+        return target.position
+    if target is BuildingType:
+        return target.center_position()
+    return position
+
+
+func _damage_against_target(target: Variant) -> float:
+    if target is BuildingType:
+        return maxf(4.0, float(damage_profile.get("buildings", 4)))
+    if target is CombatUnitState:
+        return maxf(4.0, float(damage_profile.get(target.unit_id, 8)))
+    if target is WorkerUnitType:
+        return maxf(4.0, float(damage_profile.get(target.unit_id, 10)))
+    return 5.0
+
+
+func _is_target_valid(target: Variant) -> bool:
+    if target == null:
+        return false
+    if target is CombatUnitState:
+        return target.is_alive()
+    if target is WorkerUnitType:
+        return target.is_alive()
+    if target is BuildingType:
+        return target.is_alive()
+    return false
+
+
+func _regenerate(delta: float, world_state) -> void:
+    if team != "player":
+        return
+
+    var regeneration_rate: float = float(world_state.modifiers.get("regeneration", 0.0))
+    if regeneration_rate <= 0.0 or health >= max_health:
+        return
+
+    health = minf(max_health, health + (delta * regeneration_rate * 4.0))

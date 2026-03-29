@@ -34,7 +34,7 @@ func _init() -> void:
         {"unit_id": "farmer", "offset": Vector2(-0.10, 1.15)},
         {"unit_id": "builder", "offset": Vector2(1.10, 1.10)},
         {"unit_id": "builder", "offset": Vector2(0.45, -0.75)},
-        {"unit_id": "mechanic", "offset": Vector2(-0.65, 0.55)}
+        {"unit_id": "builder", "offset": Vector2(-0.65, 0.55)}
     ]
 
     for worker_spec in worker_specs:
@@ -47,7 +47,7 @@ func _init() -> void:
         workers.append(worker)
 
     var delta := 1.0 / 60.0
-    for _step in range(5400):
+    for _step in range(8400):
         world_state.tick(delta)
         for worker in workers:
             worker.update(delta, resource_nodes, world_state.resources)
