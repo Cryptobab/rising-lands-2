@@ -34,6 +34,12 @@
 - extended the map schema with starting resources, starting buildings, starting units, and scenario-scoped build palettes
 - authored actual Mission 2 and Mission 3 scenario maps on top of the campaign shell
 - added a multi-mission content smoke test covering Mission 1 through Mission 3 progression
+- added a diplomacy-target runtime and alliance-tracking mission snapshot state
+- added messenger diplomacy orders plus diplomacy-aware save/load persistence
+- expanded the build palette and production runtime with `market` support
+- authored an actual Mission 4 diplomacy scenario map
+- extended the multi-mission content smoke test through Mission 4 and Mission 5 unlock
+- added a dedicated diplomacy smoke test covering messenger-order persistence and alliance completion
 
 ### Files Added Or Changed
 
@@ -48,6 +54,7 @@
 - [`game/scripts/core/campaign_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/campaign_state.gd)
 - [`game/scripts/core/mission_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/mission_state.gd)
 - [`game/scripts/core/mission_event_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/mission_event_state.gd)
+- [`game/scripts/core/diplomacy_target_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/diplomacy_target_state.gd)
 - [`game/scripts/core/map_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/map_state.gd)
 - [`game/scripts/data/classic_database.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/data/classic_database.gd)
 - [`game/scripts/simulation/worker_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/worker_unit_state.gd)
@@ -65,9 +72,11 @@
 - [`game/scripts/tests/campaign_progression_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_progression_smoke.gd)
 - [`game/scripts/tests/save_slots_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/save_slots_smoke.gd)
 - [`game/scripts/tests/multi_mission_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/multi_mission_content_smoke.gd)
+- [`game/scripts/tests/diplomacy_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/diplomacy_smoke.gd)
 - [`game/data/classic/vertical_slice/mission_001_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/mission_001_map.json)
 - [`game/data/classic/vertical_slice/monde02_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde02_map.json)
 - [`game/data/classic/vertical_slice/monde03_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde03_map.json)
+- [`game/data/classic/vertical_slice/monde04_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde04_map.json)
 - [`tools/importers/extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/extract_classic_data.py)
 - [`tools/importers/tests/test_extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/tests/test_extract_classic_data.py)
 
@@ -87,9 +96,10 @@
 - Godot headless tower-defense smoke test completed without reported errors
 - Godot headless campaign-progression smoke test completed without reported errors
 - Godot headless save-slots smoke test completed without reported errors
-- Godot headless multi-mission content smoke test completed without reported errors
+- Godot headless multi-mission content smoke test completed without reported errors through Mission 4
+- Godot headless diplomacy smoke test completed without reported errors
 
 ### Outstanding
 
 - validate the project in the interactive Godot editor
-- extend the current mission-systems slice into broader content parity, campaign flow, and stronger UX
+- extend the current campaign diplomacy slice into broader content parity, campaign flow, and stronger UX

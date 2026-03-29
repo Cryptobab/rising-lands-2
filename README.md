@@ -14,14 +14,14 @@ The active implementation targets a professional `Godot 4` codebase for PC, usin
 
 ## Current Status
 
-This repo is in `mission systems slice` state.
+This repo is in `campaign diplomacy slice` state.
 
 What exists now:
 
 - a new Godot project scaffold in [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game)
 - importer tooling in [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers)
 - planning and continuation docs in [`docs/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs)
-- playable Mission 1, Mission 2, and Mission 3 scenario maps with worker economy, mission-scoped build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, and scripted mission events
+- playable Mission 1 through Mission 4 scenario maps with worker economy, mission-scoped build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, and first-pass diplomacy
 
 ## Project Layout
 
@@ -56,17 +56,20 @@ In the current Godot vertical slice:
 - left click selects a worker, combat unit, or building
 - right click on a resource assigns the selected worker to gather it
 - right click with a selected combat unit issues move or attack orders
+- right click with a selected `messenger` on a clan marker sends it to negotiate
 - builders can press `1` for `storehouse` build mode
 - builders can press `2` for `culture` build mode
 - builders can press `3` for `barracks` build mode
 - builders can press `4` for `laboratory` build mode
 - builders can press `5` for `library`, `6` for `sanctuary`, `7` for `workshop`, `8` for `garage`, and `9` for `hangar`
+- builders can press `M` for `market`
 - builders can press `0` for `tower_catapult`, `-` for `tower_cannon`, and `=` for `wall`
 - left click while in build mode places a construction site
 - right click on a construction site assigns the selected builder to build it
 - selected buildings use `Q/W/E/R/T/Y` for context actions
 - the available build palette is now mission-scoped, so early missions only expose the structures that scenario allows
 - `culture`, `barracks`, `sanctuary`, `workshop`, `garage`, and `hangar` now expose broader trainable rosters
+- `market` now trains `messenger` for diplomacy scenarios
 - `library` and `laboratory` both support branch-based research
 - `tower_catapult` and `tower_cannon` auto-fire on nearby enemies
 - `F5` saves to `user://save_slot_1.json`
@@ -74,7 +77,7 @@ In the current Godot vertical slice:
 - `F7` loads the active named slot profile
 - `F9` loads from `user://save_slot_1.json`
 - `Esc` clears build mode
-- the HUD now shows campaign progress, the active save slot, objective progress, recent mission alerts, and selection detail
+- the HUD now shows campaign progress, the active save slot, objective progress, alliance count, recent mission alerts, and selection detail
 
 ## Constraints
 

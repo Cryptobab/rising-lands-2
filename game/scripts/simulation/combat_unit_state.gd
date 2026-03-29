@@ -9,6 +9,8 @@ var unit_id: String = ""
 var name: String = ""
 var role: String = ""
 var position: Vector2 = Vector2.ZERO
+var diplomacy_target_id: String = ""
+var diplomacy_target_position: Vector2 = Vector2.ZERO
 var move_target: Vector2 = Vector2.ZERO
 var has_move_target: bool = false
 var attack_range: float = 1.0
@@ -34,6 +36,8 @@ func configure_from_record(record: Dictionary, spawn_position: Vector2, new_team
     name = str(record.get("name", unit_id))
     role = str(record.get("role", ""))
     position = spawn_position
+    diplomacy_target_id = ""
+    diplomacy_target_position = spawn_position
     move_target = spawn_position
     has_move_target = false
     attack_range = maxf(1.0, float(record.get("range", 1)))
@@ -94,7 +98,7 @@ func update(
         target_ref = null
         target_kind = ""
 
-    if target_ref == null:
+    if target_ref == null and diplomacy_target_id.is_empty() and role != "civilian":
         var target_payload: Dictionary = _find_nearest_target(hostile_units, hostile_workers, hostile_buildings)
         target_ref = target_payload.get("target", null)
         target_kind = str(target_payload.get("kind", ""))
@@ -141,6 +145,7 @@ func update(
 
 
 func assign_move_target(new_target: Vector2) -> void:
+    clear_diplomacy_target()
     move_target = new_target
     has_move_target = true
     target_ref = null
@@ -150,12 +155,30 @@ func assign_move_target(new_target: Vector2) -> void:
 
 
 func assign_attack_target(target: Variant, kind: String) -> void:
+    clear_diplomacy_target()
     target_ref = target
     target_kind = kind
     has_move_target = false
     attack_timer = 0.0
     state = "engaging"
     last_action = "engaging %s" % kind
+
+
+func assign_diplomacy_target(target_id: String, target_position: Vector2) -> void:
+    diplomacy_target_id = target_id
+    diplomacy_target_position = target_position
+    move_target = target_position
+    has_move_target = true
+    target_ref = null
+    target_kind = ""
+    attack_timer = 0.0
+    state = "messaging"
+    last_action = "bearing message"
+
+
+func clear_diplomacy_target() -> void:
+    diplomacy_target_id = ""
+    diplomacy_target_position = Vector2.ZERO
 
 
 func apply_damage(amount: float) -> bool:
@@ -165,6 +188,7 @@ func apply_damage(amount: float) -> bool:
         state = "dead"
         target_ref = null
         target_kind = ""
+        clear_diplomacy_target()
         last_action = "destroyed"
         return true
     return false
@@ -185,6 +209,8 @@ func serialize() -> Dictionary:
         "name": name,
         "role": role,
         "position": {"x": position.x, "y": position.y},
+        "diplomacy_target_id": diplomacy_target_id,
+        "diplomacy_target_position": {"x": diplomacy_target_position.x, "y": diplomacy_target_position.y},
         "move_target": {"x": move_target.x, "y": move_target.y},
         "has_move_target": has_move_target,
         "attack_range": attack_range,
@@ -212,6 +238,13 @@ func load_from_payload(payload: Dictionary, record: Dictionary) -> void:
 
     name = str(payload.get("name", name))
     role = str(payload.get("role", role))
+
+    diplomacy_target_id = str(payload.get("diplomacy_target_id", ""))
+    var diplomacy_target_payload: Dictionary = payload.get("diplomacy_target_position", {})
+    diplomacy_target_position = Vector2(
+        float(diplomacy_target_payload.get("x", position.x)),
+        float(diplomacy_target_payload.get("y", position.y))
+    )
 
     var move_target_payload: Dictionary = payload.get("move_target", {})
     move_target = Vector2(float(move_target_payload.get("x", position.x)), float(move_target_payload.get("y", position.y)))

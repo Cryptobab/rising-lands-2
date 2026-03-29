@@ -85,6 +85,54 @@ func _init() -> void:
         quit(1)
         return
 
+    if not game_root.start_mission("monde04"):
+        push_error("Multi-mission content smoke test could not start Mission 4.")
+        quit(1)
+        return
+
+    if not game_root.current_map_path.ends_with("monde04_map.json"):
+        push_error("Multi-mission content smoke test did not load the Mission 4 map file.")
+        quit(1)
+        return
+
+    var market_index: int = game_root.spawn_completed_building("market", Vector2i(8, 5))
+    if market_index < 0:
+        push_error("Multi-mission content smoke test could not create the Mission 4 market.")
+        quit(1)
+        return
+
+    game_root.run_simulation_steps(10)
+    if not game_root.queue_training_for_building(market_index, "messenger"):
+        push_error("Multi-mission content smoke test could not queue the Mission 4 messenger.")
+        quit(1)
+        return
+
+    game_root.run_simulation_steps(240)
+    var messenger = _find_player_unit(game_root.combat_units, "messenger")
+    if messenger == null:
+        push_error("Multi-mission content smoke test did not produce the Mission 4 messenger.")
+        quit(1)
+        return
+
+    if game_root.diplomacy_targets.is_empty():
+        push_error("Multi-mission content smoke test did not load any diplomacy targets for Mission 4.")
+        quit(1)
+        return
+
+    var diplomacy_target = game_root.diplomacy_targets[0]
+    messenger.assign_diplomacy_target(diplomacy_target.clan_id, diplomacy_target.center_position())
+    game_root.run_simulation_steps(360)
+
+    if game_root.world_state.mission_status != "victory":
+        push_error("Multi-mission content smoke test did not satisfy Mission 4 objectives.")
+        quit(1)
+        return
+
+    if not game_root.campaign_state.is_mission_unlocked("monde05"):
+        push_error("Multi-mission content smoke test did not unlock Mission 5.")
+        quit(1)
+        return
+
     print(
         "Multi-mission content smoke test: completed=%d unlocked=%d current=%s"
         % [
@@ -95,3 +143,10 @@ func _init() -> void:
     )
     game_root.free()
     quit()
+
+
+func _find_player_unit(units: Array, unit_id: String):
+    for unit in units:
+        if unit.team == "player" and unit.unit_id == unit_id and unit.is_alive():
+            return unit
+    return null

@@ -52,7 +52,9 @@ Working now:
 - named save slots now persist runtime state plus slot metadata through a campaign profile
 - runtime mission objectives now drive victory state instead of only the old stockpile fallback
 - Mission 1 map now includes scripted mission-event beats, rewards, and reinforcements
-- Mission 2 and Mission 3 now have actual scenario maps with build, stockpile, and research-driven objectives
+- Mission 2, Mission 3, and Mission 4 now have actual scenario maps with build, stockpile, research, and diplomacy-driven objectives
+- Mission 4 now introduces diplomacy targets, messenger alliance orders, alliance-tracking runtime state, and diplomacy-aware save/load
+- `market` is now part of the runtime build palette and trains `messenger`
 - the debug HUD now surfaces objective progress, recent mission alerts, and deeper selection detail
 - a Godot smoke-test script exists for the vertical-slice resource loop
 - a second Godot smoke-test script exists for builder construction
@@ -64,15 +66,16 @@ Working now:
 - an eighth Godot smoke-test script exists for campaign progression and mission unlock persistence
 - a ninth Godot smoke-test script exists for named save slots and slot-metadata persistence
 - a tenth Godot smoke-test script exists for actual Mission 1 -> Mission 2 -> Mission 3 campaign content progression
+- an eleventh Godot smoke-test script exists for diplomacy order persistence and Mission 4 alliance completion
 - issue and PR templates exist for public repo workflow
 - the old browser prototype files have been removed from the active codebase
 
 Not done yet:
 
 - stronger command queueing, selection UX, and HUD feedback
-- diplomacy and broader meta-layer behavior beyond the current campaign/save-slot shell
+- broader diplomacy rules beyond the current messenger-to-clan alliance shell
 - broader mission scripting coverage across additional scenarios and campaign flow
-- more authored scenario maps beyond the first three campaign missions
+- more authored scenario maps beyond the first four campaign missions
 - additional faction-specific buildings, support effects, and deeper unit parity beyond the current advanced roster slice
 - expanded-content ruleset layered cleanly on top of the classic remake
 
@@ -87,7 +90,9 @@ Not done yet:
 - Vertical-slice map: [`game/data/classic/vertical_slice/mission_001_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/mission_001_map.json)
 - Mission 2 map: [`game/data/classic/vertical_slice/monde02_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde02_map.json)
 - Mission 3 map: [`game/data/classic/vertical_slice/monde03_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde03_map.json)
+- Mission 4 map: [`game/data/classic/vertical_slice/monde04_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde04_map.json)
 - Godot map loader: [`game/scripts/core/map_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/map_state.gd)
+- Diplomacy runtime: [`game/scripts/core/diplomacy_target_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/diplomacy_target_state.gd)
 - Mission-event runtime: [`game/scripts/core/mission_event_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/mission_event_state.gd)
 - Worker runtime: [`game/scripts/simulation/worker_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/worker_unit_state.gd)
 - Combat runtime: [`game/scripts/simulation/combat_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/combat_unit_state.gd)
@@ -103,13 +108,14 @@ Not done yet:
 - Campaign-progression smoke test: [`game/scripts/tests/campaign_progression_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_progression_smoke.gd)
 - Save-slots smoke test: [`game/scripts/tests/save_slots_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/save_slots_smoke.gd)
 - Multi-mission content smoke test: [`game/scripts/tests/multi_mission_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/multi_mission_content_smoke.gd)
+- Diplomacy smoke test: [`game/scripts/tests/diplomacy_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/diplomacy_smoke.gd)
 
 ## Next Session Start Here
 
-1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate Mission 2 / Mission 3 map bootstrapping, build palettes, and campaign handoff visually.
-2. Add better selection UX, command feedback, and HUD surfacing for queues and research.
-3. Extend the mission-event system from Mission 1 into reusable scenario scripting for later missions.
-4. Author more actual mission-map content so the first campaign chapter extends beyond the current three playable scenarios.
+1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate Mission 4 diplomacy markers, `market` build access, and messenger order flow visually.
+2. Add better selection UX, command feedback, and HUD surfacing for diplomacy targets, queues, and research.
+3. Extend the mission-event system and map authoring from Mission 1 through Mission 4 into reusable scenario scripting for later missions.
+4. Author more actual mission-map content so the first campaign chapter extends beyond the current four playable scenarios.
 5. Keep the repo trace clean by updating this file and the session log whenever systems behavior changes.
 
 ## Commands
@@ -218,6 +224,15 @@ Run the multi-mission content smoke test:
   --headless `
   --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
   --script res://scripts/tests/multi_mission_content_smoke.gd
+```
+
+Run the diplomacy smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/diplomacy_smoke.gd
 ```
 
 ## Blockers

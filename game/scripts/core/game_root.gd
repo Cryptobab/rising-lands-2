@@ -5,6 +5,7 @@ const WorldStateScript = preload("res://scripts/core/world_state.gd")
 const CampaignStateScript = preload("res://scripts/core/campaign_state.gd")
 const MissionStateScript = preload("res://scripts/core/mission_state.gd")
 const MissionEventStateScript = preload("res://scripts/core/mission_event_state.gd")
+const DiplomacyTargetStateScript = preload("res://scripts/core/diplomacy_target_state.gd")
 const MapStateScript = preload("res://scripts/core/map_state.gd")
 const ClassicDatabaseScript = preload("res://scripts/data/classic_database.gd")
 const ResourceNodeStateScript = preload("res://scripts/simulation/resource_node_state.gd")
@@ -29,6 +30,7 @@ const BUILD_KEY_ORDER: Array = [
     {"keycode": KEY_7, "building_id": "workshop"},
     {"keycode": KEY_8, "building_id": "garage"},
     {"keycode": KEY_9, "building_id": "hangar"},
+    {"keycode": KEY_M, "building_id": "market"},
     {"keycode": KEY_0, "building_id": "tower_catapult"},
     {"keycode": KEY_MINUS, "building_id": "tower_cannon"},
     {"keycode": KEY_EQUAL, "building_id": "wall"},
@@ -46,9 +48,11 @@ var construction_sites: Array = []
 var workers: Array = []
 var combat_units: Array = []
 var enemy_units: Array = []
+var diplomacy_targets: Array = []
 var pending_enemy_spawns: Array = []
 var mission_events: Array = []
 var alert_log: Array[String] = []
+var allied_clans: Array[String] = []
 var simulation_status: String = "bootstrapping"
 var selected_worker_index: int = -1
 var selected_combat_index: int = -1
@@ -182,6 +186,7 @@ func advance_simulation(delta: float) -> void:
     for enemy_unit in enemy_units:
         enemy_unit.update(delta, world_state, combat_units, workers, buildings)
 
+    _update_diplomacy_state()
     _finalize_construction_sites()
     _cleanup_destroyed_entities()
     _update_worker_home_positions()
@@ -404,6 +409,9 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
     current_map_path = str(payload.get("map_path", DEFAULT_MAP_PATH))
     current_mission_id = str(payload.get("mission_id", current_mission_id))
     active_save_slot_id = str(payload.get("save_slot_id", active_save_slot_id))
+    allied_clans = []
+    for clan_id in payload.get("allied_clans", []):
+        allied_clans.append(str(clan_id))
 
     map_state = MapStateScript.new()
     if not map_state.load_from_file(current_map_path):
@@ -470,6 +478,11 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
         enemy_unit.load_from_payload(unit_payload, enemy_record)
         enemy_units.append(enemy_unit)
 
+    if payload.get("diplomacy_targets", []).is_empty():
+        _load_diplomacy_targets_from_map()
+    else:
+        _load_diplomacy_targets_from_payload(payload.get("diplomacy_targets", []))
+
     pending_enemy_spawns = payload.get("pending_enemy_spawns", []).duplicate(true)
     alert_log = []
     for alert_entry in payload.get("alert_log", []):
@@ -502,6 +515,8 @@ func serialize_runtime() -> Dictionary:
         "workers": _serialize_collection(workers),
         "combat_units": _serialize_collection(combat_units),
         "enemy_units": _serialize_collection(enemy_units),
+        "diplomacy_targets": _serialize_collection(diplomacy_targets),
+        "allied_clans": allied_clans.duplicate(true),
         "pending_enemy_spawns": pending_enemy_spawns.duplicate(true),
         "mission_events": _serialize_collection(mission_events),
         "alert_log": alert_log.duplicate(true),
@@ -545,15 +560,28 @@ func _build_mission_snapshot() -> Dictionary:
             continue
         building_counts[building.building_id] = int(building_counts.get(building.building_id, 0)) + 1
 
+    var unit_counts: Dictionary = {}
+    for worker in workers:
+        if not worker.is_alive():
+            continue
+        unit_counts[worker.unit_id] = int(unit_counts.get(worker.unit_id, 0)) + 1
+
+    for combat_unit in combat_units:
+        if combat_unit.team != "player" or not combat_unit.is_alive():
+            continue
+        unit_counts[combat_unit.unit_id] = int(unit_counts.get(combat_unit.unit_id, 0)) + 1
+
     return {
         "resources": world_state.resources.duplicate(true),
         "building_counts": building_counts,
+        "unit_counts": unit_counts,
         "branch_levels": world_state.branch_levels.duplicate(true),
         "unlocked_tech_count": world_state.unlocked_techs.size(),
         "elapsed_time": world_state.elapsed_time,
         "enemy_waves_spawned": world_state.enemy_waves_spawned,
         "enemy_units_alive": enemy_units.size(),
-        "pending_enemy_spawns": pending_enemy_spawns.size()
+        "pending_enemy_spawns": pending_enemy_spawns.size(),
+        "allied_clans": allied_clans.duplicate(true)
     }
 
 
@@ -611,6 +639,12 @@ func _draw() -> void:
                 Color("70b8e8"),
                 true
             )
+
+    for diplomacy_target in diplomacy_targets:
+        var diplomacy_pos := _tile_origin(diplomacy_target.tile, origin)
+        var diplomacy_color: Color = diplomacy_target.display_color()
+        draw_rect(Rect2(diplomacy_pos + Vector2(8.0, 8.0), Vector2(TILE_SIZE - 16.0, TILE_SIZE - 16.0)), diplomacy_color, false, 3.0)
+        draw_circle(diplomacy_pos + Vector2(TILE_SIZE * 0.5, TILE_SIZE * 0.5), 5.0, diplomacy_color)
 
     for site_index in range(construction_sites.size()):
         var construction_site = construction_sites[site_index]
@@ -688,6 +722,19 @@ func _load_mission_events_from_payload(payloads: Array) -> void:
         mission_events.append(mission_event)
 
 
+func _load_diplomacy_targets_from_map() -> void:
+    _load_diplomacy_targets_from_payload(map_state.diplomacy_targets)
+
+
+func _load_diplomacy_targets_from_payload(payloads: Array) -> void:
+    diplomacy_targets = []
+    for target_payload in payloads:
+        var diplomacy_target = DiplomacyTargetStateScript.new()
+        diplomacy_target.load_from_payload(target_payload)
+        diplomacy_target.allied = diplomacy_target.allied or allied_clans.has(diplomacy_target.clan_id)
+        diplomacy_targets.append(diplomacy_target)
+
+
 func _spawn_vertical_slice_entities() -> void:
     resource_nodes.clear()
     buildings.clear()
@@ -695,6 +742,8 @@ func _spawn_vertical_slice_entities() -> void:
     workers.clear()
     combat_units.clear()
     enemy_units.clear()
+    allied_clans = []
+    _load_diplomacy_targets_from_map()
 
     for resource_payload in map_state.resources:
         var resource_node = ResourceNodeStateScript.new()
@@ -849,6 +898,41 @@ func _cleanup_destroyed_entities() -> void:
     selected_combat_index = _normalize_index(selected_combat_index, combat_units.size())
     selected_building_index = _normalize_index(selected_building_index, buildings.size())
     selected_site_index = _normalize_index(selected_site_index, construction_sites.size())
+
+
+func _update_diplomacy_state() -> void:
+    if diplomacy_targets.is_empty():
+        return
+
+    for combat_unit in combat_units:
+        if combat_unit == null or not combat_unit.is_alive() or combat_unit.unit_id != "messenger":
+            continue
+        if combat_unit.diplomacy_target_id.is_empty():
+            continue
+
+        var diplomacy_target = _find_diplomacy_target_by_id(combat_unit.diplomacy_target_id)
+        if diplomacy_target == null:
+            combat_unit.clear_diplomacy_target()
+            continue
+        if diplomacy_target.allied:
+            combat_unit.clear_diplomacy_target()
+            continue
+        if combat_unit.position.distance_to(diplomacy_target.center_position()) > 0.45:
+            continue
+
+        _form_alliance(diplomacy_target, combat_unit)
+
+
+func _form_alliance(diplomacy_target, messenger) -> void:
+    diplomacy_target.allied = true
+    if not allied_clans.has(diplomacy_target.clan_id):
+        allied_clans.append(diplomacy_target.clan_id)
+    messenger.clear_diplomacy_target()
+    messenger.has_move_target = false
+    messenger.state = "holding"
+    messenger.last_action = "allied with %s" % diplomacy_target.clan_name
+    simulation_status = "allied with %s" % diplomacy_target.clan_name
+    _push_alert("alliance forged: %s" % diplomacy_target.clan_name)
 
 
 func _update_worker_home_positions() -> void:
@@ -1072,6 +1156,20 @@ func _enemy_unit_index_at_tile(tile: Vector2i) -> int:
     return best_index
 
 
+func _diplomacy_target_index_at_tile(tile: Vector2i) -> int:
+    for index in range(diplomacy_targets.size()):
+        if diplomacy_targets[index].tile == tile:
+            return index
+    return -1
+
+
+func _find_diplomacy_target_by_id(clan_id: String):
+    for diplomacy_target in diplomacy_targets:
+        if diplomacy_target.clan_id == clan_id:
+            return diplomacy_target
+    return null
+
+
 func _can_place_building(tile: Vector2i) -> bool:
     if tile.x < 0 or tile.y < 0 or tile.x >= map_state.width or tile.y >= map_state.height:
         return false
@@ -1193,6 +1291,8 @@ func _building_color(building_id: String) -> Color:
             return Color("c85d4f")
         "hangar", "heliport":
             return Color("7ebde8")
+        "market":
+            return Color("d9a259")
         "library":
             return Color("d9c27b")
         "laboratory":
@@ -1387,6 +1487,10 @@ func _building_actions(building_id: String) -> Array:
                 {"slot": 1, "key": "Q", "kind": "train", "id": "heliped", "label": "heliped"},
                 {"slot": 2, "key": "W", "kind": "train", "id": "balloon", "label": "balloon"},
             ]
+        "market":
+            return [
+                {"slot": 1, "key": "Q", "kind": "train", "id": "messenger", "label": "messenger"},
+            ]
         "laboratory", "library":
             return [
                 {"slot": 1, "key": "Q", "kind": "research", "id": "agriculture", "label": "agriculture"},
@@ -1485,6 +1589,13 @@ func _handle_right_click(screen_position: Vector2) -> void:
 
     var combat_unit = _selected_combat_unit()
     if combat_unit != null:
+        var diplomacy_index := _diplomacy_target_index_at_tile(tile)
+        if combat_unit.unit_id == "messenger" and diplomacy_index >= 0:
+            var diplomacy_target = diplomacy_targets[diplomacy_index]
+            combat_unit.assign_diplomacy_target(diplomacy_target.clan_id, diplomacy_target.center_position())
+            simulation_status = "%s dispatched to %s" % [combat_unit.name, diplomacy_target.clan_name]
+            return
+
         var enemy_index := _enemy_unit_index_at_tile(tile)
         if enemy_index >= 0:
             combat_unit.assign_attack_target(enemy_units[enemy_index], "enemy")
@@ -1554,11 +1665,12 @@ func _refresh_debug_text() -> void:
     if objective_lines.is_empty():
         objective_lines.append("[ ] No objectives loaded")
 
-    var goal_text: String = "Stockpile: %d/%d food | %d/%d stone" % [
+    var goal_text: String = "Stockpile: %d/%d food | %d/%d stone | Allies: %d" % [
         int(world_state.resources.get("food", 0)),
         int(map_state.storehouse_goal.get("food", 0)),
         int(world_state.resources.get("stone", 0)),
-        int(map_state.storehouse_goal.get("stone", 0))
+        int(map_state.storehouse_goal.get("stone", 0)),
+        allied_clans.size()
     ]
 
     var selection_text := "Selection: none"
@@ -1592,7 +1704,7 @@ func _refresh_debug_text() -> void:
     debug_label.text = "\n".join([
         "Rising Lands 2",
         "Godot mission systems slice",
-        "Controls: LMB select/place | RMB assign/move | 1-9,0,-,= build palette",
+        "Controls: LMB select/place | RMB assign/move | 1-9, M, 0, -, = build palette",
         "Systems: Q/W/E/R/T/Y context | F5 save | F9 load",
         _build_palette_label(),
         "Mission: %s" % mission_state.title,

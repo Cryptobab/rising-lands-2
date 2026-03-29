@@ -1,0 +1,110 @@
+{
+  "id": "monde04_map",
+  "name": "Mission 4 - Red Clan Parley",
+  "width": 18,
+  "height": 12,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "SSGGGGGGGGGGGGGFFF",
+    "SGGGGGGGGGGGGGGFFF",
+    "GGGGGGDGGGGGGGGFFR",
+    "GGGGGDDGGGGGGGFFRR",
+    "GGGGFGDGGGGGGFFRRR",
+    "GGGFFGGGGGGGGGRRRR",
+    "GGGFGGGGGGGGGGRRRR",
+    "GGGGGGGGGGGGGGRRRR",
+    "SGGGGGGGGGGGGGRRRR",
+    "SSGGGGFGGGGGGGRRRR",
+    "WSSGGGFGGGGGGRRRRR",
+    "WWSSGGGGGGGGGRRRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 4, "type": "food", "amount": 130 },
+    { "x": 3, "y": 8, "type": "food", "amount": 130 },
+    { "x": 11, "y": 3, "type": "stone", "amount": 120 },
+    { "x": 13, "y": 6, "type": "stone", "amount": 120 },
+    { "x": 15, "y": 8, "type": "parts", "amount": 70 }
+  ],
+  "player_start": { "x": 4, "y": 6 },
+  "starting_resources": { "food": 30, "stone": 24, "parts": 6, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 4, "y": 6, "team": "player" },
+    { "building_id": "culture", "x": 6, "y": 6, "team": "player" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 3, "y": 5, "team": "player" },
+    { "unit_id": "farmer", "x": 3, "y": 7, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 5, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 7, "team": "player" },
+    { "unit_id": "mechanic", "x": 4, "y": 8, "team": "player" }
+  ],
+  "build_palette": ["storehouse", "culture", "market", "barracks", "sanctuary", "laboratory"],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "build_market",
+      "type": "build",
+      "building_id": "market",
+      "target": 1,
+      "label": "Build a Market",
+      "required": true
+    },
+    {
+      "id": "train_messenger",
+      "type": "unit_count",
+      "unit_id": "messenger",
+      "target": 1,
+      "label": "Train a Messenger",
+      "required": true
+    },
+    {
+      "id": "ally_red_clan",
+      "type": "alliance",
+      "clan_id": "red_clan",
+      "target": 1,
+      "label": "Forge an alliance with the Red Clan",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_4_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "A nearby clan watches your border. Build a Market and send a Messenger to negotiate." }
+      ]
+    },
+    {
+      "id": "mission_4_market_ready",
+      "trigger": { "type": "objective_complete", "objective_id": "build_market" },
+      "actions": [
+        { "type": "message", "text": "The Market is open. Train a Messenger and approach the Red Clan banner." }
+      ]
+    },
+    {
+      "id": "mission_4_alliance_reward",
+      "trigger": { "type": "objective_complete", "objective_id": "ally_red_clan" },
+      "actions": [
+        { "type": "message", "text": "The Red Clan accepts the pact and shares its first tribute." },
+        { "type": "grant_resources", "resources": { "food": 10, "stone": 10, "tech": 2 } }
+      ]
+    }
+  ],
+  "diplomacy_targets": [
+    {
+      "clan_id": "red_clan",
+      "clan_name": "Red Clan",
+      "x": 13,
+      "y": 5,
+      "color_hex": "d86161"
+    }
+  ]
+}

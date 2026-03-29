@@ -66,12 +66,20 @@ func evaluate(snapshot: Dictionary) -> Array[String]:
             "build":
                 current_value = int(snapshot.get("building_counts", {}).get(str(objective.get("building_id", "")), 0))
                 completed = current_value >= target_value
+            "unit_count":
+                current_value = int(snapshot.get("unit_counts", {}).get(str(objective.get("unit_id", "")), 0))
+                completed = current_value >= target_value
             "tech_count":
                 current_value = int(snapshot.get("unlocked_tech_count", 0))
                 completed = current_value >= target_value
             "research_branch":
                 current_value = int(snapshot.get("branch_levels", {}).get(str(objective.get("branch", "")), 0))
                 completed = current_value >= target_value
+            "alliance":
+                var clan_id: String = str(objective.get("clan_id", ""))
+                var allied_clans: Array = snapshot.get("allied_clans", [])
+                current_value = 1 if allied_clans.has(clan_id) else 0
+                completed = current_value >= maxi(1, target_value)
             "survive_until":
                 current_value = int(floor(float(snapshot.get("elapsed_time", 0.0))))
                 completed = float(snapshot.get("elapsed_time", 0.0)) >= float(target_value)

@@ -58,6 +58,8 @@ func configure_from_record(record: Dictionary, spawn_tile: Vector2i, new_team: S
         "culture":
             trainable_units = ["farmer", "builder", "mechanic", "settler", "messenger"]
             tech_generation_rate = 0.35
+        "market":
+            trainable_units = ["messenger"]
         "barracks":
             trainable_units = ["swordsman", "captain", "archer", "scorcher"]
         "sanctuary", "temple":

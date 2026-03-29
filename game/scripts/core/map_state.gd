@@ -17,6 +17,7 @@ var build_palette: Array = []
 var enemy_spawns: Array = []
 var objectives: Array = []
 var mission_events: Array = []
+var diplomacy_targets: Array = []
 
 
 func load_from_file(path: String) -> bool:
@@ -43,6 +44,7 @@ func load_from_file(path: String) -> bool:
     enemy_spawns = payload.get("enemy_spawns", [])
     objectives = payload.get("objectives", [])
     mission_events = payload.get("mission_events", [])
+    diplomacy_targets = payload.get("diplomacy_targets", [])
 
     var start_payload: Dictionary = payload.get("player_start", {})
     player_start = Vector2i(int(start_payload.get("x", 0)), int(start_payload.get("y", 0)))
