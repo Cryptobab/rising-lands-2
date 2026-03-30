@@ -1234,6 +1234,10 @@ func _execute_mission_event_action(action_payload: Dictionary) -> void:
             _unlock_build_palette(action_payload.get("building_ids", []).duplicate(true), str(action_payload.get("message", "")))
         "set_build_palette":
             _set_build_palette(action_payload.get("building_ids", []).duplicate(true), str(action_payload.get("message", "")))
+        "transfer_building_team":
+            _transfer_building_team(action_payload)
+        "transfer_unit_team":
+            _transfer_unit_team(action_payload)
         "set_mission_outcome":
             _set_mission_outcome(str(action_payload.get("status", "active")), str(action_payload.get("message", "")))
         _:
@@ -1332,6 +1336,38 @@ func _set_build_palette(building_ids: Array, message: String = "") -> void:
 
     if not message.is_empty():
         _push_alert(message)
+
+
+func _transfer_building_team(action_payload: Dictionary) -> void:
+    var target_team: String = str(action_payload.get("team", "player"))
+    var target_building = _find_matching_building(action_payload)
+    if target_building == null:
+        return
+
+    target_building.team = target_team
+    if target_team == "player":
+        target_building.refresh_modifiers(world_state)
+    if action_payload.has("message"):
+        _push_alert(str(action_payload.get("message", "")))
+
+
+func _transfer_unit_team(action_payload: Dictionary) -> void:
+    var target_team: String = str(action_payload.get("team", "player"))
+    var target_unit = _find_matching_unit(action_payload)
+    if target_unit == null:
+        return
+
+    var target_position: Vector2 = target_unit.position
+    var target_unit_id: String = str(target_unit.unit_id)
+
+    if target_unit in enemy_units:
+        enemy_units.erase(target_unit)
+    elif target_unit in combat_units:
+        combat_units.erase(target_unit)
+
+    spawn_unit(target_unit_id, target_position, target_team)
+    if action_payload.has("message"):
+        _push_alert(str(action_payload.get("message", "")))
 
 
 func _set_mission_outcome(status: String, message: String = "") -> void:
@@ -1436,6 +1472,51 @@ func _clan_demand_satisfied(snapshot: Dictionary, diplomacy_target) -> bool:
             return int(snapshot.get("allied_clans", []).size()) >= int(demand.get("target", 0))
         _:
             return false
+
+
+func _find_matching_building(action_payload: Dictionary):
+    var target_building_id: String = str(action_payload.get("building_id", ""))
+    var source_team: String = str(action_payload.get("source_team", ""))
+    var search_rect := _action_rect(action_payload)
+
+    for building in buildings:
+        if building == null or not building.is_alive():
+            continue
+        if not target_building_id.is_empty() and building.building_id != target_building_id:
+            continue
+        if not source_team.is_empty() and building.team != source_team:
+            continue
+        if search_rect != null and not search_rect.has_point(building.center_position()):
+            continue
+        return building
+    return null
+
+
+func _find_matching_unit(action_payload: Dictionary):
+    var target_unit_id: String = str(action_payload.get("unit_id", ""))
+    var source_team: String = str(action_payload.get("source_team", ""))
+    var search_rect := _action_rect(action_payload)
+
+    for unit in combat_units + enemy_units:
+        if unit == null or not unit.is_alive():
+            continue
+        if not target_unit_id.is_empty() and unit.unit_id != target_unit_id:
+            continue
+        if not source_team.is_empty() and unit.team != source_team:
+            continue
+        if search_rect != null and not search_rect.has_point(unit.position):
+            continue
+        return unit
+    return null
+
+
+func _action_rect(action_payload: Dictionary) -> Variant:
+    if not action_payload.has("x") or not action_payload.has("y"):
+        return null
+    return Rect2(
+        Vector2(float(action_payload.get("x", 0.0)), float(action_payload.get("y", 0.0))),
+        Vector2(maxf(1.0, float(action_payload.get("width", 1.0))), maxf(1.0, float(action_payload.get("height", 1.0))))
+    )
 
 
 func _goal_complete() -> bool:
@@ -2339,6 +2420,8 @@ func build_ui_snapshot() -> Dictionary:
             campaign_state.mission_count(),
             campaign_state.unlocked_missions.size()
         ]
+        if campaign_state.campaign_complete():
+            campaign_text += " | COMPLETE"
 
     var objective_lines: Array[String] = mission_state.objective_lines()
     if objective_lines.is_empty():
@@ -2387,13 +2470,20 @@ func build_ui_snapshot() -> Dictionary:
     }
     if world_state.mission_status == "victory":
         var next_mission_id: String = ""
+        var campaign_complete: bool = false
         if campaign_state != null:
             next_mission_id = campaign_state.next_mission_id_after(current_mission_id)
             if not next_mission_id.is_empty() and not campaign_state.is_mission_unlocked(next_mission_id):
                 next_mission_id = ""
+            campaign_complete = campaign_state.campaign_complete()
         result_payload["visible"] = true
-        result_payload["title"] = "Mission Complete"
-        result_payload["body"] = "The clan secured %s in %d ticks." % [mission_state.title, world_state.tick_count]
+        result_payload["title"] = "Campaign Complete" if campaign_complete else "Mission Complete"
+        result_payload["body"] = (
+            "The clan secured the Rising Lands after %d completed missions."
+            % [campaign_state.completed_count()]
+            if campaign_complete
+            else "The clan secured %s in %d ticks." % [mission_state.title, world_state.tick_count]
+        )
         result_payload["next_mission_id"] = next_mission_id
         result_payload["next_mission_title"] = str(mission_record_for_id(next_mission_id).get("title", next_mission_id))
     elif world_state.mission_status == "defeat":

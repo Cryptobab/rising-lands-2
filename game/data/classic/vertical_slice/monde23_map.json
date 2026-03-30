@@ -1,0 +1,99 @@
+{
+  "id": "monde23_map",
+  "name": "Mission 23 - Great Library",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "GGGGGGGGGGGGGGGGGFFF",
+    "GGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGDGGGGGGGGGFFFR",
+    "GGGGFGDDGGGGGGGGFFRR",
+    "GGGFFGDDGGGGGGGGFRRR",
+    "GGGFGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "SGGGGGGGGGGGGGGGGRRR",
+    "SSGGGGFGGGGGGGGGGRRR",
+    "WSSGGGFGGGGGGGGGGRRR",
+    "WWSSGGGGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR",
+    "WWWWSSGGGGGGGGGGGRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 4, "type": "food", "amount": 130 },
+    { "x": 4, "y": 10, "type": "food", "amount": 120 },
+    { "x": 8, "y": 4, "type": "stone", "amount": 120 },
+    { "x": 11, "y": 10, "type": "stone", "amount": 110 },
+    { "x": 14, "y": 7, "type": "parts", "amount": 85 }
+  ],
+  "player_start": { "x": 3, "y": 9 },
+  "starting_resources": { "food": 34, "stone": 28, "parts": 12, "tech": 2 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 3, "y": 9, "team": "player" },
+    { "building_id": "culture", "x": 5, "y": 9, "team": "player" },
+    { "building_id": "barracks", "x": 5, "y": 7, "team": "player" },
+    { "building_id": "library", "x": 16, "y": 5, "team": "enemy" },
+    { "building_id": "tower_cannon", "x": 15, "y": 6, "team": "enemy" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 2, "y": 8, "team": "player" },
+    { "unit_id": "farmer", "x": 2, "y": 10, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 8, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 10, "team": "player" },
+    { "unit_id": "messenger", "x": 5, "y": 11, "team": "player" },
+    { "unit_id": "swordsman", "x": 6, "y": 9, "team": "player" },
+    { "unit_id": "archer", "x": 6, "y": 10, "team": "player" },
+    { "unit_id": "archer", "x": 16, "y": 6, "team": "enemy" },
+    { "unit_id": "basher", "x": 15, "y": 4, "team": "enemy" },
+    { "unit_id": "hurler", "x": 17, "y": 6, "team": "enemy" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "barracks",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "control_great_library",
+      "type": "control_building",
+      "building_id": "library",
+      "x": 15,
+      "y": 4,
+      "width": 4,
+      "height": 4,
+      "target": 1,
+      "label": "Take over the Great Library to the Southeast",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_23_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "Break through to the Great Library, seize it intact, and drive off its corrupted keepers." }
+      ]
+    },
+    {
+      "id": "mission_23_take_library",
+      "trigger": { "type": "unit_in_area", "unit_id": "builder", "x": 15, "y": 4, "width": 4, "height": 4, "value": 1 },
+      "actions": [
+        { "type": "transfer_building_team", "building_id": "library", "source_team": "enemy", "team": "player", "x": 15, "y": 4, "width": 4, "height": 4, "message": "The Great Library has been reclaimed." },
+        { "type": "transfer_unit_team", "unit_id": "archer", "source_team": "enemy", "team": "player", "x": 15, "y": 4, "width": 4, "height": 4, "message": "The library wardens defect to your cause." }
+      ]
+    }
+  ],
+  "diplomacy_targets": []
+}

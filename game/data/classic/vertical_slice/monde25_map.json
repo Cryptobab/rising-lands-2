@@ -1,0 +1,104 @@
+{
+  "id": "monde25_map",
+  "name": "Mission 25 - Rising Lands",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "GGGGGGGGGGGGGGGGGFFF",
+    "GGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGDGGGGGGGGGFFFR",
+    "GGGGFGDDGGGGGGGGFFRR",
+    "GGGFFGDDGGGGGGGGFRRR",
+    "GGGFGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "SGGGGGGGGGGGGGGGGRRR",
+    "SSGGGGFGGGGGGGGGGRRR",
+    "WSSGGGFGGGGGGGGGGRRR",
+    "WWSSGGGGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR",
+    "WWWWSSSSSGGGGGGGRRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 4, "type": "food", "amount": 150 },
+    { "x": 5, "y": 10, "type": "food", "amount": 145 },
+    { "x": 9, "y": 3, "type": "stone", "amount": 135 },
+    { "x": 12, "y": 10, "type": "stone", "amount": 125 },
+    { "x": 15, "y": 6, "type": "parts", "amount": 100 }
+  ],
+  "player_start": { "x": 3, "y": 9 },
+  "starting_resources": { "food": 48, "stone": 36, "parts": 16, "tech": 4 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 3, "y": 9, "team": "player" },
+    { "building_id": "culture", "x": 5, "y": 9, "team": "player" },
+    { "building_id": "barracks", "x": 5, "y": 7, "team": "player" },
+    { "building_id": "library", "x": 7, "y": 7, "team": "player" },
+    { "building_id": "laboratory", "x": 7, "y": 9, "team": "player" },
+    { "building_id": "storehouse", "x": 15, "y": 4, "team": "enemy" },
+    { "building_id": "tower_cannon", "x": 16, "y": 5, "team": "enemy" },
+    { "building_id": "tower_catapult", "x": 16, "y": 8, "team": "enemy" },
+    { "building_id": "storehouse", "x": 17, "y": 9, "team": "enemy" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 2, "y": 8, "team": "player" },
+    { "unit_id": "farmer", "x": 2, "y": 10, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 8, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 10, "team": "player" },
+    { "unit_id": "mechanic", "x": 3, "y": 11, "team": "player" },
+    { "unit_id": "messenger", "x": 5, "y": 11, "team": "player" },
+    { "unit_id": "swordsman", "x": 6, "y": 9, "team": "player" },
+    { "unit_id": "archer", "x": 6, "y": 10, "team": "player" },
+    { "unit_id": "basher", "x": 15, "y": 3, "team": "enemy" },
+    { "unit_id": "basher", "x": 16, "y": 9, "team": "enemy" },
+    { "unit_id": "hurler", "x": 18, "y": 6, "team": "enemy" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "library",
+    "laboratory",
+    "barracks",
+    "sanctuary",
+    "tower_catapult",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "defeat_anyone_who_opposes_you",
+      "type": "clear_hostiles",
+      "target": 0,
+      "label": "Defeat anyone who opposes you",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_25_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "The Rising Lands are at hand. Crush every remaining hostile force and secure the realm once and for all." }
+      ]
+    },
+    {
+      "id": "mission_25_final_battle",
+      "trigger": { "type": "time_elapsed", "value": 16.0 },
+      "actions": [
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 8, "count": 3, "delay": 0.6, "stagger": 0.35 },
+        { "type": "schedule_enemy_wave", "unit_id": "hurler", "x": 18, "y": 5, "count": 2, "delay": 1.1, "stagger": 0.35 },
+        { "type": "message", "text": "The Shadow warlords commit their final reserves." }
+      ]
+    }
+  ],
+  "diplomacy_targets": []
+}

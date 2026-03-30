@@ -165,6 +165,10 @@ func mission_count() -> int:
 	return mission_order.size()
 
 
+func campaign_complete() -> bool:
+	return mission_count() > 0 and completed_count() >= mission_count()
+
+
 func available_missions() -> Array:
 	var available: Array = []
 	for mission_id in mission_order:

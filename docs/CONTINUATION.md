@@ -15,6 +15,7 @@
 - Roadmap: [`docs/MASTER-PLAN.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/MASTER-PLAN.md)
 - Engine choice: [`docs/ENGINE-DECISION.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/ENGINE-DECISION.md)
 - Session trace: [`docs/SESSION-LOG.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/SESSION-LOG.md)
+- Tranche backlog: [`docs/NEXT-20.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/NEXT-20.md)
 - Godot entry: [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot)
 - Shell scene: [`game/scenes/main.tscn`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scenes/main.tscn)
 - Importer: [`tools/importers/extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/extract_classic_data.py)
@@ -64,10 +65,11 @@ Working now:
 - mission victory and defeat now surface a shell-side result panel with retry and next-mission actions
 - shell options now persist runtime pressure and menu-pause behavior in `user://shell_settings.json`
 - enemy combat units now advance on the player settlement when idle instead of stalling outside vision range
-- Mission 5 through Mission 20 now have authored scenario maps with diplomacy-count, exploration-area, build-in-area, survival, prison-break escape chains, trust-demand deadlines, and queued guardian-wave behavior
+- Mission 5 through Mission 25 now have authored scenario maps with diplomacy-count, exploration-area, build-in-area, survival, prison-break escape chains, trust-demand deadlines, takeover scripts, and queued guardian-wave behavior
 - diplomacy targets now track clan trust, alliance thresholds, active demands, and revenge-on-failure state
-- mission objectives now support alliance-count, unit-in-area, reach-area-once, build-in-area, clear-hostiles, clan-trust, and demand-status checks
-- mission events now support alliance-count, clan-stance, clan-trust, demand-status, and unit-in-area triggers plus queued enemy-wave scheduling, explicit clan-stance shifts, trust changes, demand injection, dynamic build-palette updates, and mission-outcome actions
+- mission objectives now support alliance-count, unit-in-area, reach-area-once, build-in-area, control-building, clear-hostiles, clan-trust, and demand-status checks
+- mission events now support alliance-count, clan-stance, clan-trust, demand-status, and unit-in-area triggers plus queued enemy-wave scheduling, explicit clan-stance shifts, trust changes, demand injection, dynamic build-palette updates, building transfer, unit transfer, and mission-outcome actions
+- campaign results now distinguish between mission victory and full campaign completion in the shell snapshot
 - a Godot smoke-test script exists for the vertical-slice resource loop
 - a second Godot smoke-test script exists for builder construction
 - a third Godot smoke-test script exists for production, research, combat, and save/load
@@ -89,6 +91,8 @@ Working now:
 - a nineteenth Godot smoke-test script exists for Mission 13 through Mission 16 progression
 - a twentieth Godot smoke-test script exists for dynamic build-palette unlock persistence
 - a twenty-first Godot smoke-test script exists for Mission 17 through Mission 20 progression
+- a twenty-second Godot smoke-test script exists for ownership-transfer takeover scripting
+- a twenty-third Godot smoke-test script exists for Mission 21 through Mission 25 progression and full campaign completion
 - issue and PR templates exist for public repo workflow
 - the old browser prototype files have been removed from the active codebase
 
@@ -97,7 +101,7 @@ Not done yet:
 - stronger command queueing, selection UX, and richer HUD feedback
 - broader diplomacy rules beyond the current trust-demand-revenge shell
 - broader mission scripting coverage across additional scenarios and campaign flow
-- more authored scenario maps beyond the first twenty campaign missions
+- more authored scenario maps beyond the first twenty-five campaign missions
 - additional faction-specific buildings, support effects, and deeper unit parity beyond the current advanced roster slice
 - expanded-content ruleset layered cleanly on top of the classic remake
 
@@ -130,6 +134,11 @@ Not done yet:
 - Mission 18 map: [`game/data/classic/vertical_slice/monde18_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde18_map.json)
 - Mission 19 map: [`game/data/classic/vertical_slice/monde19_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde19_map.json)
 - Mission 20 map: [`game/data/classic/vertical_slice/monde20_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde20_map.json)
+- Mission 21 map: [`game/data/classic/vertical_slice/monde21_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde21_map.json)
+- Mission 22 map: [`game/data/classic/vertical_slice/monde22_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde22_map.json)
+- Mission 23 map: [`game/data/classic/vertical_slice/monde23_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde23_map.json)
+- Mission 24 map: [`game/data/classic/vertical_slice/monde24_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde24_map.json)
+- Mission 25 map: [`game/data/classic/vertical_slice/monde25_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde25_map.json)
 - Godot map loader: [`game/scripts/core/map_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/map_state.gd)
 - Diplomacy runtime: [`game/scripts/core/diplomacy_target_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/diplomacy_target_state.gd)
 - Mission-event runtime: [`game/scripts/core/mission_event_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/mission_event_state.gd)
@@ -158,13 +167,15 @@ Not done yet:
 - Mid-campaign content smoke test: [`game/scripts/tests/mid_campaign_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mid_campaign_content_smoke.gd)
 - Dynamic build-palette smoke test: [`game/scripts/tests/dynamic_build_palette_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/dynamic_build_palette_smoke.gd)
 - Late-campaign content smoke test: [`game/scripts/tests/late_campaign_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/late_campaign_content_smoke.gd)
+- Ownership-transfer smoke test: [`game/scripts/tests/ownership_transfer_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/ownership_transfer_smoke.gd)
+- Final-campaign smoke test: [`game/scripts/tests/final_campaign_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/final_campaign_smoke.gd)
 
 ## Next Session Start Here
 
-1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate Mission 17 through Mission 20 flow visually, especially prison-break clarity, hidden-sanctuary reveal pacing, and southeastern relocation readability.
-2. Extend scenario authoring through Mission 21 and beyond so the campaign no longer pauses after the current late-campaign slice.
-3. Expand mission-event actions into fuller scripting primitives for escort, rescue, betrayal follow-through, reinforcement routing, prison release, and prisoner-return scenarios.
-4. Keep building diplomacy depth on top of the current trust-demand-revenge runtime and the new dynamic build-palette scripting instead of replacing them with bespoke mission logic.
+1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate Mission 21 through Mission 25 flow visually, especially Great Library takeover readability and the final campaign-complete shell result.
+2. Extend scenario authoring beyond Mission 25 only for the expanded-content ruleset; the classic 25-mission arc now has authored runtime coverage.
+3. Expand mission-event actions into fuller scripting primitives for escort, rescue, betrayal follow-through, reinforcement routing, prison release, prisoner-return, and multi-target ownership transfer scenarios.
+4. Push next into AI depth, shell polish, and expanded-mode data layering rather than adding more placeholder classic-campaign maps.
 5. Keep the repo trace clean by updating this file and the session log whenever systems behavior changes.
 
 ## Commands
@@ -372,6 +383,24 @@ Run the late-campaign content smoke test:
   --headless `
   --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
   --script res://scripts/tests/late_campaign_content_smoke.gd
+```
+
+Run the ownership-transfer smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/ownership_transfer_smoke.gd
+```
+
+Run the final-campaign smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/final_campaign_smoke.gd
 ```
 
 ## Blockers

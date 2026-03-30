@@ -1,0 +1,110 @@
+{
+  "id": "monde22_map",
+  "name": "Mission 22 - Final Push",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "GGGGGGGGGGGGGGGGGRRR",
+    "GGGGGGGGGGGGGGGGGRRR",
+    "GGGGGGDGGGGGGGGGRRRR",
+    "GGGGFGDDGGGGGGGGRRRR",
+    "GGGFFGDDGGGGGGGGRRRR",
+    "GGGFGGGDGGGGGGGGRRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "SSGGGGGGGGGGGGGGGRRR",
+    "WSSGGGFGGGGGGGGGGRRR",
+    "WWSSGGFGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR",
+    "WWWWSGGGGGGGGGGGGRRR",
+    "WWWWWSSSSGGGGGGGRRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 5, "type": "food", "amount": 145 },
+    { "x": 5, "y": 10, "type": "food", "amount": 130 },
+    { "x": 9, "y": 4, "type": "stone", "amount": 130 },
+    { "x": 12, "y": 9, "type": "stone", "amount": 120 },
+    { "x": 15, "y": 6, "type": "parts", "amount": 90 }
+  ],
+  "player_start": { "x": 3, "y": 9 },
+  "starting_resources": { "food": 42, "stone": 30, "parts": 12, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 3, "y": 9, "team": "player" },
+    { "building_id": "culture", "x": 5, "y": 9, "team": "player" },
+    { "building_id": "barracks", "x": 5, "y": 7, "team": "player" },
+    { "building_id": "storehouse", "x": 15, "y": 4, "team": "enemy" },
+    { "building_id": "tower_cannon", "x": 16, "y": 5, "team": "enemy" },
+    { "building_id": "tower_catapult", "x": 17, "y": 7, "team": "enemy" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 2, "y": 8, "team": "player" },
+    { "unit_id": "farmer", "x": 2, "y": 10, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 8, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 10, "team": "player" },
+    { "unit_id": "mechanic", "x": 3, "y": 11, "team": "player" },
+    { "unit_id": "swordsman", "x": 6, "y": 9, "team": "player" },
+    { "unit_id": "archer", "x": 6, "y": 10, "team": "player" },
+    { "unit_id": "basher", "x": 15, "y": 3, "team": "enemy" },
+    { "unit_id": "basher", "x": 16, "y": 8, "team": "enemy" },
+    { "unit_id": "hurler", "x": 18, "y": 6, "team": "enemy" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "barracks",
+    "sanctuary",
+    "tower_catapult",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "build_sanctuary_southeast",
+      "type": "build_in_area",
+      "building_id": "sanctuary",
+      "x": 15,
+      "y": 8,
+      "width": 4,
+      "height": 5,
+      "target": 1,
+      "label": "Build a Sanctuary to the Southeast",
+      "required": true
+    },
+    {
+      "id": "destroy_all_enemy_clans",
+      "type": "clear_hostiles",
+      "target": 0,
+      "label": "Destroy all enemy Clans",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_22_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "One last push through the Shadow reaches. Build southeast and crush every last hostile clan between you and freedom." }
+      ]
+    },
+    {
+      "id": "mission_22_counterattack",
+      "trigger": { "type": "objective_complete", "objective_id": "build_sanctuary_southeast" },
+      "actions": [
+        { "type": "message", "text": "The sanctuary rises. Shadow warbands launch a desperate counterattack." },
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 8, "count": 2, "delay": 0.5, "stagger": 0.35 },
+        { "type": "schedule_enemy_wave", "unit_id": "hurler", "x": 18, "y": 6, "count": 1, "delay": 0.9 }
+      ]
+    }
+  ],
+  "diplomacy_targets": []
+}

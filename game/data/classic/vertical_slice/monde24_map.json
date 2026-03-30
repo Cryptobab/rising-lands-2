@@ -1,0 +1,102 @@
+{
+  "id": "monde24_map",
+  "name": "Mission 24 - Fertile Rumors",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "GGGGGGGGGGGGGGGGGFFF",
+    "GGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGDGGGGGGGGGFFFR",
+    "GGGGFGDDGGGGGGGGFFRR",
+    "GGGFFGDDGGGGGGGGFRRR",
+    "GGGFGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "SGGGGGGGGGGGGGGGGRRR",
+    "SSGGGGFGGGGGGGGGGRRR",
+    "WSSGGGFGGGGGGGGGGRRR",
+    "WWSSGGGGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR",
+    "WWWWSSSSSGGGGGGGRRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 5, "type": "food", "amount": 140 },
+    { "x": 5, "y": 10, "type": "food", "amount": 135 },
+    { "x": 9, "y": 4, "type": "stone", "amount": 125 },
+    { "x": 12, "y": 10, "type": "stone", "amount": 120 },
+    { "x": 15, "y": 7, "type": "parts", "amount": 90 }
+  ],
+  "player_start": { "x": 3, "y": 9 },
+  "starting_resources": { "food": 36, "stone": 30, "parts": 10, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 3, "y": 9, "team": "player" },
+    { "building_id": "culture", "x": 5, "y": 9, "team": "player" },
+    { "building_id": "barracks", "x": 5, "y": 7, "team": "player" },
+    { "building_id": "tower_cannon", "x": 16, "y": 5, "team": "enemy" },
+    { "building_id": "tower_catapult", "x": 16, "y": 8, "team": "enemy" },
+    { "building_id": "storehouse", "x": 15, "y": 6, "team": "enemy" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 2, "y": 8, "team": "player" },
+    { "unit_id": "farmer", "x": 2, "y": 10, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 8, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 10, "team": "player" },
+    { "unit_id": "mechanic", "x": 3, "y": 11, "team": "player" },
+    { "unit_id": "swordsman", "x": 6, "y": 9, "team": "player" },
+    { "unit_id": "archer", "x": 6, "y": 10, "team": "player" },
+    { "unit_id": "basher", "x": 15, "y": 4, "team": "enemy" },
+    { "unit_id": "basher", "x": 16, "y": 9, "team": "enemy" },
+    { "unit_id": "hurler", "x": 18, "y": 6, "team": "enemy" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "barracks",
+    "sanctuary",
+    "tower_catapult",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "build_sanctuary_southeast",
+      "type": "build_in_area",
+      "building_id": "sanctuary",
+      "x": 15,
+      "y": 8,
+      "width": 4,
+      "height": 5,
+      "target": 1,
+      "label": "Build a Sanctuary to the Southeast",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_24_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "The fertile lands are near, but a massive hostile presence guards the southeast. Build the sanctuary before the region collapses into war." }
+      ]
+    },
+    {
+      "id": "mission_24_massive_presence",
+      "trigger": { "type": "time_elapsed", "value": 12.0 },
+      "actions": [
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 7, "count": 3, "delay": 0.5, "stagger": 0.35 },
+        { "type": "schedule_enemy_wave", "unit_id": "hurler", "x": 18, "y": 5, "count": 2, "delay": 1.1, "stagger": 0.35 }
+      ]
+    }
+  ],
+  "diplomacy_targets": []
+}

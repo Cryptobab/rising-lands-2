@@ -14,14 +14,14 @@ The active implementation targets a professional `Godot 4` codebase for PC, usin
 
 ## Current Status
 
-This repo is in `campaign content mission-20 full slice` state.
+This repo is in `classic campaign mission-25 full slice` state.
 
 What exists now:
 
 - a new Godot project scaffold in [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game)
 - importer tooling in [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers)
 - planning and continuation docs in [`docs/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs)
-- playable Mission 1 through Mission 20 scenario maps with worker economy, mission-scoped and dynamically unlockable build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, reactive clan stances, clan trust/demand/revenge rules, late-campaign prison/sanctuary relocation scenarios, better RTS control UX, a real menu/HUD shell, command-card buttons, mission result flow, persistent shell options, chapter-two exploration and beachhead objectives, chapter-three conquest scenarios, and a deeper late-campaign diplomacy-pressure slice
+- playable Mission 1 through Mission 25 scenario maps with worker economy, mission-scoped and dynamically unlockable build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, reactive clan stances, clan trust/demand/revenge rules, ownership-transfer takeover scenarios, late-campaign prison/sanctuary relocation scenarios, full classic-campaign result flow, better RTS control UX, a real menu/HUD shell, command-card buttons, mission result flow, persistent shell options, chapter-two exploration and beachhead objectives, chapter-three conquest scenarios, and a complete classic-campaign playable slice
 
 ## Project Layout
 
@@ -103,6 +103,10 @@ In the current Godot shell:
 - Mission 18 now introduces hidden-site discovery, mid-mission Sanctuary unlocks, and sanctuary-reactivation pressure
 - Mission 19 now introduces volcanic relocation and tribute-driven convoy support on the southeastern route
 - Mission 20 now introduces treacherous route fortification, timed betrayal pressure, and another sanctuary relocation finale
+- Mission 21 and Mission 22 now extend the final molten exodus with southeast sanctuary placement under hostile-clan pressure
+- Mission 23 now introduces Great Library takeover scripting with building and unit ownership transfer
+- Mission 24 now pushes a final southeast sanctuary rush under heavy enemy presence
+- Mission 25 now delivers the final campaign annihilation battle and campaign-complete result flow
 - `F5` saves to `user://save_slot_1.json`
 - `F6` saves the active named slot profile
 - `F7` loads the active named slot profile

@@ -75,6 +75,12 @@
 - authored Mission 17 through Mission 20 scenario maps for the next late-campaign slice
 - added a dynamic build-palette smoke test for runtime palette unlock persistence
 - added a late-campaign content smoke test covering Mission 17 through Mission 20 progression
+- added a tracked next-20 execution backlog document for the current tranche
+- added control-building objective support plus mission-event building/unit ownership transfer actions
+- added campaign-complete detection and campaign-complete result payload support
+- authored Mission 21 through Mission 25 scenario maps for the remainder of the classic campaign
+- added an ownership-transfer smoke test for Great Library takeover scripting
+- added a final-campaign smoke test covering Mission 21 through Mission 25 progression and campaign completion
 
 ### Files Added Or Changed
 
@@ -133,6 +139,11 @@
 - [`game/data/classic/vertical_slice/monde18_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde18_map.json)
 - [`game/data/classic/vertical_slice/monde19_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde19_map.json)
 - [`game/data/classic/vertical_slice/monde20_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde20_map.json)
+- [`game/data/classic/vertical_slice/monde21_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde21_map.json)
+- [`game/data/classic/vertical_slice/monde22_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde22_map.json)
+- [`game/data/classic/vertical_slice/monde23_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde23_map.json)
+- [`game/data/classic/vertical_slice/monde24_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde24_map.json)
+- [`game/data/classic/vertical_slice/monde25_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde25_map.json)
 - [`tools/importers/extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/extract_classic_data.py)
 - [`tools/importers/tests/test_extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/tests/test_extract_classic_data.py)
 - [`game/scripts/tests/chapter_two_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/chapter_two_content_smoke.gd)
@@ -142,6 +153,9 @@
 - [`game/scripts/tests/mid_campaign_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mid_campaign_content_smoke.gd)
 - [`game/scripts/tests/dynamic_build_palette_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/dynamic_build_palette_smoke.gd)
 - [`game/scripts/tests/late_campaign_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/late_campaign_content_smoke.gd)
+- [`docs/NEXT-20.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/NEXT-20.md)
+- [`game/scripts/tests/ownership_transfer_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/ownership_transfer_smoke.gd)
+- [`game/scripts/tests/final_campaign_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/final_campaign_smoke.gd)
 
 ### Validation
 
@@ -171,8 +185,10 @@
 - Godot headless mid-campaign content smoke test completed without reported errors through Mission 16
 - Godot headless dynamic build-palette smoke test completed without reported errors
 - Godot headless late-campaign content smoke test completed without reported errors through Mission 20
+- Godot headless ownership-transfer smoke test completed without reported errors
+- Godot headless final-campaign smoke test completed without reported errors through Mission 25
 
 ### Outstanding
 
 - validate the project in the interactive Godot editor
-- extend the current campaign shell slice into broader content parity, deeper diplomacy, and stronger multi-mission scenario coverage beyond Mission 20
+- extend the current campaign shell slice into deeper AI, shell polish, and expanded-mode systems now that all 25 classic missions have authored runtime coverage
