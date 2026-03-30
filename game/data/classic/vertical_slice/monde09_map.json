@@ -1,0 +1,126 @@
+{
+  "id": "monde09_map",
+  "name": "Mission 9 - Fractured Authority",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "SSGGGGGGGGGGGGGGFFFF",
+    "SGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGDGGGGGGGGGFFFR",
+    "GGGGFGDDGGGGGGGGFFRR",
+    "GGGFFGDDGGGGGGGGFRRR",
+    "GGGFGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "SGGGGGGGGGGGGGGGGRRR",
+    "SSGGGGFGGGGGGGGGGRRR",
+    "WSSGGGFGGGGGGGGGGRRR",
+    "WWSSGGGGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR",
+    "WWWWSSGGGGGGGGGGGRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 4, "type": "food", "amount": 150 },
+    { "x": 3, "y": 9, "type": "food", "amount": 130 },
+    { "x": 11, "y": 3, "type": "stone", "amount": 130 },
+    { "x": 12, "y": 9, "type": "stone", "amount": 130 },
+    { "x": 15, "y": 6, "type": "parts", "amount": 95 }
+  ],
+  "player_start": { "x": 4, "y": 7 },
+  "starting_resources": { "food": 40, "stone": 30, "parts": 12, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 4, "y": 7, "team": "player" },
+    { "building_id": "culture", "x": 6, "y": 7, "team": "player" },
+    { "building_id": "library", "x": 5, "y": 5, "team": "player" },
+    { "building_id": "laboratory", "x": 7, "y": 5, "team": "player" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 3, "y": 6, "team": "player" },
+    { "unit_id": "farmer", "x": 3, "y": 8, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 6, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 8, "team": "player" },
+    { "unit_id": "mechanic", "x": 4, "y": 9, "team": "player" },
+    { "unit_id": "messenger", "x": 6, "y": 6, "team": "player" },
+    { "unit_id": "swordsman", "x": 7, "y": 7, "team": "player" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "library",
+    "laboratory",
+    "barracks",
+    "sanctuary",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "discover_two_technologies",
+      "type": "tech_count",
+      "target": 2,
+      "label": "Make two discoveries",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_9_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "Research quickly and hold the realm together. Rival clans are watching every move." }
+      ]
+    },
+    {
+      "id": "mission_9_rogues_turn",
+      "trigger": { "type": "time_elapsed", "value": 18.0 },
+      "actions": [
+        { "type": "set_clan_stance", "clan_id": "rogue_clan", "stance": "hostile", "message": "The Rogue Clan rejects your authority and rallies raiders." },
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 4, "count": 2, "delay": 1.0, "stagger": 0.4 },
+        { "type": "schedule_enemy_wave", "unit_id": "hurler", "x": 18, "y": 8, "count": 1, "delay": 2.0 }
+      ]
+    },
+    {
+      "id": "mission_9_research_secures_realm",
+      "trigger": { "type": "objective_complete", "objective_id": "discover_two_technologies" },
+      "actions": [
+        { "type": "set_clan_stance", "clan_id": "amber_clan", "stance": "allied", "message": "The Amber Clan recognizes your command and shares stores." },
+        { "type": "grant_resources", "resources": { "food": 10, "stone": 10 } }
+      ]
+    },
+    {
+      "id": "mission_9_fail_state",
+      "trigger": { "type": "time_elapsed", "value": 100.0 },
+      "actions": [
+        { "type": "set_mission_outcome", "status": "defeat", "message": "The rival clans shattered your authority before the discoveries were complete." }
+      ]
+    }
+  ],
+  "diplomacy_targets": [
+    {
+      "clan_id": "amber_clan",
+      "clan_name": "Amber Clan",
+      "x": 14,
+      "y": 4,
+      "stance": "neutral",
+      "color_hex": "d9a259"
+    },
+    {
+      "clan_id": "rogue_clan",
+      "clan_name": "Rogue Clan",
+      "x": 14,
+      "y": 10,
+      "stance": "neutral",
+      "color_hex": "9a5151"
+    }
+  ]
+}

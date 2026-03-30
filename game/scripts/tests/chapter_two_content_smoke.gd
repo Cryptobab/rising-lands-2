@@ -4,6 +4,10 @@ const GameRoot = preload("res://scripts/core/game_root.gd")
 
 
 func _init() -> void:
+    call_deferred("_run_test")
+
+
+func _run_test() -> void:
     var profile_path := "user://chapter_two_content_profile.json"
     var slot_dir := "user://chapter_two_content_slots"
 
@@ -16,13 +20,11 @@ func _init() -> void:
     game_root.campaign_state.unlock_mission("monde05")
 
     if not game_root.start_mission("monde05"):
-        push_error("Chapter two content smoke test could not start Mission 5.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test could not start Mission 5.")
         return
 
     if not game_root.current_map_path.ends_with("monde05_map.json"):
-        push_error("Chapter two content smoke test did not load the Mission 5 map.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test did not load the Mission 5 map.")
         return
 
     game_root.spawn_completed_building("tower_cannon", Vector2i(8, 6))
@@ -32,14 +34,12 @@ func _init() -> void:
     game_root.spawn_unit("swordsman", Vector2(6.5, 7.5), "player")
 
     if game_root.diplomacy_targets.size() != 2:
-        push_error("Chapter two content smoke test did not load the Mission 5 diplomacy targets.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test did not load the Mission 5 diplomacy targets.")
         return
 
     var messenger = _find_player_unit(game_root.combat_units, "messenger")
     if messenger == null:
-        push_error("Chapter two content smoke test could not find the Mission 5 messenger.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test could not find the Mission 5 messenger.")
         return
 
     var first_target = game_root.diplomacy_targets[0]
@@ -51,8 +51,7 @@ func _init() -> void:
         game_root.run_simulation_steps(1)
         messenger = _find_player_unit(game_root.combat_units, "messenger")
         if messenger == null:
-            push_error("Chapter two content smoke test lost the Mission 5 messenger before diplomacy resolved.")
-            quit(1)
+            await _fail(game_root, "Chapter two content smoke test lost the Mission 5 messenger before diplomacy resolved.")
             return
 
         if not second_target_assigned and game_root.allied_clans.has(first_target.clan_id):
@@ -63,30 +62,25 @@ func _init() -> void:
             break
 
     if game_root.world_state.mission_status != "victory":
-        push_error("Chapter two content smoke test did not complete Mission 5.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test did not complete Mission 5.")
         return
 
     if not game_root.campaign_state.is_mission_unlocked("monde06"):
-        push_error("Chapter two content smoke test did not unlock Mission 6.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test did not unlock Mission 6.")
         return
 
     if not game_root.start_mission("monde06"):
-        push_error("Chapter two content smoke test could not start Mission 6.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test could not start Mission 6.")
         return
 
     if not game_root.current_map_path.ends_with("monde06_map.json"):
-        push_error("Chapter two content smoke test did not load the Mission 6 map.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test did not load the Mission 6 map.")
         return
 
     game_root.spawn_completed_building("tower_cannon", Vector2i(8, 7))
     var scout = _find_player_unit(game_root.combat_units, "swordsman")
     if scout == null:
-        push_error("Chapter two content smoke test could not find a Mission 6 scout.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test could not find a Mission 6 scout.")
         return
 
     scout.assign_move_target(Vector2(16.5, 5.5))
@@ -94,40 +88,33 @@ func _init() -> void:
     var research_queued: bool = false
     var library_index: int = _find_building_index(game_root.buildings, "library")
     if library_index < 0:
-        push_error("Chapter two content smoke test could not find the Mission 6 library.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test could not find the Mission 6 library.")
         return
 
     for _step in range(4800):
         game_root.run_simulation_steps(1)
-
         if not research_queued and game_root.mission_state.objective_completed("explore_mine"):
             if not game_root.queue_research_for_building(library_index, "religious"):
-                push_error("Chapter two content smoke test could not queue Mission 6 religious research.")
-                quit(1)
+                await _fail(game_root, "Chapter two content smoke test could not queue Mission 6 religious research.")
                 return
             research_queued = true
         if game_root.world_state.mission_status != "active":
             break
 
     if game_root.world_state.mission_status != "victory":
-        push_error("Chapter two content smoke test did not complete Mission 6.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test did not complete Mission 6.")
         return
 
     if not game_root.campaign_state.is_mission_unlocked("monde07"):
-        push_error("Chapter two content smoke test did not unlock Mission 7.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test did not unlock Mission 7.")
         return
 
     if not game_root.start_mission("monde07"):
-        push_error("Chapter two content smoke test could not start Mission 7.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test could not start Mission 7.")
         return
 
     if not game_root.current_map_path.ends_with("monde07_map.json"):
-        push_error("Chapter two content smoke test did not load the Mission 7 map.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test did not load the Mission 7 map.")
         return
 
     game_root.spawn_completed_building("tower_cannon", Vector2i(9, 6))
@@ -137,18 +124,15 @@ func _init() -> void:
     var mission_seven_library: int = _find_building_index(game_root.buildings, "library")
     var mission_seven_lab: int = _find_building_index(game_root.buildings, "laboratory")
     if mission_seven_library < 0 or mission_seven_lab < 0:
-        push_error("Chapter two content smoke test could not find Mission 7 research buildings.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test could not find Mission 7 research buildings.")
         return
 
     if not game_root.queue_research_for_building(mission_seven_library, "agriculture"):
-        push_error("Chapter two content smoke test could not queue the first Mission 7 research.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test could not queue the first Mission 7 research.")
         return
 
     if not game_root.queue_research_for_building(mission_seven_lab, "military"):
-        push_error("Chapter two content smoke test could not queue the second Mission 7 research.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test could not queue the second Mission 7 research.")
         return
 
     for _step in range(7200):
@@ -157,29 +141,24 @@ func _init() -> void:
             break
 
     if game_root.world_state.mission_status != "victory":
-        push_error("Chapter two content smoke test did not complete Mission 7.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test did not complete Mission 7.")
         return
 
     if not game_root.campaign_state.is_mission_unlocked("monde08"):
-        push_error("Chapter two content smoke test did not unlock Mission 8.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test did not unlock Mission 8.")
         return
 
     if not game_root.start_mission("monde08"):
-        push_error("Chapter two content smoke test could not start Mission 8.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test could not start Mission 8.")
         return
 
     if not game_root.current_map_path.ends_with("monde08_map.json"):
-        push_error("Chapter two content smoke test did not load the Mission 8 map.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test did not load the Mission 8 map.")
         return
 
     var beach_builder = _find_player_worker(game_root.workers, "builder")
     if beach_builder == null:
-        push_error("Chapter two content smoke test could not find a Mission 8 builder.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test could not find a Mission 8 builder.")
         return
 
     beach_builder.assign_move_target(Vector2(16.5, 6.5))
@@ -194,13 +173,11 @@ func _init() -> void:
             break
 
     if game_root.world_state.mission_status != "victory":
-        push_error("Chapter two content smoke test did not complete Mission 8.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test did not complete Mission 8.")
         return
 
     if not game_root.campaign_state.is_mission_unlocked("monde09"):
-        push_error("Chapter two content smoke test did not unlock Mission 9.")
-        quit(1)
+        await _fail(game_root, "Chapter two content smoke test did not unlock Mission 9.")
         return
 
     print(
@@ -216,9 +193,22 @@ func _init() -> void:
     beach_builder = null
     first_target = null
     second_target = null
-    game_root.free()
-    game_root = null
-    quit()
+    await _shutdown(game_root, 0)
+
+
+func _fail(game_root, message: String) -> void:
+    push_error(message)
+    await _shutdown(game_root, 1)
+
+
+func _shutdown(game_root, exit_code: int) -> void:
+    if game_root != null:
+        if game_root.get_parent() != null:
+            game_root.get_parent().remove_child(game_root)
+        game_root.queue_free()
+    await process_frame
+    await process_frame
+    quit(exit_code)
 
 
 func _find_player_unit(units: Array, unit_id: String):

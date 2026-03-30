@@ -1,0 +1,147 @@
+{
+  "id": "monde12_map",
+  "name": "Mission 12 - Northeastern Breakout",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "GGGGGGGGGGGGGGGGGFFF",
+    "GGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGDGGGGGGGGGFFFR",
+    "GGGGFGDDGGGGGGGGFFRR",
+    "GGGFFGDDGGGGGGGGFRRR",
+    "GGGFGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGGGGGGGGGGGRRR",
+    "SGGGGGFGGGGGGGGGGRRR",
+    "SSGGGGFGGGGGGGGGGRRR",
+    "WSSGGGGGGGGGGGGGGRRR",
+    "WWSSGGGGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 5, "type": "food", "amount": 150 },
+    { "x": 4, "y": 10, "type": "food", "amount": 120 },
+    { "x": 9, "y": 3, "type": "stone", "amount": 130 },
+    { "x": 12, "y": 10, "type": "stone", "amount": 130 },
+    { "x": 16, "y": 6, "type": "parts", "amount": 90 }
+  ],
+  "player_start": { "x": 3, "y": 8 },
+  "starting_resources": { "food": 34, "stone": 26, "parts": 10, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 3, "y": 8, "team": "player" },
+    { "building_id": "culture", "x": 5, "y": 8, "team": "player" },
+    { "building_id": "barracks", "x": 5, "y": 6, "team": "player" },
+    { "building_id": "storehouse", "x": 14, "y": 3, "team": "enemy" },
+    { "building_id": "tower_cannon", "x": 14, "y": 5, "team": "enemy" },
+    { "building_id": "tower_catapult", "x": 16, "y": 4, "team": "enemy" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 2, "y": 7, "team": "player" },
+    { "unit_id": "farmer", "x": 2, "y": 9, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 7, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 9, "team": "player" },
+    { "unit_id": "mechanic", "x": 3, "y": 10, "team": "player" },
+    { "unit_id": "swordsman", "x": 6, "y": 8, "team": "player" },
+    { "unit_id": "archer", "x": 6, "y": 9, "team": "player" },
+    { "unit_id": "basher", "x": 13, "y": 4, "team": "enemy" },
+    { "unit_id": "basher", "x": 15, "y": 3, "team": "enemy" },
+    { "unit_id": "hurler", "x": 16, "y": 6, "team": "enemy" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "barracks",
+    "sanctuary",
+    "tower_catapult",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "break_the_blockade",
+      "type": "unit_in_area",
+      "unit_id": "builder",
+      "x": 14,
+      "y": 2,
+      "width": 5,
+      "height": 6,
+      "target": 1,
+      "label": "Break through the enemy blockade",
+      "required": true
+    },
+    {
+      "id": "build_northeast_sanctuary",
+      "type": "build_in_area",
+      "building_id": "sanctuary",
+      "x": 14,
+      "y": 2,
+      "width": 5,
+      "height": 6,
+      "target": 1,
+      "label": "Build a Sanctuary in the Northeast",
+      "required": true
+    },
+    {
+      "id": "destroy_all_enemy_clans",
+      "type": "clear_hostiles",
+      "target": 0,
+      "label": "Destroy all enemy clans",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_12_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "Punch through the northeastern blockade, raise a Sanctuary, and shatter the enemy holdouts." }
+      ]
+    },
+    {
+      "id": "mission_12_breakout_support",
+      "trigger": { "type": "objective_complete", "objective_id": "break_the_blockade" },
+      "actions": [
+        { "type": "set_clan_stance", "clan_id": "gold_clan", "stance": "allied", "message": "The Gold Clan sees the breakthrough and sends a relief force." },
+        { "type": "spawn_unit", "unit_id": "archer", "x": 15, "y": 7, "team": "player", "count": 2 }
+      ]
+    },
+    {
+      "id": "mission_12_last_stand",
+      "trigger": { "type": "objective_complete", "objective_id": "build_northeast_sanctuary" },
+      "actions": [
+        { "type": "message", "text": "The sanctuary beacon rises. Enemy clans launch one final counterattack." },
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 4, "count": 2, "delay": 1.0, "stagger": 0.4 },
+        { "type": "schedule_enemy_wave", "unit_id": "hurler", "x": 18, "y": 6, "count": 1, "delay": 1.6 }
+      ]
+    }
+  ],
+  "diplomacy_targets": [
+    {
+      "clan_id": "gold_clan",
+      "clan_name": "Gold Clan",
+      "x": 16,
+      "y": 8,
+      "stance": "neutral",
+      "color_hex": "d9b259"
+    },
+    {
+      "clan_id": "obsidian_clan",
+      "clan_name": "Obsidian Clan",
+      "x": 15,
+      "y": 4,
+      "stance": "hostile",
+      "color_hex": "6f5d5d"
+    }
+  ]
+}

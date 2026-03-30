@@ -1,0 +1,112 @@
+{
+  "id": "monde11_map",
+  "name": "Mission 11 - Swamp Crossing",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "SSSGGGGGGGGGGGGGGFFF",
+    "SSGGGGGGGGGGGGGGFFFF",
+    "SGGGGGGGDGGGGGGGFFFR",
+    "SGGGFGGDDGGGGGGFFFRR",
+    "SGGFFGGDDGGGGGGFFRRR",
+    "SGGFGGGGDDGGGGGGRRRR",
+    "SGGGGGGGDDGGGGGGRRRR",
+    "SGGGGGGGDDGGGGGGRRRR",
+    "SSGGGGGGGGGGGGGGRRRR",
+    "WSSGGGFGGGGGGGGGRRRR",
+    "WWSSGGFGGGGGGGGGRRRR",
+    "WWWSSGGGGGGGGGGGRRRR",
+    "WWWWSSGGGGGGGGGGRRRR",
+    "WWWWWSSGGGGGGGGGRRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 4, "type": "food", "amount": 140 },
+    { "x": 4, "y": 9, "type": "food", "amount": 120 },
+    { "x": 10, "y": 3, "type": "stone", "amount": 110 },
+    { "x": 11, "y": 9, "type": "stone", "amount": 110 },
+    { "x": 15, "y": 7, "type": "parts", "amount": 80 }
+  ],
+  "player_start": { "x": 3, "y": 7 },
+  "starting_resources": { "food": 22, "stone": 20, "parts": 8, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 3, "y": 7, "team": "player" },
+    { "building_id": "culture", "x": 5, "y": 7, "team": "player" },
+    { "building_id": "library", "x": 5, "y": 5, "team": "player" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 2, "y": 6, "team": "player" },
+    { "unit_id": "farmer", "x": 2, "y": 8, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 6, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 8, "team": "player" },
+    { "unit_id": "swordsman", "x": 6, "y": 7, "team": "player" },
+    { "unit_id": "archer", "x": 6, "y": 8, "team": "player" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "library",
+    "laboratory",
+    "barracks",
+    "sanctuary",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "cross_the_swamps",
+      "type": "unit_in_area",
+      "unit_id": "builder",
+      "x": 15,
+      "y": 5,
+      "width": 3,
+      "height": 5,
+      "target": 1,
+      "label": "Cross the swamps",
+      "required": true
+    },
+    {
+      "id": "produce_food",
+      "type": "stockpile",
+      "resource": "food",
+      "target": 50,
+      "label": "Produce 50 sacks of food",
+      "required": true
+    },
+    {
+      "id": "develop_one_technology",
+      "type": "tech_count",
+      "target": 1,
+      "label": "Develop one technology",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [
+    { "x": 18, "y": 6, "unit_id": "raptor", "delay": 30.0 }
+  ],
+  "mission_events": [
+    {
+      "id": "mission_11_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "Push a builder through the quagmire, feed the clan, and uncover a new technology." }
+      ]
+    },
+    {
+      "id": "mission_11_swamp_ambush",
+      "trigger": { "type": "unit_in_area", "unit_id": "builder", "x": 15, "y": 5, "width": 3, "height": 5, "value": 1 },
+      "actions": [
+        { "type": "message", "text": "The crossing is open, but shadow beasts now stalk the trail." },
+        { "type": "schedule_enemy_wave", "unit_id": "raptor", "x": 18, "y": 7, "count": 2, "delay": 0.5, "stagger": 0.5 }
+      ]
+    }
+  ]
+}

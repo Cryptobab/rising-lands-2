@@ -59,6 +59,12 @@
 - extended mission objectives with build-in-area support for beachhead scenarios
 - authored Mission 7 and Mission 8 scenario maps for the full chapter-two campaign slice
 - extended the chapter-two content smoke test through Mission 8 progression
+- extended diplomacy from binary alliance state into neutral/allied/hostile clan stances
+- added explicit mission-event actions for clan stance changes and forced mission outcomes
+- added a cleanup pass that clears combat target references across mission transitions to avoid leaked runtime refs in long campaign smokes
+- authored Mission 9 through Mission 12 scenario maps for the chapter-three campaign slice
+- added a chapter-three content smoke test that covers Mission 9 through Mission 12 progression
+- added a mission-event actions smoke test for hostile-clan and forced-outcome scripting
 
 ### Files Added Or Changed
 
@@ -105,9 +111,15 @@
 - [`game/data/classic/vertical_slice/monde06_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde06_map.json)
 - [`game/data/classic/vertical_slice/monde07_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde07_map.json)
 - [`game/data/classic/vertical_slice/monde08_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde08_map.json)
+- [`game/data/classic/vertical_slice/monde09_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde09_map.json)
+- [`game/data/classic/vertical_slice/monde10_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde10_map.json)
+- [`game/data/classic/vertical_slice/monde11_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde11_map.json)
+- [`game/data/classic/vertical_slice/monde12_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde12_map.json)
 - [`tools/importers/extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/extract_classic_data.py)
 - [`tools/importers/tests/test_extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/tests/test_extract_classic_data.py)
 - [`game/scripts/tests/chapter_two_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/chapter_two_content_smoke.gd)
+- [`game/scripts/tests/chapter_three_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/chapter_three_content_smoke.gd)
+- [`game/scripts/tests/mission_event_actions_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mission_event_actions_smoke.gd)
 
 ### Validation
 
@@ -130,9 +142,11 @@
 - Godot headless selection-orders smoke test completed without reported errors
 - Godot headless app-shell smoke test completed without reported errors
 - Godot headless shell-settings smoke test completed without reported errors
-- Godot headless chapter-two content smoke test completed with a passing exit code through Mission 8; Godot still reports one resource-cleanup warning on exit for that script
+- Godot headless chapter-two content smoke test completed without reported errors through Mission 8
+- Godot headless chapter-three content smoke test completed without reported errors through Mission 12
+- Godot headless mission-event actions smoke test completed without reported errors
 
 ### Outstanding
 
 - validate the project in the interactive Godot editor
-- extend the current campaign shell slice into broader content parity, deeper diplomacy, and stronger multi-mission scenario coverage beyond Mission 8
+- extend the current campaign shell slice into broader content parity, deeper diplomacy, and stronger multi-mission scenario coverage beyond Mission 12

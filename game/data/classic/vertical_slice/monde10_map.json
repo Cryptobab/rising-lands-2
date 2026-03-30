@@ -1,0 +1,120 @@
+{
+  "id": "monde10_map",
+  "name": "Mission 10 - Enemy Confederacy",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "SSGGGGGGGGGGGGGGFFFF",
+    "SGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGDGGGGGGGGGFFFR",
+    "GGGGFGDDGGGGGGGGFFRR",
+    "GGGFFGDDGGGGGGGGFRRR",
+    "GGGFGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "SGGGGGGGGGGGGGGGGRRR",
+    "SSGGGGFGGGGGGGGGGRRR",
+    "WSSGGGFGGGGGGGGGGRRR",
+    "WWSSGGGGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR",
+    "WWWWSSGGGGGGGGGGGRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 4, "type": "food", "amount": 140 },
+    { "x": 3, "y": 10, "type": "food", "amount": 120 },
+    { "x": 10, "y": 3, "type": "stone", "amount": 130 },
+    { "x": 11, "y": 9, "type": "stone", "amount": 130 },
+    { "x": 15, "y": 6, "type": "parts", "amount": 90 }
+  ],
+  "player_start": { "x": 3, "y": 7 },
+  "starting_resources": { "food": 38, "stone": 28, "parts": 10, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 3, "y": 7, "team": "player" },
+    { "building_id": "culture", "x": 5, "y": 7, "team": "player" },
+    { "building_id": "barracks", "x": 5, "y": 5, "team": "player" },
+    { "building_id": "storehouse", "x": 14, "y": 4, "team": "enemy" },
+    { "building_id": "tower_cannon", "x": 15, "y": 6, "team": "enemy" },
+    { "building_id": "storehouse", "x": 15, "y": 10, "team": "enemy" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 2, "y": 6, "team": "player" },
+    { "unit_id": "farmer", "x": 2, "y": 8, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 6, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 8, "team": "player" },
+    { "unit_id": "swordsman", "x": 6, "y": 7, "team": "player" },
+    { "unit_id": "archer", "x": 6, "y": 8, "team": "player" },
+    { "unit_id": "basher", "x": 13, "y": 4, "team": "enemy" },
+    { "unit_id": "basher", "x": 14, "y": 9, "team": "enemy" },
+    { "unit_id": "hurler", "x": 16, "y": 7, "team": "enemy" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "barracks",
+    "sanctuary",
+    "tower_catapult",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "destroy_enemy_clans",
+      "type": "clear_hostiles",
+      "target": 0,
+      "label": "Destroy enemy clans",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_10_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "The confederate clans are rallying. Break every enemy stronghold." }
+      ]
+    },
+    {
+      "id": "mission_10_ivory_betrayal",
+      "trigger": { "type": "time_elapsed", "value": 14.0 },
+      "actions": [
+        { "type": "set_clan_stance", "clan_id": "ivory_clan", "stance": "hostile", "message": "The Ivory Clan joins the confederacy and seals the roads." },
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 11, "count": 2, "delay": 0.5, "stagger": 0.4 }
+      ]
+    },
+    {
+      "id": "mission_10_victory_call",
+      "trigger": { "type": "objective_complete", "objective_id": "destroy_enemy_clans" },
+      "actions": [
+        { "type": "message", "text": "The confederate line collapses. No enemy clan holds this field." }
+      ]
+    }
+  ],
+  "diplomacy_targets": [
+    {
+      "clan_id": "ash_clan",
+      "clan_name": "Ash Clan",
+      "x": 14,
+      "y": 4,
+      "stance": "hostile",
+      "color_hex": "d0674f"
+    },
+    {
+      "clan_id": "ivory_clan",
+      "clan_name": "Ivory Clan",
+      "x": 16,
+      "y": 10,
+      "stance": "neutral",
+      "color_hex": "d6d1c2"
+    }
+  ]
+}

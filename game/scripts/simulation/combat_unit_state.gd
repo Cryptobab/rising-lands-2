@@ -189,6 +189,11 @@ func clear_diplomacy_target() -> void:
     diplomacy_target_position = Vector2.ZERO
 
 
+func clear_runtime_references() -> void:
+    target_ref = null
+    target_kind = ""
+
+
 func apply_damage(amount: float) -> bool:
     var mitigated: float = maxf(1.0, amount - (armor * 1.4))
     health = maxf(0.0, health - mitigated)

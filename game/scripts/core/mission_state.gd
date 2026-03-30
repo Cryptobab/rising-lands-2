@@ -99,6 +99,9 @@ func evaluate(snapshot: Dictionary) -> Array[String]:
                     and int(snapshot.get("enemy_units_alive", 0)) <= 0
                     and int(snapshot.get("pending_enemy_spawns", 0)) <= 0
                 )
+            "clear_hostiles":
+                current_value = int(snapshot.get("enemy_units_alive", 0)) + int(snapshot.get("enemy_building_count", 0)) + int(snapshot.get("pending_enemy_spawns", 0))
+                completed = current_value <= target_value
             _:
                 current_value = 0
                 completed = false

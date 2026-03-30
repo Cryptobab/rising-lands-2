@@ -56,6 +56,7 @@ var pending_enemy_spawns: Array = []
 var mission_events: Array = []
 var alert_log: Array[String] = []
 var allied_clans: Array[String] = []
+var hostile_clans: Array[String] = []
 var simulation_status: String = "bootstrapping"
 var selected_worker_index: int = -1
 var selected_combat_index: int = -1
@@ -416,14 +417,18 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
         return false
 
     var payload: Dictionary = parsed
+    _release_runtime_references()
     world_state = WorldStateScript.new()
     world_state.load_from_payload(payload.get("world_state", {}))
     current_map_path = str(payload.get("map_path", DEFAULT_MAP_PATH))
     current_mission_id = str(payload.get("mission_id", current_mission_id))
     active_save_slot_id = str(payload.get("save_slot_id", active_save_slot_id))
     allied_clans = []
+    hostile_clans = []
     for clan_id in payload.get("allied_clans", []):
         allied_clans.append(str(clan_id))
+    for clan_id in payload.get("hostile_clans", []):
+        hostile_clans.append(str(clan_id))
 
     map_state = MapStateScript.new()
     if not map_state.load_from_file(current_map_path):
@@ -531,6 +536,7 @@ func serialize_runtime() -> Dictionary:
         "enemy_units": _serialize_collection(enemy_units),
         "diplomacy_targets": _serialize_collection(diplomacy_targets),
         "allied_clans": allied_clans.duplicate(true),
+        "hostile_clans": hostile_clans.duplicate(true),
         "pending_enemy_spawns": pending_enemy_spawns.duplicate(true),
         "mission_events": _serialize_collection(mission_events),
         "alert_log": alert_log.duplicate(true),
@@ -570,15 +576,19 @@ func _objective_payloads_from_map() -> Array:
 func _build_mission_snapshot() -> Dictionary:
     var building_counts: Dictionary = {}
     var player_building_positions: Array = []
+    var enemy_building_count: int = 0
     for building in buildings:
-        if building.team != "player" or not building.is_alive():
+        if not building.is_alive():
             continue
-        building_counts[building.building_id] = int(building_counts.get(building.building_id, 0)) + 1
-        player_building_positions.append({
-            "building_id": building.building_id,
-            "x": building.center_position().x,
-            "y": building.center_position().y
-        })
+        if building.team == "player":
+            building_counts[building.building_id] = int(building_counts.get(building.building_id, 0)) + 1
+            player_building_positions.append({
+                "building_id": building.building_id,
+                "x": building.center_position().x,
+                "y": building.center_position().y
+            })
+        else:
+            enemy_building_count += 1
 
     var unit_counts: Dictionary = {}
     var player_unit_positions: Array = []
@@ -608,13 +618,16 @@ func _build_mission_snapshot() -> Dictionary:
         "player_building_positions": player_building_positions,
         "unit_counts": unit_counts,
         "player_unit_positions": player_unit_positions,
+        "enemy_building_count": enemy_building_count,
         "branch_levels": world_state.branch_levels.duplicate(true),
         "unlocked_tech_count": world_state.unlocked_techs.size(),
         "elapsed_time": world_state.elapsed_time,
         "enemy_waves_spawned": world_state.enemy_waves_spawned,
         "enemy_units_alive": enemy_units.size(),
         "pending_enemy_spawns": pending_enemy_spawns.size(),
-        "allied_clans": allied_clans.duplicate(true)
+        "allied_clans": allied_clans.duplicate(true),
+        "hostile_clans": hostile_clans.duplicate(true),
+        "clan_stances": _clan_stance_map()
     }
 
 
@@ -829,11 +842,23 @@ func _load_diplomacy_targets_from_payload(payloads: Array) -> void:
     for target_payload in payloads:
         var diplomacy_target = DiplomacyTargetStateScript.new()
         diplomacy_target.load_from_payload(target_payload)
-        diplomacy_target.allied = diplomacy_target.allied or allied_clans.has(diplomacy_target.clan_id)
+        if allied_clans.has(diplomacy_target.clan_id):
+            diplomacy_target.set_stance("allied")
+        elif hostile_clans.has(diplomacy_target.clan_id):
+            diplomacy_target.set_stance("hostile")
+        else:
+            match diplomacy_target.stance:
+                "allied":
+                    if not allied_clans.has(diplomacy_target.clan_id):
+                        allied_clans.append(diplomacy_target.clan_id)
+                "hostile":
+                    if not hostile_clans.has(diplomacy_target.clan_id):
+                        hostile_clans.append(diplomacy_target.clan_id)
         diplomacy_targets.append(diplomacy_target)
 
 
 func _spawn_vertical_slice_entities() -> void:
+    _release_runtime_references()
     resource_nodes.clear()
     buildings.clear()
     construction_sites.clear()
@@ -841,6 +866,7 @@ func _spawn_vertical_slice_entities() -> void:
     combat_units.clear()
     enemy_units.clear()
     allied_clans = []
+    hostile_clans = []
     _load_diplomacy_targets_from_map()
 
     for resource_payload in map_state.resources:
@@ -1032,8 +1058,15 @@ func _update_diplomacy_state() -> void:
         if diplomacy_target == null:
             combat_unit.clear_diplomacy_target()
             continue
-        if diplomacy_target.allied:
+        if diplomacy_target.stance == "allied":
             combat_unit.clear_diplomacy_target()
+            continue
+        if diplomacy_target.is_hostile():
+            combat_unit.clear_diplomacy_target()
+            combat_unit.has_move_target = false
+            combat_unit.state = "holding"
+            combat_unit.last_action = "rebuffed by %s" % diplomacy_target.clan_name
+            _push_alert("%s refuses diplomacy and prepares for war" % diplomacy_target.clan_name)
             continue
         if combat_unit.position.distance_to(diplomacy_target.center_position()) > 0.45:
             continue
@@ -1042,9 +1075,7 @@ func _update_diplomacy_state() -> void:
 
 
 func _form_alliance(diplomacy_target, messenger) -> void:
-    diplomacy_target.allied = true
-    if not allied_clans.has(diplomacy_target.clan_id):
-        allied_clans.append(diplomacy_target.clan_id)
+    _set_clan_stance(diplomacy_target.clan_id, "allied")
     messenger.clear_diplomacy_target()
     messenger.has_move_target = false
     messenger.state = "holding"
@@ -1080,6 +1111,8 @@ func _update_mission_state() -> void:
         _push_alert("objective complete: %s" % completed_label)
 
     _update_mission_events(snapshot)
+    if world_state.mission_status != "active":
+        return
     mission_state.evaluate(_build_mission_snapshot())
 
     if _goal_complete():
@@ -1163,6 +1196,12 @@ func _execute_mission_event_action(action_payload: Dictionary) -> void:
             )
         "schedule_enemy_wave":
             _schedule_enemy_wave(action_payload)
+        "set_clan_stance":
+            _set_clan_stance(str(action_payload.get("clan_id", "")), str(action_payload.get("stance", "neutral")))
+            if action_payload.has("message"):
+                _push_alert(str(action_payload.get("message", "")))
+        "set_mission_outcome":
+            _set_mission_outcome(str(action_payload.get("status", "active")), str(action_payload.get("message", "")))
         _:
             pass
 
@@ -1186,12 +1225,69 @@ func _schedule_enemy_wave(action_payload: Dictionary) -> void:
         })
 
 
+func _set_clan_stance(clan_id: String, stance: String) -> void:
+    if clan_id.is_empty():
+        return
+
+    allied_clans.erase(clan_id)
+    hostile_clans.erase(clan_id)
+    match stance:
+        "allied":
+            if not allied_clans.has(clan_id):
+                allied_clans.append(clan_id)
+        "hostile":
+            if not hostile_clans.has(clan_id):
+                hostile_clans.append(clan_id)
+        _:
+            pass
+
+    var diplomacy_target = _find_diplomacy_target_by_id(clan_id)
+    if diplomacy_target != null:
+        diplomacy_target.set_stance(stance)
+
+
+func _set_mission_outcome(status: String, message: String = "") -> void:
+    match status:
+        "victory":
+            world_state.mission_status = "victory"
+            simulation_status = message if not message.is_empty() else "mission goal complete"
+            _register_campaign_outcome(true)
+        "defeat":
+            world_state.mission_status = "defeat"
+            simulation_status = message if not message.is_empty() else "mission failed"
+            _register_campaign_outcome(false)
+        _:
+            world_state.mission_status = "active"
+            if not message.is_empty():
+                simulation_status = message
+
+
+func _clan_stance_map() -> Dictionary:
+    var payload: Dictionary = {}
+    for diplomacy_target in diplomacy_targets:
+        payload[diplomacy_target.clan_id] = diplomacy_target.stance
+    for clan_id in allied_clans:
+        payload[str(clan_id)] = "allied"
+    for clan_id in hostile_clans:
+        payload[str(clan_id)] = "hostile"
+    return payload
+
+
 func _goal_complete() -> bool:
     if mission_state.runtime_objectives.is_empty():
         var food_target: int = int(map_state.storehouse_goal.get("food", 0))
         var stone_target: int = int(map_state.storehouse_goal.get("stone", 0))
         return int(world_state.resources.get("food", 0)) >= food_target and int(world_state.resources.get("stone", 0)) >= stone_target
     return mission_state.required_objectives_complete()
+
+
+func _release_runtime_references() -> void:
+    for combat_unit in combat_units:
+        if combat_unit != null:
+            combat_unit.clear_runtime_references()
+    for enemy_unit in enemy_units:
+        if enemy_unit != null:
+            enemy_unit.clear_runtime_references()
 
 
 func _map_path_for_mission(mission_id: String) -> String:
