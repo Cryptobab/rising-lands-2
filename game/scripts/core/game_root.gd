@@ -7,7 +7,7 @@ const MissionStateScript = preload("res://scripts/core/mission_state.gd")
 const MissionEventStateScript = preload("res://scripts/core/mission_event_state.gd")
 const DiplomacyTargetStateScript = preload("res://scripts/core/diplomacy_target_state.gd")
 const MapStateScript = preload("res://scripts/core/map_state.gd")
-const ClassicDatabaseScript = preload("res://scripts/data/classic_database.gd")
+const RulesetDatabaseScript = preload("res://scripts/data/ruleset_database.gd")
 const ResourceNodeStateScript = preload("res://scripts/simulation/resource_node_state.gd")
 const BuildingStateScript = preload("res://scripts/simulation/building_state.gd")
 const ConstructionSiteStateScript = preload("res://scripts/simulation/construction_site_state.gd")
@@ -16,6 +16,7 @@ const CombatUnitStateScript = preload("res://scripts/simulation/combat_unit_stat
 
 const TILE_SIZE: float = 40.0
 const MAP_TOP_MARGIN: float = 160.0
+const DEFAULT_RULESET_ID: String = "classic"
 const DEFAULT_MAP_PATH: String = "res://data/classic/vertical_slice/mission_001_map.json"
 const DEFAULT_SAVE_PATH: String = "user://save_slot_1.json"
 const MAX_ALERT_LOG: int = 6
@@ -43,7 +44,7 @@ var world_state
 var campaign_state
 var mission_state
 var map_state
-var classic_database
+var ruleset_database
 var debug_label: Label
 var resource_nodes: Array = []
 var buildings: Array = []
@@ -74,7 +75,8 @@ var selection_drag_current: Vector2 = Vector2.ZERO
 var runtime_initialized: bool = false
 var ui_enabled: bool = false
 var auto_enemy_pressure_enabled: bool = true
-var current_mission_id: String = "monde01"
+var ruleset_id: String = DEFAULT_RULESET_ID
+var current_mission_id: String = ""
 var current_map_path: String = DEFAULT_MAP_PATH
 var active_save_slot_id: String = "slot_1"
 var campaign_profile_path: String = "user://campaign_profile.json"
@@ -96,8 +98,9 @@ func initialize_runtime(show_ui: bool = true) -> void:
         set_process_unhandled_input(show_ui)
         return
 
-    classic_database = ClassicDatabaseScript.new()
-    classic_database.load_from_dir()
+    if not _ensure_ruleset_database():
+        simulation_status = "ruleset unavailable: %s" % ruleset_id
+        return
     _initialize_campaign_state(show_ui)
     _bootstrap_runtime_state()
     runtime_initialized = true
@@ -120,10 +123,69 @@ func run_simulation_steps(step_count: int, delta: float = 1.0 / 60.0) -> void:
         advance_simulation(delta)
 
 
+func configure_ruleset(next_ruleset_id: String, restart_runtime: bool = false) -> bool:
+    var normalized_ruleset_id: String = str(next_ruleset_id).strip_edges().to_lower()
+    if normalized_ruleset_id.is_empty():
+        normalized_ruleset_id = DEFAULT_RULESET_ID
+
+    if ruleset_database != null and ruleset_id == normalized_ruleset_id:
+        return true
+
+    var next_database = RulesetDatabaseScript.new()
+    next_database.load_ruleset(normalized_ruleset_id)
+    if not next_database.available:
+        return false
+
+    ruleset_database = next_database
+    ruleset_id = ruleset_database.ruleset_id
+    current_mission_id = _default_mission_id()
+    current_map_path = _default_map_path()
+
+    if campaign_state != null:
+        campaign_state.bootstrap_from_missions(ruleset_database.missions, ruleset_id)
+        if not current_mission_id.is_empty():
+            campaign_state.set_active_mission(current_mission_id)
+
+    if runtime_initialized and restart_runtime:
+        _bootstrap_runtime_state()
+        _refresh_debug_text()
+        if is_inside_tree():
+            queue_redraw()
+
+    return true
+
+
+func _ensure_ruleset_database() -> bool:
+    if ruleset_database != null:
+        return true
+    return configure_ruleset(ruleset_id, false)
+
+
+func _default_mission_id() -> String:
+    if ruleset_database == null:
+        return "monde01"
+    if not ruleset_database.default_mission_id.is_empty():
+        return ruleset_database.default_mission_id
+    if not ruleset_database.missions.is_empty():
+        return str(ruleset_database.missions[0].get("id", ""))
+    return ""
+
+
+func _default_map_path() -> String:
+    if ruleset_database == null:
+        return DEFAULT_MAP_PATH
+    if not ruleset_database.default_map_path.is_empty():
+        return ruleset_database.default_map_path
+    var mission_id: String = _default_mission_id()
+    if not mission_id.is_empty():
+        return ruleset_database.mission_map_path(mission_id)
+    return DEFAULT_MAP_PATH
+
+
 func _initialize_campaign_state(auto_load_profile: bool) -> void:
     campaign_state = CampaignStateScript.new()
-    campaign_state.bootstrap_from_missions(classic_database.missions)
-    current_mission_id = campaign_state.active_mission_id
+    campaign_state.bootstrap_from_missions(ruleset_database.missions, ruleset_id)
+    current_mission_id = campaign_state.active_mission_id if not campaign_state.active_mission_id.is_empty() else _default_mission_id()
     current_map_path = _map_path_for_mission(current_mission_id)
 
     if auto_load_profile and FileAccess.file_exists(campaign_profile_path):
@@ -135,9 +197,9 @@ func _bootstrap_runtime_state() -> void:
     mission_state = MissionStateScript.new()
     map_state = MapStateScript.new()
 
-    world_state.bootstrap_classic_vertical_slice()
+    world_state.bootstrap_runtime(ruleset_id)
     if not map_state.load_from_file(current_map_path):
-        current_map_path = DEFAULT_MAP_PATH
+        current_map_path = _default_map_path()
         map_state.load_from_file(current_map_path)
 
     if map_state.width > 0 and map_state.height > 0:
@@ -148,7 +210,7 @@ func _bootstrap_runtime_state() -> void:
 
     _load_mission_record()
     _load_mission_events_from_map()
-    _spawn_vertical_slice_entities()
+    _spawn_map_entities()
     pending_enemy_spawns = map_state.enemy_spawns.duplicate(true)
     enemy_ai_state = _normalize_enemy_ai_plans(map_state.enemy_ai_plans)
     _apply_enemy_ai_to_existing_units()
@@ -163,7 +225,7 @@ func _bootstrap_runtime_state() -> void:
 
 
 func start_mission(mission_id: String, map_path: String = "") -> bool:
-    if classic_database == null:
+    if ruleset_database == null:
         initialize_runtime(false)
 
     if campaign_state == null:
@@ -194,6 +256,7 @@ func advance_simulation(delta: float) -> void:
     _update_buildings(delta)
     _sync_enemy_ai_assignments()
     var enemy_ai_contexts: Dictionary = _build_enemy_ai_contexts()
+    var hostile_player_buildings: Array = _player_owned_buildings()
     _update_worker_home_positions()
 
     for worker in workers:
@@ -208,7 +271,7 @@ func advance_simulation(delta: float) -> void:
             world_state,
             combat_units,
             workers,
-            buildings,
+            hostile_player_buildings,
             enemy_units,
             _enemy_ai_context_for_unit(enemy_unit, enemy_ai_contexts)
         )
@@ -227,7 +290,7 @@ func advance_simulation(delta: float) -> void:
 
 
 func spawn_completed_building(building_id: String, tile: Vector2i, team: String = "player") -> int:
-    var building_record: Dictionary = classic_database.find_building(building_id)
+    var building_record: Dictionary = ruleset_database.find_building(building_id)
     if building_record.is_empty():
         return -1
 
@@ -240,7 +303,7 @@ func spawn_completed_building(building_id: String, tile: Vector2i, team: String 
 
 
 func spawn_unit(unit_id: String, position: Vector2, team: String = "player") -> Variant:
-    var unit_record: Dictionary = classic_database.find_unit(unit_id)
+    var unit_record: Dictionary = ruleset_database.find_unit(unit_id)
     if unit_record.is_empty():
         return null
 
@@ -268,7 +331,7 @@ func queue_training_for_building(building_index: int, unit_id: String) -> bool:
     if not building.is_alive() or not building.can_train_unit(unit_id):
         return false
 
-    var unit_record: Dictionary = classic_database.find_unit(unit_id)
+    var unit_record: Dictionary = ruleset_database.find_unit(unit_id)
     if unit_record.is_empty():
         return false
 
@@ -291,7 +354,7 @@ func queue_research_for_building(building_index: int, branch: String) -> bool:
     if not building.is_alive() or not building.can_research():
         return false
 
-    var tech_record: Dictionary = classic_database.next_tech_for_branch(branch, world_state.unlocked_techs)
+    var tech_record: Dictionary = ruleset_database.next_tech_for_branch(branch, world_state.unlocked_techs)
     if tech_record.is_empty():
         simulation_status = "branch exhausted: %s" % branch
         return false
@@ -313,7 +376,7 @@ func queue_research_for_building(building_index: int, branch: String) -> bool:
 
 
 func save_campaign_profile(path: String = campaign_profile_path) -> bool:
-    if classic_database == null:
+    if ruleset_database == null:
         return false
 
     if campaign_state == null:
@@ -324,6 +387,7 @@ func save_campaign_profile(path: String = campaign_profile_path) -> bool:
         return false
 
     file.store_string(JSON.stringify({
+        "ruleset_id": ruleset_id,
         "campaign_state": campaign_state.serialize(),
         "active_save_slot_id": active_save_slot_id,
         "current_mission_id": current_mission_id,
@@ -334,7 +398,10 @@ func save_campaign_profile(path: String = campaign_profile_path) -> bool:
 
 
 func load_campaign_profile(path: String = campaign_profile_path) -> bool:
-    if classic_database == null or not FileAccess.file_exists(path):
+    if not FileAccess.file_exists(path):
+        return false
+
+    if not _ensure_ruleset_database():
         return false
 
     var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
@@ -342,14 +409,19 @@ func load_campaign_profile(path: String = campaign_profile_path) -> bool:
         return false
 
     var payload: Dictionary = parsed
+    var payload_ruleset_id: String = str(payload.get("ruleset_id", payload.get("campaign_state", {}).get("ruleset_id", ruleset_id)))
+    if not payload_ruleset_id.is_empty() and payload_ruleset_id != ruleset_id:
+        if not configure_ruleset(payload_ruleset_id, false):
+            return false
+
     if campaign_state == null:
         campaign_state = CampaignStateScript.new()
 
-    campaign_state.load_from_payload(payload.get("campaign_state", {}), classic_database.missions)
+    campaign_state.load_from_payload(payload.get("campaign_state", {}), ruleset_database.missions, ruleset_id)
     active_save_slot_id = str(payload.get("active_save_slot_id", active_save_slot_id))
     current_mission_id = str(payload.get("current_mission_id", campaign_state.active_mission_id))
     if current_mission_id.is_empty():
-        current_mission_id = campaign_state.active_mission_id
+        current_mission_id = campaign_state.active_mission_id if not campaign_state.active_mission_id.is_empty() else _default_mission_id()
     current_map_path = str(payload.get("current_map_path", _map_path_for_mission(current_mission_id)))
     campaign_state.set_active_mission(current_mission_id)
     return true
@@ -369,6 +441,8 @@ func save_to_slot(slot_id: String = active_save_slot_id) -> bool:
 
     if campaign_state != null:
         campaign_state.set_slot_metadata(slot_id, {
+            "ruleset_id": ruleset_id,
+            "ruleset_name": ruleset_database.display_name,
             "mission_id": current_mission_id,
             "mission_title": mission_state.title,
             "map_path": current_map_path,
@@ -432,11 +506,19 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
         return false
 
     var payload: Dictionary = parsed
+    var payload_ruleset_id: String = str(payload.get("ruleset_id", ruleset_id))
+    if not payload_ruleset_id.is_empty() and payload_ruleset_id != ruleset_id:
+        if not configure_ruleset(payload_ruleset_id, false):
+            return false
+
     _release_runtime_references()
     world_state = WorldStateScript.new()
     world_state.load_from_payload(payload.get("world_state", {}))
-    current_map_path = str(payload.get("map_path", DEFAULT_MAP_PATH))
-    current_mission_id = str(payload.get("mission_id", current_mission_id))
+    ruleset_id = str(payload.get("ruleset_id", world_state.ruleset_id)).strip_edges().to_lower()
+    if ruleset_id.is_empty():
+        ruleset_id = DEFAULT_RULESET_ID
+    current_map_path = str(payload.get("map_path", _default_map_path()))
+    current_mission_id = str(payload.get("mission_id", current_mission_id if not current_mission_id.is_empty() else _default_mission_id()))
     active_save_slot_id = str(payload.get("save_slot_id", active_save_slot_id))
     allied_clans = []
     hostile_clans = []
@@ -452,7 +534,7 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
         map_state.build_palette = payload.get("build_palette", []).duplicate(true)
 
     mission_state = MissionStateScript.new()
-    var mission_record: Dictionary = classic_database.find_mission(current_mission_id)
+    var mission_record: Dictionary = ruleset_database.find_mission(current_mission_id)
     if mission_record.is_empty():
         mission_state.load_stub_mission(current_mission_id)
     else:
@@ -471,7 +553,7 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
 
     buildings = []
     for building_payload in payload.get("buildings", []):
-        var building_record: Dictionary = classic_database.find_building(str(building_payload.get("building_id", "")))
+        var building_record: Dictionary = ruleset_database.find_building(str(building_payload.get("building_id", "")))
         if building_record.is_empty():
             continue
         var building = BuildingStateScript.new()
@@ -480,14 +562,14 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
 
     construction_sites = []
     for site_payload in payload.get("construction_sites", []):
-        var site_record: Dictionary = classic_database.find_building(str(site_payload.get("building_id", "")))
+        var site_record: Dictionary = ruleset_database.find_building(str(site_payload.get("building_id", "")))
         var construction_site = ConstructionSiteStateScript.new()
         construction_site.load_from_payload(site_payload, site_record)
         construction_sites.append(construction_site)
 
     workers = []
     for worker_payload in payload.get("workers", []):
-        var worker_record: Dictionary = classic_database.find_unit(str(worker_payload.get("unit_id", "")))
+        var worker_record: Dictionary = ruleset_database.find_unit(str(worker_payload.get("unit_id", "")))
         if worker_record.is_empty():
             continue
         var worker = WorkerUnitStateScript.new()
@@ -496,7 +578,7 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
 
     combat_units = []
     for unit_payload in payload.get("combat_units", []):
-        var combat_record: Dictionary = classic_database.find_unit(str(unit_payload.get("unit_id", "")))
+        var combat_record: Dictionary = ruleset_database.find_unit(str(unit_payload.get("unit_id", "")))
         if combat_record.is_empty():
             continue
         var combat_unit = CombatUnitStateScript.new()
@@ -505,7 +587,7 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
 
     enemy_units = []
     for unit_payload in payload.get("enemy_units", []):
-        var enemy_record: Dictionary = classic_database.find_unit(str(unit_payload.get("unit_id", "")))
+        var enemy_record: Dictionary = ruleset_database.find_unit(str(unit_payload.get("unit_id", "")))
         if enemy_record.is_empty():
             continue
         var enemy_unit = CombatUnitStateScript.new()
@@ -543,6 +625,7 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
 
 func serialize_runtime() -> Dictionary:
     return {
+        "ruleset_id": ruleset_id,
         "map_path": current_map_path,
         "mission_id": current_mission_id,
         "save_slot_id": active_save_slot_id,
@@ -830,7 +913,7 @@ func _minimap_point(world_position: Vector2, minimap_origin: Vector2) -> Vector2
 
 
 func _load_mission_record() -> void:
-    var mission_record: Dictionary = classic_database.find_mission(current_mission_id)
+    var mission_record: Dictionary = ruleset_database.find_mission(current_mission_id)
     if mission_record.is_empty():
         mission_state.load_stub_mission(current_mission_id)
     else:
@@ -880,7 +963,7 @@ func _load_diplomacy_targets_from_payload(payloads: Array) -> void:
         diplomacy_targets.append(diplomacy_target)
 
 
-func _spawn_vertical_slice_entities() -> void:
+func _spawn_map_entities() -> void:
     _release_runtime_references()
     resource_nodes.clear()
     buildings.clear()
@@ -963,7 +1046,7 @@ func _handle_completed_building_job(building, completed_job: Dictionary) -> void
                     _apply_enemy_ai_to_actor(trained_actor, completed_job)
                 simulation_status = "%s trained %s" % [building.name, str(completed_job.get("id", "unit"))]
         "research":
-            var tech_record: Dictionary = classic_database.find_tech(str(completed_job.get("id", "")))
+            var tech_record: Dictionary = ruleset_database.find_tech(str(completed_job.get("id", "")))
             if world_state.register_research(tech_record):
                 _refresh_player_modifiers()
                 simulation_status = "researched %s" % str(tech_record.get("id", "tech"))
@@ -1037,7 +1120,7 @@ func _update_enemy_ai() -> void:
             enemy_ai_state[index] = plan
             continue
 
-        var unit_record: Dictionary = classic_database.find_unit(unit_id)
+        var unit_record: Dictionary = ruleset_database.find_unit(unit_id)
         if unit_record.is_empty():
             enemy_ai_state[index] = plan
             continue
@@ -1061,7 +1144,7 @@ func _enemy_unit_count(unit_id: String) -> int:
 
 func _find_enemy_training_building(plan: Dictionary):
     var building_id: String = str(plan.get("building_id", ""))
-    var search_rect := _action_rect(plan)
+    var search_rect: Rect2 = _action_rect(plan)
     for building in buildings:
         if building == null or building.team != "enemy" or not building.is_alive():
             continue
@@ -1265,7 +1348,7 @@ func _enemy_ai_directive_from_plan(plan: Dictionary) -> Dictionary:
     }
 
 
-func _enemy_ai_wave_directive(action_payload: Dictionary, unit_id: String, base_delay: float) -> Dictionary:
+func _enemy_ai_wave_plan(action_payload: Dictionary, unit_id: String, base_delay: float) -> Dictionary:
     if not _payload_has_enemy_ai_fields(action_payload):
         return {}
 
@@ -1277,7 +1360,13 @@ func _enemy_ai_wave_directive(action_payload: Dictionary, unit_id: String, base_
         int(round(base_delay * 10.0)),
         pending_enemy_spawns.size()
     ]))
-    var normalized_plan: Dictionary = _normalize_enemy_ai_plan(plan_payload, pending_enemy_spawns.size())
+    return _normalize_enemy_ai_plan(plan_payload, pending_enemy_spawns.size())
+
+
+func _enemy_ai_wave_directive(action_payload: Dictionary, unit_id: String, base_delay: float) -> Dictionary:
+    var normalized_plan: Dictionary = _enemy_ai_wave_plan(action_payload, unit_id, base_delay)
+    if normalized_plan.is_empty():
+        return {}
     return _enemy_ai_directive_from_plan(normalized_plan)
 
 
@@ -1351,6 +1440,27 @@ func _enemy_ai_plan_by_id(plan_id: String) -> Dictionary:
     return {}
 
 
+func _upsert_enemy_ai_plan(plan_payload: Dictionary) -> void:
+    if plan_payload.is_empty():
+        return
+
+    var plan_id: String = str(plan_payload.get("id", ""))
+    if plan_id.is_empty():
+        return
+
+    for index in range(enemy_ai_state.size()):
+        if str(enemy_ai_state[index].get("id", "")) != plan_id:
+            continue
+        var existing_plan: Dictionary = enemy_ai_state[index].duplicate(true)
+        var existing_group_released: bool = bool(existing_plan.get("group_released", false))
+        var next_plan: Dictionary = plan_payload.duplicate(true)
+        next_plan["group_released"] = bool(next_plan.get("group_released", existing_group_released))
+        enemy_ai_state[index] = next_plan
+        return
+
+    enemy_ai_state.append(plan_payload.duplicate(true))
+
+
 func _matching_enemy_ai_plan_for_unit(enemy_unit) -> Dictionary:
     var best_plan: Dictionary = {}
     var best_distance: float = INF
@@ -1418,7 +1528,7 @@ func _build_enemy_ai_contexts() -> Dictionary:
         contexts[plan_id] = {
             "plan_unit_count": unit_count,
             "plan_rally_count": rally_count,
-            "group_ready": group_released or unit_count >= min_group_size
+            "group_ready": group_released
         }
     return contexts
 
@@ -1708,7 +1818,10 @@ func _schedule_enemy_wave(action_payload: Dictionary) -> void:
     var stagger: float = maxf(0.0, float(action_payload.get("stagger", 0.0)))
     var unit_id: String = str(action_payload.get("unit_id", "basher"))
     var enemy_ai_plan_id: String = str(action_payload.get("enemy_ai_plan_id", ""))
+    var wave_ai_plan: Dictionary = _enemy_ai_wave_plan(action_payload, unit_id, base_delay)
     var enemy_ai_directive: Dictionary = _enemy_ai_wave_directive(action_payload, unit_id, base_delay)
+    if enemy_ai_plan_id.is_empty() and not wave_ai_plan.is_empty():
+        _upsert_enemy_ai_plan(wave_ai_plan)
 
     for index in range(spawn_count):
         var spawn_payload := {
@@ -1939,7 +2052,7 @@ func _clan_demand_satisfied(snapshot: Dictionary, diplomacy_target) -> bool:
 func _find_matching_building(action_payload: Dictionary):
     var target_building_id: String = str(action_payload.get("building_id", ""))
     var source_team: String = str(action_payload.get("source_team", ""))
-    var search_rect := _action_rect(action_payload)
+    var search_rect: Rect2 = _action_rect(action_payload)
 
     for building in buildings:
         if building == null or not building.is_alive():
@@ -1957,7 +2070,7 @@ func _find_matching_building(action_payload: Dictionary):
 func _find_matching_unit(action_payload: Dictionary):
     var target_unit_id: String = str(action_payload.get("unit_id", ""))
     var source_team: String = str(action_payload.get("source_team", ""))
-    var search_rect := _action_rect(action_payload)
+    var search_rect: Rect2 = _action_rect(action_payload)
 
     for unit in combat_units + enemy_units:
         if unit == null or not unit.is_alive():
@@ -1999,9 +2112,10 @@ func _release_runtime_references() -> void:
 
 
 func _map_path_for_mission(mission_id: String) -> String:
-    var candidate_path: String = "res://data/classic/vertical_slice/%s_map.json" % mission_id
-    if FileAccess.file_exists(candidate_path):
-        return candidate_path
+    if ruleset_database != null:
+        var candidate_path: String = ruleset_database.mission_map_path(mission_id)
+        if not candidate_path.is_empty() and FileAccess.file_exists(candidate_path):
+            return candidate_path
     return DEFAULT_MAP_PATH
 
 
@@ -2042,7 +2156,7 @@ func _remap_selection_indices(indices: Array[int], index_map: Dictionary) -> Arr
 
 
 func _mission_display_name(mission_id: String) -> String:
-    var mission_record: Dictionary = classic_database.find_mission(mission_id)
+    var mission_record: Dictionary = ruleset_database.find_mission(mission_id)
     if not mission_record.is_empty():
         return _mission_frame_text(mission_record, mission_id)
     return mission_id
@@ -2310,7 +2424,7 @@ func _place_construction_site(tile: Vector2i, building_id: String) -> void:
         simulation_status = "invalid build location"
         return
 
-    var building_record: Dictionary = classic_database.find_building(building_id)
+    var building_record: Dictionary = ruleset_database.find_building(building_id)
     if building_record.is_empty():
         simulation_status = "unknown building"
         return
@@ -2644,7 +2758,7 @@ func _context_hint_for_building(building) -> String:
 
 
 func _building_display_name(building_id: String) -> String:
-    var building_record: Dictionary = classic_database.find_building(building_id)
+    var building_record: Dictionary = ruleset_database.find_building(building_id)
     if not building_record.is_empty():
         return str(building_record.get("name", building_id))
     return building_id
@@ -2945,13 +3059,13 @@ func set_interactive_runtime(enabled: bool) -> void:
 
 
 func mission_record_for_id(mission_id: String = "") -> Dictionary:
-    if classic_database == null:
+    if ruleset_database == null:
         return {}
 
     var resolved_id: String = mission_id
     if resolved_id.is_empty():
         resolved_id = current_mission_id
-    return classic_database.find_mission(resolved_id)
+    return ruleset_database.find_mission(resolved_id)
 
 
 func mission_frame_for_id(mission_id: String = "") -> String:
@@ -2967,7 +3081,8 @@ func mission_synopsis_for_id(mission_id: String = "") -> String:
 
 
 func build_ui_snapshot() -> Dictionary:
-    var summary: Dictionary = classic_database.summary()
+    var summary: Dictionary = ruleset_database.summary()
+    var ruleset_summary: Dictionary = ruleset_database.ruleset_summary()
     var active_record: Dictionary = mission_record_for_id()
     var mission_label: String = _mission_label(active_record, current_mission_id)
     var chapter_text: String = _mission_chapter_text(active_record)
@@ -3088,6 +3203,9 @@ func build_ui_snapshot() -> Dictionary:
         result_payload["body"] = "%s broke under pressure. Retry the mission or regroup in the campaign shell." % _mission_frame_text(active_record, current_mission_id)
 
     return {
+        "ruleset_id": ruleset_id,
+        "ruleset_name": str(ruleset_summary.get("display_name", ruleset_id)),
+        "ruleset_summary": ruleset_summary.duplicate(true),
         "campaign_text": campaign_text,
         "campaign_summary_lines": campaign_summary_lines,
         "objective_lines": objective_lines,
@@ -3137,6 +3255,7 @@ func _refresh_debug_text() -> void:
         "Godot campaign UX slice",
         "Controls: LMB click/select | drag box-select | RMB assign/move | 1-9, M, 0, -, = build palette",
         "Systems: Q/W/E/R/T/Y context | F5 save | F9 load",
+        "Ruleset: %s (%s)" % [str(snapshot.get("ruleset_name", "")), str(snapshot.get("ruleset_id", ""))],
         str(snapshot.get("build_palette_label", "")),
         "Mission: %s" % str(snapshot.get("mission_title", "")),
         str(snapshot.get("campaign_text", "")),
@@ -3159,7 +3278,8 @@ func _refresh_debug_text() -> void:
         "Research: %s" % str(snapshot.get("research_text", "")),
         "Forces: %s" % str(snapshot.get("forces_text", "")),
         "Tick: %s" % str(snapshot.get("tick_text", "")),
-        "Classic data: %d units, %d buildings, %d missions" % [
+        "%s data: %d units, %d buildings, %d missions" % [
+            str(snapshot.get("ruleset_name", "Ruleset")),
             int(summary.get("units", 0)),
             int(summary.get("buildings", 0)),
             int(summary.get("missions", 0))
@@ -3181,6 +3301,17 @@ func _serialize_collection(items: Array) -> Array:
     for item in items:
         payload.append(item.serialize())
     return payload
+
+
+func _player_owned_buildings() -> Array:
+    var player_buildings: Array = []
+    for building in buildings:
+        if building == null or not building.is_alive():
+            continue
+        if building.team != "player":
+            continue
+        player_buildings.append(building)
+    return player_buildings
 
 
 func _push_alert(message: String) -> void:

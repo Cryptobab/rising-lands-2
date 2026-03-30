@@ -36,6 +36,12 @@ func _init() -> void:
         quit(1)
         return
 
+    var beta_metadata: Dictionary = game_root.campaign_state.slot_metadata("beta")
+    if str(beta_metadata.get("ruleset_id", "")) != "classic":
+        push_error("Save-slots smoke test did not persist the classic ruleset id in slot metadata.")
+        quit(1)
+        return
+
     if not game_root.load_from_slot("alpha"):
         push_error("Save-slots smoke test could not load slot alpha.")
         quit(1)
@@ -72,6 +78,11 @@ func _init() -> void:
         quit(1)
         return
 
+    if loader.campaign_state.ruleset_id != "classic":
+        push_error("Save-slots smoke test did not preserve the classic ruleset identity in the campaign profile.")
+        quit(1)
+        return
+
     if not loader.load_from_slot("beta"):
         push_error("Save-slots smoke test could not load slot beta after profile reload.")
         quit(1)
@@ -83,8 +94,9 @@ func _init() -> void:
         return
 
     print(
-        "Save-slots smoke test: slots=%d active=%s beta_parts=%d"
+        "Save-slots smoke test: ruleset=%s slots=%d active=%s beta_parts=%d"
         % [
+            loader.campaign_state.ruleset_id,
             loader.list_save_slots().size(),
             loader.active_save_slot_id,
             int(loader.world_state.resources.get("parts", 0))

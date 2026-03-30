@@ -17,7 +17,7 @@ func _run_test() -> void:
         await _fail(game_root, "Enemy AI pressure smoke test could not start the test map.")
         return
 
-    game_root.run_simulation_steps(500)
+    game_root.run_simulation_steps(360)
     var first_wave_count: int = game_root.enemy_units.size()
     if first_wave_count < 1:
         await _fail(game_root, "Enemy AI pressure smoke test did not produce the first enemy unit.")

@@ -1,0 +1,9 @@
+{
+  "id": "expanded",
+  "display_name": "Expanded Proving Ground",
+  "description": "Internal expanded-mode scaffold for ruleset-aware loading and persistence tests.",
+  "normalized_path": "res://data/expanded/normalized",
+  "map_root_path": "res://data/expanded/vertical_slice",
+  "default_mission_id": "expedition01",
+  "default_map_path": "res://data/expanded/vertical_slice/expedition01_map.json"
+}

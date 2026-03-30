@@ -247,7 +247,8 @@ func _refresh_command_buttons(actions: Array) -> void:
         var button_text: String = "%s  [%s]" % [str(action.get("label", action.get("id", ""))), str(action.get("key", ""))]
         var action_button := _make_action_button(button_text, Color("3c6d78"))
         action_button.custom_minimum_size = Vector2(0, 46)
-        action_button.pressed.connect(func(target_slot := slot_number) -> void:
+        var target_slot: int = slot_number
+        action_button.pressed.connect(func() -> void:
             game_root.invoke_selected_building_action(target_slot)
             refresh_shell_ui()
         )
@@ -671,7 +672,8 @@ func _rebuild_mission_board() -> void:
         mission_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
         mission_button.custom_minimum_size = Vector2(0, 84)
         mission_button.disabled = status == "locked"
-        mission_button.pressed.connect(func(id := mission_id) -> void: launch_mission(id))
+        var target_mission_id: String = str(mission_id)
+        mission_button.pressed.connect(func() -> void: launch_mission(target_mission_id))
         mission_button_container.add_child(mission_button)
     if mission_button_container.get_child_count() == 0:
         mission_button_container.add_child(_make_body_label("No missions unlocked yet.", Color("b6c4ca")))
@@ -717,8 +719,9 @@ func _rebuild_save_slot_rows() -> void:
 
         var use_button := _make_action_button("Use", Color("3c6d78"))
         use_button.custom_minimum_size = Vector2(74, 34)
-        use_button.pressed.connect(func(id := slot_id) -> void:
-            game_root.active_save_slot_id = id
+        var target_slot_id: String = str(slot_id)
+        use_button.pressed.connect(func() -> void:
+            game_root.active_save_slot_id = target_slot_id
             game_root.save_campaign_profile()
             menu_content_dirty = true
             refresh_shell_ui()
@@ -728,9 +731,9 @@ func _rebuild_save_slot_rows() -> void:
         var save_button := _make_action_button("Save", Color("648d48"))
         save_button.custom_minimum_size = Vector2(74, 34)
         save_button.disabled = not game_started
-        save_button.pressed.connect(func(id := slot_id) -> void:
+        save_button.pressed.connect(func() -> void:
             if game_started:
-                game_root.save_to_slot(id)
+                game_root.save_to_slot(target_slot_id)
                 menu_content_dirty = true
                 refresh_shell_ui()
         )
@@ -739,8 +742,8 @@ func _rebuild_save_slot_rows() -> void:
         var load_button := _make_action_button("Load", Color("8d6d43"))
         load_button.custom_minimum_size = Vector2(74, 34)
         load_button.disabled = not _slot_has_save(slot_id)
-        load_button.pressed.connect(func(id := slot_id) -> void:
-            if game_root.load_from_slot(id):
+        load_button.pressed.connect(func() -> void:
+            if game_root.load_from_slot(target_slot_id):
                 game_started = true
                 menu_content_dirty = true
                 show_menu(false)
@@ -875,7 +878,7 @@ func _clear_container(container: Node) -> void:
 
 func _make_panel(background: Color, border: Color) -> PanelContainer:
     var panel := PanelContainer.new()
-    panel.theme_override_styles.panel = _make_panel_style(background, border)
+    panel.add_theme_stylebox_override("panel", _make_panel_style(background, border))
     return panel
 
 
@@ -930,10 +933,10 @@ func _make_action_button(text: String, accent: Color) -> Button:
     button.text = text
     button.flat = false
     button.focus_mode = Control.FOCUS_NONE
-    button.theme_override_styles.normal = _make_button_style(accent, 0.82)
-    button.theme_override_styles.hover = _make_button_style(accent.lightened(0.08), 0.92)
-    button.theme_override_styles.pressed = _make_button_style(accent.darkened(0.12), 0.96)
-    button.theme_override_styles.disabled = _make_button_style(Color("4d565d"), 0.55)
+    button.add_theme_stylebox_override("normal", _make_button_style(accent, 0.82))
+    button.add_theme_stylebox_override("hover", _make_button_style(accent.lightened(0.08), 0.92))
+    button.add_theme_stylebox_override("pressed", _make_button_style(accent.darkened(0.12), 0.96))
+    button.add_theme_stylebox_override("disabled", _make_button_style(Color("4d565d"), 0.55))
     button.add_theme_color_override("font_color", Color("f6f6f2"))
     button.add_theme_color_override("font_hover_color", Color("ffffff"))
     button.add_theme_color_override("font_pressed_color", Color("ffffff"))

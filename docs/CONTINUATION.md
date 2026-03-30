@@ -67,6 +67,11 @@ Working now:
 - enemy combat units now advance on the player settlement when idle instead of stalling outside vision range
 - enemy production plans now normalize into persisted plan ids with rally points, aggression modes, pressure targets, target priorities, and latched group-release coordination for trained and preplaced enemy units
 - scheduled enemy waves can now carry the same AI directives or attach to an authored plan id, and those queued-wave directives persist through save/load until spawn
+- runtime bootstrap, mission lookup, shell snapshots, campaign profiles, save slots, and raw runtime saves now carry explicit `ruleset_id` metadata through a neutral ruleset-aware database loader
+- classic data now loads through a per-ruleset manifest instead of a hard-wired classic path, while existing classic campaign behavior remains unchanged
+- an internal expanded proving-ground dataset now lives under `game/data/expanded/normalized` and `game/data/expanded/vertical_slice` to prove alternate ruleset discovery and save/profile restoration
+- enemy rally groups now ignore their own buildings while forming and only release once the authored rally condition has actually latched
+- queued wave directives now register runtime AI-plan state so direct rally/pressure directives behave the same way as authored plan ids and survive save/load cleanly
 - Mission 5 through Mission 25 now have authored scenario maps with diplomacy-count, exploration-area, build-in-area, survival, prison-break escape chains, trust-demand deadlines, takeover scripts, and queued guardian-wave behavior
 - diplomacy targets now track clan trust, alliance thresholds, active demands, and revenge-on-failure state
 - mission objectives now support alliance-count, unit-in-area, reach-area-once, build-in-area, control-building, clear-hostiles, clan-trust, and demand-status checks
@@ -122,7 +127,12 @@ Not done yet:
 - Shell runtime: [`game/scripts/ui/app_shell.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/ui/app_shell.gd)
 - Campaign runtime: [`game/scripts/core/campaign_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/campaign_state.gd)
 - Godot classic loader: [`game/scripts/data/classic_database.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/data/classic_database.gd)
+- Godot ruleset loader: [`game/scripts/data/ruleset_database.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/data/ruleset_database.gd)
 - Vertical-slice map: [`game/data/classic/vertical_slice/mission_001_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/mission_001_map.json)
+- Classic ruleset manifest: [`game/data/classic/ruleset_manifest.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/ruleset_manifest.json)
+- Expanded ruleset manifest: [`game/data/expanded/ruleset_manifest.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/ruleset_manifest.json)
+- Expanded proving-ground mission: [`game/data/expanded/normalized/missions.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/normalized/missions.json)
+- Expanded proving-ground map: [`game/data/expanded/vertical_slice/expedition01_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/vertical_slice/expedition01_map.json)
 - Mission 2 map: [`game/data/classic/vertical_slice/monde02_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde02_map.json)
 - Mission 3 map: [`game/data/classic/vertical_slice/monde03_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde03_map.json)
 - Mission 4 map: [`game/data/classic/vertical_slice/monde04_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde04_map.json)
@@ -182,13 +192,14 @@ Not done yet:
 - Enemy-AI behavior smoke test: [`game/scripts/tests/enemy_ai_behaviors_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_behaviors_smoke.gd)
 - Enemy-AI wave-directives smoke test: [`game/scripts/tests/enemy_ai_wave_directives_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_wave_directives_smoke.gd)
 - Campaign-board smoke test: [`game/scripts/tests/campaign_board_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_board_smoke.gd)
+- Ruleset-loader smoke test: [`game/scripts/tests/ruleset_loader_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/ruleset_loader_smoke.gd)
 
 ## Next Session Start Here
 
-1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate the refreshed shell copy/layout plus Mission 25 reinforcement pacing on live interaction.
-2. Push next into expanded-mode data layering with explicit loader hooks and isolated `game/data/expanded` scaffolding.
-3. Broaden faction-specific AI hooks beyond the current classic rally/aggression/wave-directive layer only where late-campaign missions need it.
-4. Keep trimming shell readability gaps instead of adding placeholder systems: chapter framing is in, but post-campaign flow and deeper mission metadata are still open.
+1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate the classic shell flow plus ruleset-safe save/profile behavior on live interaction.
+2. Decide the next honest expanded-mode target on top of the new foundation: either a small playable proving-ground mission or a broader expanded database slice with actual units/buildings/tech.
+3. Keep the public shell conservative until expanded runtime content is coherent enough to justify a developer-facing or player-facing launch path.
+4. Broaden AI or shell polish only where it supports the stable classic baseline or the new ruleset foundation.
 5. Keep the repo trace clean by updating this file and the session log whenever systems behavior changes.
 
 ## Commands

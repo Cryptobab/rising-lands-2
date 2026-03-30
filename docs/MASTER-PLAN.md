@@ -55,6 +55,7 @@ As of 2026-03-29:
 - a new Godot rewrite scaffold has been created
 - importer tooling now starts from the original game files
 - classic and expanded data are being split from the start
+- explicit ruleset-aware loading now exists through per-ruleset manifests, neutral database plumbing, and ruleset-safe save/profile payloads
 
 What still does not exist:
 
@@ -114,6 +115,9 @@ Units, buildings, spells, tech trees, missions, and balance should not be buried
 
 3. `Classic and expanded content stay separated.`
 The remake baseline must remain testable without expansion noise.
+
+3a. `Ruleset identity must be explicit.`
+Runtime bootstrap, mission lookup, shell snapshots, and persistence payloads should carry `ruleset_id` instead of inferring mode from ad hoc paths or flags.
 
 4. `Version saved data.`
 Campaign carry-over will become fragile fast without explicit save versions.

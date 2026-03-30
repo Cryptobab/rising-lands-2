@@ -24,6 +24,12 @@ func _init() -> void:
         quit(1)
         return
 
+    var boot_snapshot: Dictionary = shell.game_root.build_ui_snapshot()
+    if str(boot_snapshot.get("ruleset_id", "")) != "classic":
+        push_error("App shell smoke test did not retain the classic ruleset identity on boot.")
+        quit(1)
+        return
+
     if not shell.menu_briefing_title.text.contains("Mission 01") or not shell.menu_briefing_title.text.contains("Chapter I"):
         push_error("App shell smoke test did not frame the briefing with chapter and mission metadata.")
         quit(1)
@@ -122,8 +128,9 @@ func _init() -> void:
         return
 
     print(
-        "App shell smoke test: missions=%d slots=%d hud=%s commands=%d"
+        "App shell smoke test: ruleset=%s missions=%d slots=%d hud=%s commands=%d"
         % [
+            str(boot_snapshot.get("ruleset_id", "")),
             shell.mission_button_container.get_child_count(),
             shell.save_slot_container.get_child_count(),
             str(shell.hud_mission_label.text),

@@ -1,0 +1,39 @@
+{
+  "id": "expedition01_map",
+  "name": "Expanded Loader Proving Ground",
+  "width": 12,
+  "height": 8,
+  "legend": {
+    ".": "grass"
+  },
+  "tiles": [
+    "............",
+    "............",
+    "............",
+    "............",
+    "............",
+    "............",
+    "............",
+    "............"
+  ],
+  "player_start": {
+    "x": 4,
+    "y": 3
+  },
+  "starting_resources": {
+    "food": 15,
+    "stone": 10,
+    "parts": 5,
+    "tech": 0
+  },
+  "resources": [],
+  "starting_buildings": [],
+  "starting_units": [],
+  "storehouse_goal": {},
+  "build_palette": [],
+  "enemy_spawns": [],
+  "enemy_ai_plans": [],
+  "objectives": [],
+  "mission_events": [],
+  "diplomacy_targets": []
+}

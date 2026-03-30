@@ -41,6 +41,8 @@ func _run_test() -> void:
     game_root.spawn_completed_building("sanctuary", Vector2i(16, 9))
     _destroy_hostiles(game_root)
     game_root.run_simulation_steps(30)
+    _destroy_hostiles(game_root)
+    game_root.run_simulation_steps(30)
     if game_root.world_state.mission_status != "victory":
         await _fail(game_root, "Final campaign smoke test did not complete Mission 22.")
         return

@@ -1,0 +1,13 @@
+{
+  "summary": {
+    "units": 0,
+    "buildings": 0,
+    "spells": 0,
+    "techs": 0,
+    "strings": 0,
+    "missions": 1
+  },
+  "notes": [
+    "Internal-only expanded ruleset dataset used to validate ruleset-aware loading."
+  ]
+}

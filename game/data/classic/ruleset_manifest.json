@@ -1,0 +1,9 @@
+{
+  "id": "classic",
+  "display_name": "Classic Remake",
+  "description": "Imported remake baseline with authored classic campaign content.",
+  "normalized_path": "res://data/classic/normalized",
+  "map_root_path": "res://data/classic/vertical_slice",
+  "default_mission_id": "monde01",
+  "default_map_path": "res://data/classic/vertical_slice/mission_001_map.json"
+}

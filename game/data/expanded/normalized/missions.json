@@ -1,0 +1,14 @@
+[
+  {
+    "id": "expedition01",
+    "source_file": "EXPANDED/EXPEDITION01.JSON",
+    "mission_number": 1,
+    "title": "- Expedition 1 -",
+    "chapter": "- EXPANDED PROVING GROUND -",
+    "objectives": [
+      "Survey the expanded frontier."
+    ],
+    "briefing": "- EXPANDED PROVING GROUND -\n\nThis internal-only scenario exists to prove that alternate ruleset data can boot, resolve mission metadata, and persist safely beside the classic campaign.\n\nSynopsis:\nSurvey the expanded frontier.",
+    "map_path": "res://data/expanded/vertical_slice/expedition01_map.json"
+  }
+]

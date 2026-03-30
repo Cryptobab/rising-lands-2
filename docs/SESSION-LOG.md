@@ -91,6 +91,13 @@
 - extended `schedule_enemy_wave` so scripted reinforcements can carry authored AI directives or attach to existing plan ids with save/load persistence
 - polished the shell with chapter-framed mission labels, synopsis-aware mission-board rows, richer campaign record summaries, and clearer next-mission result copy
 - added an enemy-AI wave-directives smoke test plus shell assertions for the new chapter/synopsis presentation
+- added a neutral `RulesetDatabase` layer backed by per-ruleset manifests so runtime/bootstrap logic no longer hard-wires the classic normalized path
+- threaded explicit `ruleset_id` metadata through runtime saves, campaign profiles, slot metadata, world-state payloads, and shell snapshots
+- added an internal expanded proving-ground mission/map dataset under `game/data/expanded` to prove alternate ruleset discovery without exposing a public unfinished mode
+- added a ruleset-loader smoke test and extended classic shell/save-slot smokes with ruleset-identity assertions
+- fixed enemy rally targeting so hostile units do not treat their own structures as attack targets while forming up
+- fixed rally-group release evaluation so queued-wave directives can hold, latch, and release through the same AI-plan context as authored enemy plans
+- refreshed the dedicated enemy-AI test timings/data and the final-campaign smoke so the full regression suite matches the tested runtime behavior
 
 ### Files Added Or Changed
 
@@ -110,7 +117,9 @@
 - [`game/scripts/core/map_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/map_state.gd)
 - [`game/scripts/ui/app_shell.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/ui/app_shell.gd)
 - [`game/scripts/data/classic_database.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/data/classic_database.gd)
+- [`game/scripts/data/ruleset_database.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/data/ruleset_database.gd)
 - [`game/scripts/simulation/worker_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/worker_unit_state.gd)
+- [`game/scripts/simulation/combat_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/combat_unit_state.gd)
 - [`game/scripts/simulation/resource_node_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/resource_node_state.gd)
 - [`game/scripts/simulation/building_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/building_state.gd)
 - [`game/scripts/simulation/construction_site_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/construction_site_state.gd)
@@ -155,6 +164,17 @@
 - [`game/data/classic/vertical_slice/monde24_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde24_map.json)
 - [`game/data/classic/vertical_slice/monde25_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde25_map.json)
 - [`game/data/classic/vertical_slice/enemy_ai_test_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/enemy_ai_test_map.json)
+- [`game/data/classic/ruleset_manifest.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/ruleset_manifest.json)
+- [`game/data/expanded/ruleset_manifest.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/ruleset_manifest.json)
+- [`game/data/expanded/normalized/manifest.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/normalized/manifest.json)
+- [`game/data/expanded/normalized/missions.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/normalized/missions.json)
+- [`game/data/expanded/normalized/units.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/normalized/units.json)
+- [`game/data/expanded/normalized/buildings.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/normalized/buildings.json)
+- [`game/data/expanded/normalized/spells.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/normalized/spells.json)
+- [`game/data/expanded/normalized/tech_tree.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/normalized/tech_tree.json)
+- [`game/data/expanded/normalized/strings.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/normalized/strings.json)
+- [`game/data/expanded/normalized/misc.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/normalized/misc.json)
+- [`game/data/expanded/vertical_slice/expedition01_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/vertical_slice/expedition01_map.json)
 - [`tools/importers/extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/extract_classic_data.py)
 - [`tools/importers/tests/test_extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/tests/test_extract_classic_data.py)
 - [`game/scripts/tests/chapter_two_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/chapter_two_content_smoke.gd)
@@ -171,6 +191,10 @@
 - [`game/scripts/tests/enemy_ai_behaviors_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_behaviors_smoke.gd)
 - [`game/scripts/tests/enemy_ai_wave_directives_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_wave_directives_smoke.gd)
 - [`game/scripts/tests/campaign_board_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_board_smoke.gd)
+- [`game/scripts/tests/ruleset_loader_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/ruleset_loader_smoke.gd)
+- [`game/scripts/tests/enemy_ai_pressure_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_pressure_smoke.gd)
+- [`game/scripts/tests/enemy_ai_wave_directives_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_wave_directives_smoke.gd)
+- [`game/scripts/tests/final_campaign_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/final_campaign_smoke.gd)
 
 ### Validation
 
@@ -206,6 +230,12 @@
 - Godot headless enemy-AI behaviors smoke test completed without reported errors
 - Godot headless enemy-AI wave-directives smoke test completed without reported errors
 - Godot headless campaign-board smoke test completed without reported errors
+- Godot headless ruleset-loader smoke test completed without reported errors
+- Godot headless save-slots smoke test still completed without reported errors after ruleset-id persistence was added
+- Godot headless app-shell smoke test still completed without reported errors after classic ruleset snapshot assertions were added
+- Godot headless startup completed without reported errors after the ruleset-loader tranche
+- importer unit tests passed after the ruleset-loader tranche
+- the full Godot smoke-test regression suite was re-run in explicit batches and completed without reported errors after the ruleset-loader and enemy-AI fixes
 
 ### Outstanding
 

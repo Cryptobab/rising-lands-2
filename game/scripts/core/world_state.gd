@@ -34,6 +34,7 @@ var elapsed_time: float = 0.0
 var map_seed: int = 1997
 var map_size: Vector2i = Vector2i(18, 12)
 var resources: Dictionary = {}
+var ruleset_id: String = "classic"
 var phase_name: String = "bootstrap"
 var unlocked_techs: Array = []
 var branch_levels: Dictionary = {}
@@ -43,13 +44,16 @@ var casualties: Dictionary = {}
 var mission_status: String = "active"
 
 
-func bootstrap_classic_vertical_slice() -> void:
+func bootstrap_runtime(next_ruleset_id: String = "classic", next_phase_name: String = "vertical_slice_prep") -> void:
     tick_count = 0
     elapsed_time = 0.0
     map_seed = 1997
     map_size = Vector2i(18, 12)
     resources = DEFAULT_RESOURCES.duplicate(true)
-    phase_name = "vertical_slice_prep"
+    ruleset_id = str(next_ruleset_id).strip_edges().to_lower()
+    if ruleset_id.is_empty():
+        ruleset_id = "classic"
+    phase_name = next_phase_name
     unlocked_techs = []
     branch_levels = DEFAULT_BRANCH_LEVELS.duplicate(true)
     modifiers = DEFAULT_MODIFIERS.duplicate(true)
@@ -59,6 +63,10 @@ func bootstrap_classic_vertical_slice() -> void:
         "enemy": 0
     }
     mission_status = "active"
+
+
+func bootstrap_classic_vertical_slice() -> void:
+    bootstrap_runtime("classic", "vertical_slice_prep")
 
 
 func tick(delta: float) -> void:
@@ -123,6 +131,7 @@ func serialize() -> Dictionary:
         "map_seed": map_seed,
         "map_size": {"x": map_size.x, "y": map_size.y},
         "resources": resources.duplicate(true),
+        "ruleset_id": ruleset_id,
         "phase_name": phase_name,
         "unlocked_techs": unlocked_techs.duplicate(true),
         "branch_levels": branch_levels.duplicate(true),
@@ -145,6 +154,9 @@ func load_from_payload(payload: Dictionary) -> void:
     for resource_type in payload.get("resources", {}).keys():
         resources[resource_type] = int(payload.get("resources", {}).get(resource_type, 0))
 
+    ruleset_id = str(payload.get("ruleset_id", "classic")).strip_edges().to_lower()
+    if ruleset_id.is_empty():
+        ruleset_id = "classic"
     phase_name = str(payload.get("phase_name", "vertical_slice_prep"))
     unlocked_techs = []
     for tech_id in payload.get("unlocked_techs", []):

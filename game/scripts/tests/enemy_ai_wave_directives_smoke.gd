@@ -55,7 +55,7 @@ func _run_test() -> void:
         await _fail(game_root, "Enemy AI wave directives smoke test did not persist the queued wave metadata.")
         return
 
-    game_root.run_simulation_steps(220)
+    game_root.run_simulation_steps(24)
     if game_root.enemy_units.is_empty():
         await _fail(game_root, "Enemy AI wave directives smoke test did not spawn the first reinforced unit.")
         return

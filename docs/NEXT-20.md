@@ -28,3 +28,9 @@ This document records the next bounded 20-task tranche that was selected and exe
 ## Result
 
 The classic campaign now has authored scenario coverage through Mission 25, a final-campaign smoke path, ownership-transfer scripting for takeover scenarios, and campaign-complete result support in the shell/runtime snapshot.
+
+Follow-on foundation after this tranche:
+
+- explicit `classic` / `expanded` ruleset manifests now back a neutral database loader
+- runtime saves, campaign profiles, slot metadata, and shell snapshots now carry `ruleset_id`
+- `game/data/expanded` now contains an internal proving-ground dataset used to validate alternate ruleset loading without exposing a public unfinished mode

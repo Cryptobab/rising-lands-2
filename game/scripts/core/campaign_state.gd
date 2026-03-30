@@ -1,6 +1,7 @@
 class_name CampaignState
 extends RefCounted
 
+var ruleset_id: String = "classic"
 var mission_order: Array[String] = []
 var mission_records: Dictionary = {}
 var unlocked_missions: Array[String] = []
@@ -10,7 +11,10 @@ var save_slots: Dictionary = {}
 var last_completed_mission_id: String = ""
 
 
-func bootstrap_from_missions(missions: Array) -> void:
+func bootstrap_from_missions(missions: Array, next_ruleset_id: String = "classic") -> void:
+	ruleset_id = str(next_ruleset_id).strip_edges().to_lower()
+	if ruleset_id.is_empty():
+		ruleset_id = "classic"
 	mission_order = []
 	mission_records = {}
 	unlocked_missions = []
@@ -44,8 +48,17 @@ func bootstrap_from_missions(missions: Array) -> void:
 		active_mission_id = mission_order[0]
 
 
-func load_from_payload(payload: Dictionary, missions: Array) -> void:
-	bootstrap_from_missions(missions)
+func load_from_payload(payload: Dictionary, missions: Array, expected_ruleset_id: String = "") -> void:
+	var payload_ruleset_id: String = str(payload.get("ruleset_id", ""))
+	var resolved_ruleset_id: String = str(expected_ruleset_id).strip_edges().to_lower()
+	if resolved_ruleset_id.is_empty():
+		resolved_ruleset_id = payload_ruleset_id
+	if resolved_ruleset_id.is_empty():
+		resolved_ruleset_id = "classic"
+
+	bootstrap_from_missions(missions, resolved_ruleset_id)
+	if not payload_ruleset_id.is_empty() and payload_ruleset_id != resolved_ruleset_id:
+		return
 
 	for mission_id in payload.get("unlocked_missions", []):
 		unlock_mission(str(mission_id))
@@ -78,6 +91,7 @@ func load_from_payload(payload: Dictionary, missions: Array) -> void:
 
 func serialize() -> Dictionary:
 	return {
+		"ruleset_id": ruleset_id,
 		"mission_order": mission_order.duplicate(true),
 		"mission_records": mission_records.duplicate(true),
 		"unlocked_missions": unlocked_missions.duplicate(true),
@@ -181,7 +195,9 @@ func available_missions() -> Array:
 func set_slot_metadata(slot_id: String, metadata: Dictionary) -> void:
 	if slot_id.is_empty():
 		return
-	save_slots[slot_id] = metadata.duplicate(true)
+	var normalized_metadata: Dictionary = metadata.duplicate(true)
+	normalized_metadata["ruleset_id"] = ruleset_id
+	save_slots[slot_id] = normalized_metadata
 
 
 func slot_metadata(slot_id: String) -> Dictionary:

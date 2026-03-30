@@ -102,7 +102,12 @@ func update(
         target_ref = null
         target_kind = ""
 
-    if target_ref == null and diplomacy_target_id.is_empty() and role != "civilian":
+    var attack_mode: String = str(enemy_ai.get("attack_mode", "assault"))
+    var has_rally_point: bool = bool(enemy_ai.get("has_rally_point", false))
+    var group_ready: bool = bool(runtime_context.get("group_ready", true))
+    var rally_locked: bool = team == "enemy" and attack_mode == "rally" and has_rally_point and not group_ready
+
+    if target_ref == null and diplomacy_target_id.is_empty() and role != "civilian" and not rally_locked:
         var target_payload: Dictionary = _find_nearest_target(
             hostile_units,
             hostile_workers,
@@ -116,10 +121,7 @@ func update(
 
     if team == "enemy" and target_ref == null and diplomacy_target_id.is_empty() and role != "civilian":
         var pressure_target: Vector2 = _enemy_pressure_target(hostile_units, hostile_workers, hostile_buildings)
-        var attack_mode: String = str(enemy_ai.get("attack_mode", "assault"))
         var rally_point: Vector2 = _enemy_rally_point()
-        var has_rally_point: bool = bool(enemy_ai.get("has_rally_point", false))
-        var group_ready: bool = bool(runtime_context.get("group_ready", true))
         if attack_mode == "hold":
             var hold_point: Vector2 = rally_point if has_rally_point else pressure_target
             if hold_point != Vector2.ZERO:

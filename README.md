@@ -14,20 +14,24 @@ The active implementation targets a professional `Godot 4` codebase for PC, usin
 
 ## Current Status
 
-This repo is in `classic campaign AI coordination + shell polish slice` state.
+This repo is in `classic campaign baseline complete + ruleset foundation` state.
 
 What exists now:
 
 - a new Godot project scaffold in [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game)
 - importer tooling in [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers)
 - planning and continuation docs in [`docs/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs)
+- a neutral ruleset-aware database loader with explicit `classic` and `expanded` identities, per-ruleset manifests, and ruleset-safe save/profile payloads
+- an internal expanded proving-ground dataset under [`game/data/expanded/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded) that validates alternate loader/bootstrap paths without exposing a public unfinished mode
 - playable Mission 1 through Mission 25 scenario maps with worker economy, mission-scoped and dynamically unlockable build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, reactive clan stances, clan trust/demand/revenge rules, ownership-transfer takeover scenarios, late-campaign prison/sanctuary relocation scenarios, enemy building production plans and scheduled waves with rally, aggression, and target-priority hooks, full classic-campaign result flow, better RTS control UX, a real menu/HUD shell, command-card buttons, richer chapter-framed campaign summaries, persistent shell options, a full mission board with locked/completed states, and a complete classic-campaign playable slice
 
 ## Project Layout
 
 - [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game): active Godot project
 - [`game/data/classic/raw/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/raw): imported classic data snapshots
+- [`game/data/classic/ruleset_manifest.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/ruleset_manifest.json): classic ruleset identity and path metadata
 - [`game/data/expanded/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded): new Rising Lands 2 content
+- [`game/data/expanded/ruleset_manifest.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/ruleset_manifest.json): expanded ruleset identity and path metadata
 - [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers): scripts that read the original files
 - [`docs/MASTER-PLAN.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/MASTER-PLAN.md): main roadmap
 - [`docs/CONTINUATION.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/CONTINUATION.md): handoff notes for future sessions
