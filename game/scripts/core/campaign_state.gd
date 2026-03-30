@@ -9,6 +9,8 @@ var completed_missions: Array[String] = []
 var active_mission_id: String = ""
 var save_slots: Dictionary = {}
 var last_completed_mission_id: String = ""
+var carried_unlocked_techs: Array[String] = []
+var clan_relationships: Dictionary = {}
 
 
 func bootstrap_from_missions(missions: Array, next_ruleset_id: String = "classic") -> void:
@@ -21,6 +23,8 @@ func bootstrap_from_missions(missions: Array, next_ruleset_id: String = "classic
 	completed_missions = []
 	save_slots = {}
 	last_completed_mission_id = ""
+	carried_unlocked_techs = []
+	clan_relationships = {}
 
 	var sorted_missions: Array = missions.duplicate(true)
 	sorted_missions.sort_custom(func(a, b): return int(a.get("mission_number", 0)) < int(b.get("mission_number", 0)))
@@ -87,6 +91,8 @@ func load_from_payload(payload: Dictionary, missions: Array, expected_ruleset_id
 
 	save_slots = payload.get("save_slots", {}).duplicate(true)
 	last_completed_mission_id = str(payload.get("last_completed_mission_id", ""))
+	set_carryover_research(payload.get("carried_unlocked_techs", []))
+	set_carryover_clan_relationships(payload.get("clan_relationships", {}))
 
 
 func serialize() -> Dictionary:
@@ -98,7 +104,9 @@ func serialize() -> Dictionary:
 		"completed_missions": completed_missions.duplicate(true),
 		"active_mission_id": active_mission_id,
 		"save_slots": save_slots.duplicate(true),
-		"last_completed_mission_id": last_completed_mission_id
+		"last_completed_mission_id": last_completed_mission_id,
+		"carried_unlocked_techs": carried_unlocked_techs.duplicate(true),
+		"clan_relationships": clan_relationships.duplicate(true)
 	}
 
 
@@ -181,6 +189,58 @@ func mission_count() -> int:
 
 func campaign_complete() -> bool:
 	return mission_count() > 0 and completed_count() >= mission_count()
+
+
+func set_carryover_research(unlocked_techs: Array) -> void:
+	carried_unlocked_techs = []
+	for tech_id in unlocked_techs:
+		var normalized_id: String = str(tech_id)
+		if normalized_id.is_empty() or carried_unlocked_techs.has(normalized_id):
+			continue
+		carried_unlocked_techs.append(normalized_id)
+
+
+func set_carryover_clan_relationships(relationships: Dictionary) -> void:
+	clan_relationships = {}
+	merge_carryover_clan_relationships(relationships)
+
+
+func merge_carryover_state(unlocked_techs: Array, relationships: Dictionary) -> void:
+	set_carryover_research(unlocked_techs)
+	merge_carryover_clan_relationships(relationships)
+
+
+func merge_carryover_clan_relationships(relationships: Dictionary) -> void:
+	for clan_id in relationships.keys():
+		var normalized_clan_id: String = str(clan_id)
+		if normalized_clan_id.is_empty():
+			continue
+
+		var relationship_payload: Dictionary = relationships.get(clan_id, {})
+		clan_relationships[normalized_clan_id] = {
+			"stance": str(relationship_payload.get("stance", "neutral")),
+			"trust": int(relationship_payload.get("trust", 0))
+		}
+
+
+func carryover_research() -> Array:
+	return carried_unlocked_techs.duplicate(true)
+
+
+func clan_state_for(clan_id: String) -> Dictionary:
+	return clan_relationships.get(clan_id, {}).duplicate(true)
+
+
+func carried_tech_count() -> int:
+	return carried_unlocked_techs.size()
+
+
+func carryover_clan_count_by_stance(stance: String) -> int:
+	var count: int = 0
+	for relationship in clan_relationships.values():
+		if str(relationship.get("stance", "neutral")) == stance:
+			count += 1
+	return count
 
 
 func available_missions() -> Array:

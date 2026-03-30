@@ -23,7 +23,7 @@ What exists now:
 - planning and continuation docs in [`docs/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs)
 - a neutral ruleset-aware database loader with explicit `classic` and `expanded` identities, per-ruleset manifests, and ruleset-safe save/profile payloads
 - an internal expanded proving-ground dataset under [`game/data/expanded/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded) that validates alternate loader/bootstrap paths without exposing a public unfinished mode
-- playable Mission 1 through Mission 25 scenario maps with worker economy, mission-scoped and dynamically unlockable build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, reactive clan stances, clan trust/demand/revenge rules, ownership-transfer takeover scenarios, late-campaign prison/sanctuary relocation scenarios, enemy building production plans and scheduled waves with rally, aggression, and target-priority hooks, full classic-campaign result flow, better RTS control UX, a real menu/HUD shell, command-card buttons, richer chapter-framed campaign summaries, persistent shell options, a full mission board with locked/completed states, and a complete classic-campaign playable slice
+- playable Mission 1 through Mission 25 scenario maps with worker economy, mission-scoped and dynamically unlockable build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, reactive clan stances, clan trust/demand/revenge rules, campaign-persistent research unlocks, campaign-persistent clan stance/trust carryover, ownership-transfer takeover scenarios, late-campaign prison/sanctuary relocation scenarios, enemy building production plans and scheduled waves with rally, aggression, and target-priority hooks, full classic-campaign result flow, better RTS control UX, a real menu/HUD shell, command-card buttons, richer chapter-framed campaign summaries, persistent shell options, a full mission board with locked/completed states, and a complete classic-campaign playable slice
 
 ## Project Layout
 
@@ -83,6 +83,7 @@ In the current Godot shell:
 - `culture`, `barracks`, `sanctuary`, `workshop`, `garage`, and `hangar` now expose broader trainable rosters
 - `market` now trains `messenger` for diplomacy scenarios
 - `library` and `laboratory` both support branch-based research
+- mission victory now carries research unlocks and clan stance/trust forward through the campaign profile, while explicit mission-authored clan openings still win when a scenario needs to reset the diplomatic framing
 - `tower_catapult` and `tower_cannon` auto-fire on nearby enemies
 - worker move orders now hold position properly instead of collapsing straight back into auto-gather
 - move, gather, build, attack, and diplomacy orders now create visible command markers

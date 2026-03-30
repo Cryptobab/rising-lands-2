@@ -192,6 +192,17 @@ func _initialize_campaign_state(auto_load_profile: bool) -> void:
         load_campaign_profile(campaign_profile_path)
 
 
+func _apply_campaign_research_carryover() -> void:
+    if campaign_state == null or world_state == null or ruleset_database == null:
+        return
+
+    for tech_id in campaign_state.carryover_research():
+        var tech_record: Dictionary = ruleset_database.find_tech(str(tech_id))
+        if tech_record.is_empty():
+            continue
+        world_state.register_research(tech_record)
+
+
 func _bootstrap_runtime_state() -> void:
     world_state = WorldStateScript.new()
     mission_state = MissionStateScript.new()
@@ -208,6 +219,7 @@ func _bootstrap_runtime_state() -> void:
     for resource_type in map_state.starting_resources.keys():
         world_state.resources[resource_type] = int(map_state.starting_resources.get(resource_type, 0))
 
+    _apply_campaign_research_carryover()
     _load_mission_record()
     _load_mission_events_from_map()
     _spawn_map_entities()
@@ -943,23 +955,48 @@ func _load_diplomacy_targets_from_map() -> void:
     _load_diplomacy_targets_from_payload(map_state.diplomacy_targets)
 
 
+func _campaign_clan_state_for(clan_id: String) -> Dictionary:
+    if campaign_state == null:
+        return {}
+    return campaign_state.clan_state_for(clan_id)
+
+
+func _merged_diplomacy_target_payload(target_payload: Dictionary) -> Dictionary:
+    var merged_payload: Dictionary = target_payload.duplicate(true)
+    var clan_id: String = str(merged_payload.get("clan_id", ""))
+    if clan_id.is_empty():
+        return merged_payload
+
+    var carryover_payload: Dictionary = _campaign_clan_state_for(clan_id)
+    var has_explicit_stance: bool = merged_payload.has("stance") or merged_payload.has("allied")
+    var has_explicit_trust: bool = merged_payload.has("trust")
+
+    if not has_explicit_stance:
+        if allied_clans.has(clan_id):
+            merged_payload["stance"] = "allied"
+        elif hostile_clans.has(clan_id):
+            merged_payload["stance"] = "hostile"
+        elif not carryover_payload.is_empty():
+            merged_payload["stance"] = str(carryover_payload.get("stance", "neutral"))
+
+    if not has_explicit_trust and not carryover_payload.is_empty():
+        merged_payload["trust"] = int(carryover_payload.get("trust", 0))
+
+    return merged_payload
+
+
 func _load_diplomacy_targets_from_payload(payloads: Array) -> void:
     diplomacy_targets = []
     for target_payload in payloads:
         var diplomacy_target = DiplomacyTargetStateScript.new()
-        diplomacy_target.load_from_payload(target_payload)
-        if allied_clans.has(diplomacy_target.clan_id):
-            diplomacy_target.set_stance("allied")
-        elif hostile_clans.has(diplomacy_target.clan_id):
-            diplomacy_target.set_stance("hostile")
-        else:
-            match diplomacy_target.stance:
-                "allied":
-                    if not allied_clans.has(diplomacy_target.clan_id):
-                        allied_clans.append(diplomacy_target.clan_id)
-                "hostile":
-                    if not hostile_clans.has(diplomacy_target.clan_id):
-                        hostile_clans.append(diplomacy_target.clan_id)
+        diplomacy_target.load_from_payload(_merged_diplomacy_target_payload(target_payload))
+        match diplomacy_target.stance:
+            "allied":
+                if not allied_clans.has(diplomacy_target.clan_id):
+                    allied_clans.append(diplomacy_target.clan_id)
+            "hostile":
+                if not hostile_clans.has(diplomacy_target.clan_id):
+                    hostile_clans.append(diplomacy_target.clan_id)
         diplomacy_targets.append(diplomacy_target)
 
 
@@ -1722,11 +1759,45 @@ func _player_defeated() -> bool:
     return not has_storehouse or (workers.is_empty() and combat_units.is_empty())
 
 
+func _campaign_carryover_clan_payload() -> Dictionary:
+    var payload: Dictionary = {}
+
+    for diplomacy_target in diplomacy_targets:
+        if diplomacy_target == null or diplomacy_target.clan_id.is_empty():
+            continue
+        payload[diplomacy_target.clan_id] = {
+            "stance": diplomacy_target.stance,
+            "trust": diplomacy_target.trust
+        }
+
+    for clan_id in allied_clans:
+        var normalized_id: String = str(clan_id)
+        if normalized_id.is_empty():
+            continue
+        var relationship_payload: Dictionary = payload.get(normalized_id, _campaign_clan_state_for(normalized_id))
+        relationship_payload["stance"] = "allied"
+        relationship_payload["trust"] = int(relationship_payload.get("trust", 0))
+        payload[normalized_id] = relationship_payload
+
+    for clan_id in hostile_clans:
+        var normalized_id: String = str(clan_id)
+        if normalized_id.is_empty():
+            continue
+        var relationship_payload: Dictionary = payload.get(normalized_id, _campaign_clan_state_for(normalized_id))
+        relationship_payload["stance"] = "hostile"
+        relationship_payload["trust"] = int(relationship_payload.get("trust", 0))
+        payload[normalized_id] = relationship_payload
+
+    return payload
+
+
 func _register_campaign_outcome(victory: bool) -> void:
     if mission_resolution_recorded or campaign_state == null:
         return
 
     mission_resolution_recorded = true
+    if victory:
+        campaign_state.merge_carryover_state(world_state.unlocked_techs, _campaign_carryover_clan_payload())
     var outcome: Dictionary = campaign_state.record_mission_result(current_mission_id, victory, world_state.elapsed_time)
     save_campaign_profile()
 
@@ -3090,6 +3161,7 @@ func build_ui_snapshot() -> Dictionary:
     var campaign_record_totals: Dictionary = _campaign_record_totals()
     var campaign_text: String = "Campaign: offline"
     var campaign_summary_lines: Array[String] = []
+    var carryover_text: String = ""
     if campaign_state != null:
         campaign_text = "Campaign: %d/%d complete | %d unlocked" % [
             campaign_state.completed_count(),
@@ -3106,6 +3178,13 @@ func build_ui_snapshot() -> Dictionary:
         var best_campaign_time: float = float(campaign_record_totals.get("best_time", -1.0))
         if best_campaign_time >= 0.0:
             campaign_summary_lines.append("Best mission clear: %.1fs" % best_campaign_time)
+        if campaign_state.carried_tech_count() > 0 or campaign_state.carryover_clan_count_by_stance("allied") > 0 or campaign_state.carryover_clan_count_by_stance("hostile") > 0:
+            carryover_text = "Carryover: %d techs | %d allied clans | %d hostile clans" % [
+                campaign_state.carried_tech_count(),
+                campaign_state.carryover_clan_count_by_stance("allied"),
+                campaign_state.carryover_clan_count_by_stance("hostile")
+            ]
+            campaign_summary_lines.append(carryover_text)
     else:
         campaign_summary_lines.append(campaign_text)
 
@@ -3208,6 +3287,7 @@ func build_ui_snapshot() -> Dictionary:
         "ruleset_summary": ruleset_summary.duplicate(true),
         "campaign_text": campaign_text,
         "campaign_summary_lines": campaign_summary_lines,
+        "carryover_text": carryover_text,
         "objective_lines": objective_lines,
         "goal_text": goal_text,
         "selection_text": selection_text,
@@ -3259,6 +3339,7 @@ func _refresh_debug_text() -> void:
         str(snapshot.get("build_palette_label", "")),
         "Mission: %s" % str(snapshot.get("mission_title", "")),
         str(snapshot.get("campaign_text", "")),
+        str(snapshot.get("carryover_text", "")),
         "Active Mission: %s | Save Slot: %s" % [
             str(snapshot.get("current_mission_id", "")),
             str(snapshot.get("active_save_slot_id", ""))

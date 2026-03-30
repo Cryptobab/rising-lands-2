@@ -2,7 +2,7 @@
 
 ## Snapshot
 
-- Date: `2026-03-29`
+- Date: `2026-03-30`
 - Repo: `C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2`
 - Public repo: `Cryptobab/rising-lands-2`
 - Active engine: `Godot 4`
@@ -52,6 +52,7 @@ Working now:
 - save/load exists for the current runtime state
 - campaign progression now tracks unlocked and completed missions from imported classic metadata
 - named save slots now persist runtime state plus slot metadata through a campaign profile
+- mission victory now persists carried research unlocks plus clan stance/trust state through campaign transitions and profile reloads, while explicit mission-authored diplomacy payloads can still override scenario openings
 - runtime mission objectives now drive victory state instead of only the old stockpile fallback
 - Mission 1 map now includes scripted mission-event beats, rewards, and reinforcements
 - Mission 2, Mission 3, and Mission 4 now have actual scenario maps with build, stockpile, research, and diplomacy-driven objectives
@@ -106,6 +107,8 @@ Working now:
 - a twenty-fifth Godot smoke-test script exists for rally, aggression, target-priority, and save/load enemy AI behavior
 - a twenty-sixth Godot smoke-test script exists for full mission-board shell rendering and campaign-complete shell state
 - a twenty-seventh Godot smoke-test script exists for scheduled-wave AI directives and their save/load release behavior
+- a twenty-eighth Godot smoke-test script exists for ruleset-aware loader bootstrap, save/load, and profile restoration
+- a twenty-ninth Godot smoke-test script exists for campaign research/diplomacy carryover across mission transitions and profile reloads
 - issue and PR templates exist for public repo workflow
 - the old browser prototype files have been removed from the active codebase
 
@@ -193,6 +196,7 @@ Not done yet:
 - Enemy-AI wave-directives smoke test: [`game/scripts/tests/enemy_ai_wave_directives_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_wave_directives_smoke.gd)
 - Campaign-board smoke test: [`game/scripts/tests/campaign_board_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_board_smoke.gd)
 - Ruleset-loader smoke test: [`game/scripts/tests/ruleset_loader_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/ruleset_loader_smoke.gd)
+- Campaign-carryover smoke test: [`game/scripts/tests/campaign_carryover_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_carryover_smoke.gd)
 
 ## Next Session Start Here
 
@@ -461,6 +465,15 @@ Run the campaign-board smoke test:
   --headless `
   --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
   --script res://scripts/tests/campaign_board_smoke.gd
+```
+
+Run the campaign-carryover smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/campaign_carryover_smoke.gd
 ```
 
 ## Blockers

@@ -241,3 +241,61 @@
 
 - validate the project in the interactive Godot editor
 - start explicit expanded-mode layering and loader hooks now that the classic shell and AI continuation tranche is in place
+
+## 2026-03-30
+
+### Summary
+
+- added campaign-level carryover state for unlocked research and clan stance/trust relationships
+- applied carried research on mission bootstrap so completed tech branches persist across mission transitions and campaign-profile reloads
+- merged carried diplomacy into later mission bootstraps only when the scenario does not already author an explicit stance or trust opening
+- surfaced carryover summaries in the shell snapshot/HUD context
+- added a dedicated campaign-carryover smoke test that covers victory capture, next-mission bootstrap, explicit stance override behavior, and profile reload restoration
+
+### Files Added Or Changed
+
+- [`README.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/README.md)
+- [`docs/CONTINUATION.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/CONTINUATION.md)
+- [`docs/SESSION-LOG.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/SESSION-LOG.md)
+- [`game/scripts/core/campaign_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/campaign_state.gd)
+- [`game/scripts/core/game_root.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/game_root.gd)
+- [`game/scripts/ui/app_shell.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/ui/app_shell.gd)
+- [`game/scripts/tests/campaign_carryover_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_carryover_smoke.gd)
+
+### Validation
+
+- importer unit tests passed
+- Godot headless vertical-slice smoke test completed without reported errors
+- Godot headless construction smoke test completed without reported errors
+- Godot headless systems smoke test completed without reported errors
+- Godot headless mission-objectives smoke test completed without reported errors
+- Godot headless mission-events smoke test completed without reported errors
+- Godot headless expanded-roster smoke test completed without reported errors
+- Godot headless tower-defense smoke test completed without reported errors
+- Godot headless campaign-progression smoke test completed without reported errors
+- Godot headless save-slots smoke test completed without reported errors
+- Godot headless multi-mission content smoke test completed without reported errors
+- Godot headless diplomacy smoke test completed without reported errors
+- Godot headless selection-orders smoke test completed without reported errors
+- Godot headless app-shell smoke test completed without reported errors
+- Godot headless shell-settings smoke test completed without reported errors
+- Godot headless chapter-two content smoke test completed without reported errors
+- Godot headless chapter-three content smoke test completed without reported errors
+- Godot headless mission-event actions smoke test completed without reported errors
+- Godot headless diplomacy-demands smoke test completed without reported errors
+- Godot headless mid-campaign content smoke test completed without reported errors
+- Godot headless dynamic build-palette smoke test completed without reported errors
+- Godot headless late-campaign content smoke test completed without reported errors
+- Godot headless ownership-transfer smoke test completed without reported errors
+- Godot headless final-campaign smoke test completed without reported errors
+- Godot headless enemy-AI pressure smoke test completed without reported errors
+- Godot headless enemy-AI behaviors smoke test completed without reported errors
+- Godot headless enemy-AI wave-directives smoke test completed without reported errors
+- Godot headless campaign-board smoke test completed without reported errors
+- Godot headless ruleset-loader smoke test completed without reported errors
+- Godot headless campaign-carryover smoke test completed without reported errors
+
+### Outstanding
+
+- validate the project in the interactive Godot editor
+- start explicit expanded-mode layering and loader hooks now that classic carryover is in place on top of the shell/ruleset baseline

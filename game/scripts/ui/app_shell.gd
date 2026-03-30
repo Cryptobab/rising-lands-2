@@ -197,12 +197,16 @@ func refresh_shell_ui() -> void:
         [str(snapshot.get("selection_text", "Selection: none"))] + snapshot.get("selection_detail_lines", []),
         "Selection: none"
     )
-    hud_context_body.text = "\n".join([
+    var hud_context_lines: Array[String] = [
         mission_synopsis if not mission_synopsis.is_empty() else str(snapshot.get("context_hint", "Context: none")),
         str(snapshot.get("goal_text", "")),
         str(snapshot.get("forces_text", "")),
         "Research %s" % str(snapshot.get("research_text", "0 unlocked"))
-    ])
+    ]
+    var carryover_text: String = str(snapshot.get("carryover_text", ""))
+    if not carryover_text.is_empty():
+        hud_context_lines.append(carryover_text)
+    hud_context_body.text = "\n".join(hud_context_lines)
     hud_controls_body.text = "\n".join([
         str(snapshot.get("build_palette_label", "")),
         "LMB select or drag box | RMB issue order | Q/W/E/R/T/Y context",
