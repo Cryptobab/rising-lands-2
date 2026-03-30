@@ -43,6 +43,7 @@
     { "building_id": "library", "x": 7, "y": 7, "team": "player" },
     { "building_id": "laboratory", "x": 7, "y": 9, "team": "player" },
     { "building_id": "storehouse", "x": 15, "y": 4, "team": "enemy" },
+    { "building_id": "barracks", "x": 17, "y": 5, "team": "enemy" },
     { "building_id": "tower_cannon", "x": 16, "y": 5, "team": "enemy" },
     { "building_id": "tower_catapult", "x": 16, "y": 8, "team": "enemy" },
     { "building_id": "storehouse", "x": 17, "y": 9, "team": "enemy" }
@@ -70,6 +71,32 @@
     "tower_catapult",
     "tower_cannon",
     "wall"
+  ],
+  "enemy_ai_plans": [
+    {
+      "building_id": "barracks",
+      "x": 17,
+      "y": 5,
+      "width": 1,
+      "height": 1,
+      "unit_id": "basher",
+      "interval": 10.0,
+      "cap": 4,
+      "max_queue": 1,
+      "start_after": 8.0
+    },
+    {
+      "building_id": "barracks",
+      "x": 17,
+      "y": 5,
+      "width": 1,
+      "height": 1,
+      "unit_id": "hurler",
+      "interval": 16.0,
+      "cap": 2,
+      "max_queue": 1,
+      "start_after": 12.0
+    }
   ],
   "storehouse_goal": { "food": 0, "stone": 0 },
   "objectives": [

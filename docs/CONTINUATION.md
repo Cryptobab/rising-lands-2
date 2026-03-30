@@ -68,8 +68,9 @@ Working now:
 - Mission 5 through Mission 25 now have authored scenario maps with diplomacy-count, exploration-area, build-in-area, survival, prison-break escape chains, trust-demand deadlines, takeover scripts, and queued guardian-wave behavior
 - diplomacy targets now track clan trust, alliance thresholds, active demands, and revenge-on-failure state
 - mission objectives now support alliance-count, unit-in-area, reach-area-once, build-in-area, control-building, clear-hostiles, clan-trust, and demand-status checks
-- mission events now support alliance-count, clan-stance, clan-trust, demand-status, and unit-in-area triggers plus queued enemy-wave scheduling, explicit clan-stance shifts, trust changes, demand injection, dynamic build-palette updates, building transfer, unit transfer, and mission-outcome actions
+- mission events now support alliance-count, clan-stance, clan-trust, demand-status, and unit-in-area triggers plus queued enemy-wave scheduling, explicit clan-stance shifts, trust changes, demand injection, dynamic build-palette updates, building transfer, unit transfer, enemy-building production plans, and mission-outcome actions
 - campaign results now distinguish between mission victory and full campaign completion in the shell snapshot
+- the shell mission board now renders the full 25-mission campaign with locked/completed states, best times, and win/loss summaries
 - a Godot smoke-test script exists for the vertical-slice resource loop
 - a second Godot smoke-test script exists for builder construction
 - a third Godot smoke-test script exists for production, research, combat, and save/load
@@ -93,6 +94,8 @@ Working now:
 - a twenty-first Godot smoke-test script exists for Mission 17 through Mission 20 progression
 - a twenty-second Godot smoke-test script exists for ownership-transfer takeover scripting
 - a twenty-third Godot smoke-test script exists for Mission 21 through Mission 25 progression and full campaign completion
+- a twenty-fourth Godot smoke-test script exists for enemy building production-plan persistence
+- a twenty-fifth Godot smoke-test script exists for full mission-board shell rendering and campaign-complete shell state
 - issue and PR templates exist for public repo workflow
 - the old browser prototype files have been removed from the active codebase
 
@@ -139,6 +142,7 @@ Not done yet:
 - Mission 23 map: [`game/data/classic/vertical_slice/monde23_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde23_map.json)
 - Mission 24 map: [`game/data/classic/vertical_slice/monde24_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde24_map.json)
 - Mission 25 map: [`game/data/classic/vertical_slice/monde25_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde25_map.json)
+- Enemy AI test map: [`game/data/classic/vertical_slice/enemy_ai_test_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/enemy_ai_test_map.json)
 - Godot map loader: [`game/scripts/core/map_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/map_state.gd)
 - Diplomacy runtime: [`game/scripts/core/diplomacy_target_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/diplomacy_target_state.gd)
 - Mission-event runtime: [`game/scripts/core/mission_event_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/mission_event_state.gd)
@@ -169,13 +173,15 @@ Not done yet:
 - Late-campaign content smoke test: [`game/scripts/tests/late_campaign_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/late_campaign_content_smoke.gd)
 - Ownership-transfer smoke test: [`game/scripts/tests/ownership_transfer_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/ownership_transfer_smoke.gd)
 - Final-campaign smoke test: [`game/scripts/tests/final_campaign_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/final_campaign_smoke.gd)
+- Enemy-AI pressure smoke test: [`game/scripts/tests/enemy_ai_pressure_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_pressure_smoke.gd)
+- Campaign-board smoke test: [`game/scripts/tests/campaign_board_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_board_smoke.gd)
 
 ## Next Session Start Here
 
-1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate Mission 21 through Mission 25 flow visually, especially Great Library takeover readability and the final campaign-complete shell result.
-2. Extend scenario authoring beyond Mission 25 only for the expanded-content ruleset; the classic 25-mission arc now has authored runtime coverage.
-3. Expand mission-event actions into fuller scripting primitives for escort, rescue, betrayal follow-through, reinforcement routing, prison release, prisoner-return, and multi-target ownership transfer scenarios.
-4. Push next into AI depth, shell polish, and expanded-mode data layering rather than adding more placeholder classic-campaign maps.
+1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate enemy-building pressure plus mission-board readability on real missions, especially late-campaign pacing.
+2. Extend the current enemy-production runtime into broader faction AI behavior, rally logic, and map-specific aggression rules.
+3. Expand shell polish with richer campaign summaries, chapter framing, and post-campaign front-end flow.
+4. Push next into expanded-mode data layering and AI depth rather than adding more placeholder classic-campaign maps.
 5. Keep the repo trace clean by updating this file and the session log whenever systems behavior changes.
 
 ## Commands
@@ -401,6 +407,24 @@ Run the final-campaign smoke test:
   --headless `
   --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
   --script res://scripts/tests/final_campaign_smoke.gd
+```
+
+Run the enemy-AI pressure smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/enemy_ai_pressure_smoke.gd
+```
+
+Run the campaign-board smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/campaign_board_smoke.gd
 ```
 
 ## Blockers

@@ -81,6 +81,10 @@
 - authored Mission 21 through Mission 25 scenario maps for the remainder of the classic campaign
 - added an ownership-transfer smoke test for Great Library takeover scripting
 - added a final-campaign smoke test covering Mission 21 through Mission 25 progression and campaign completion
+- added enemy-building production-plan runtime support with save/load persistence
+- authored a dedicated enemy-AI pressure map and applied enemy production plans to Mission 25
+- expanded the shell mission board to show all missions, locked/completed state, win/loss record, and best clear time
+- added an enemy-AI pressure smoke test and a campaign-board shell smoke test
 
 ### Files Added Or Changed
 
@@ -144,6 +148,7 @@
 - [`game/data/classic/vertical_slice/monde23_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde23_map.json)
 - [`game/data/classic/vertical_slice/monde24_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde24_map.json)
 - [`game/data/classic/vertical_slice/monde25_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde25_map.json)
+- [`game/data/classic/vertical_slice/enemy_ai_test_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/enemy_ai_test_map.json)
 - [`tools/importers/extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/extract_classic_data.py)
 - [`tools/importers/tests/test_extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/tests/test_extract_classic_data.py)
 - [`game/scripts/tests/chapter_two_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/chapter_two_content_smoke.gd)
@@ -156,6 +161,8 @@
 - [`docs/NEXT-20.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/NEXT-20.md)
 - [`game/scripts/tests/ownership_transfer_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/ownership_transfer_smoke.gd)
 - [`game/scripts/tests/final_campaign_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/final_campaign_smoke.gd)
+- [`game/scripts/tests/enemy_ai_pressure_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_pressure_smoke.gd)
+- [`game/scripts/tests/campaign_board_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_board_smoke.gd)
 
 ### Validation
 
@@ -187,8 +194,10 @@
 - Godot headless late-campaign content smoke test completed without reported errors through Mission 20
 - Godot headless ownership-transfer smoke test completed without reported errors
 - Godot headless final-campaign smoke test completed without reported errors through Mission 25
+- Godot headless enemy-AI pressure smoke test completed without reported errors
+- Godot headless campaign-board smoke test completed without reported errors
 
 ### Outstanding
 
 - validate the project in the interactive Godot editor
-- extend the current campaign shell slice into deeper AI, shell polish, and expanded-mode systems now that all 25 classic missions have authored runtime coverage
+- extend the current campaign shell slice into broader faction AI, shell polish, and expanded-mode systems now that all 25 classic missions have authored runtime coverage

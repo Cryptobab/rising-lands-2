@@ -145,8 +145,9 @@ func refresh_shell_ui() -> void:
     var active_record: Dictionary = game_root.mission_record_for_id()
     var result_payload: Dictionary = snapshot.get("result", {})
 
+    var campaign_line: String = str(snapshot.get("campaign_text", ""))
     menu_campaign_label.text = "%s\nActive mission: %s" % [
-        str(snapshot.get("campaign_text", "")),
+        campaign_line,
         str(snapshot.get("mission_title", ""))
     ]
     menu_slot_label.text = "Active slot: %s" % str(snapshot.get("active_save_slot_id", "slot_1"))
@@ -635,26 +636,49 @@ func _build_hud_overlay() -> void:
 func _rebuild_mission_board() -> void:
     _clear_container(mission_button_container)
 
-    var available_missions: Array = []
-    if game_root.campaign_state != null:
-        available_missions = game_root.campaign_state.available_missions()
+    if game_root.campaign_state == null:
+        mission_button_container.add_child(_make_body_label("No campaign loaded.", Color("b6c4ca")))
+        return
 
-    for mission_record in available_missions:
-        var mission_id: String = str(mission_record.get("mission_id", ""))
-        var metadata: Dictionary = game_root.mission_record_for_id(mission_id)
+    for mission_id in game_root.campaign_state.mission_order:
+        var mission_record: Dictionary = game_root.campaign_state.mission_records.get(mission_id, {}).duplicate(true)
+        var metadata: Dictionary = game_root.mission_record_for_id(str(mission_id))
         var title: String = str(metadata.get("title", mission_id))
         var mission_number: int = int(mission_record.get("mission_number", 0))
-        var status: String = str(mission_record.get("status", "unlocked"))
+        var status: String = str(mission_record.get("status", "locked"))
+        var best_time: float = float(mission_record.get("best_time", -1.0))
+        var wins: int = int(mission_record.get("wins", 0))
+        var losses: int = int(mission_record.get("losses", 0))
         var mission_button := _make_action_button(
-            "%02d  %s  [%s]" % [mission_number, title, status],
-            Color("2f5f69")
+            "%02d  %s  [%s]\nW %d  L %d  %s" % [
+                mission_number,
+                title,
+                status,
+                wins,
+                losses,
+                "best %.1fs" % best_time if best_time >= 0.0 else "no clear"
+            ],
+            _mission_button_color(status, str(mission_id) == game_root.current_mission_id)
         )
         mission_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-        mission_button.custom_minimum_size = Vector2(0, 46)
+        mission_button.custom_minimum_size = Vector2(0, 60)
+        mission_button.disabled = status == "locked"
         mission_button.pressed.connect(func(id := mission_id) -> void: launch_mission(id))
         mission_button_container.add_child(mission_button)
     if mission_button_container.get_child_count() == 0:
         mission_button_container.add_child(_make_body_label("No missions unlocked yet.", Color("b6c4ca")))
+
+
+func _mission_button_color(status: String, is_active: bool) -> Color:
+    if is_active:
+        return Color("7c8a52")
+    match status:
+        "completed":
+            return Color("4d7858")
+        "unlocked":
+            return Color("2f5f69")
+        _:
+            return Color("3a434d")
 
 
 func _rebuild_save_slot_rows() -> void:

@@ -1,0 +1,62 @@
+{
+  "id": "enemy_ai_test_map",
+  "name": "Enemy AI Test Map",
+  "width": 12,
+  "height": 10,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "R": "rock"
+  },
+  "tiles": [
+    "GGGGGGGGGGGG",
+    "GGGGGGGGGGGG",
+    "GGGGDGGGGGGG",
+    "GGGGDGGGGGGG",
+    "GGGGDGGGGGGG",
+    "GGGGDGGGGGGG",
+    "GGGGGGGGGGGG",
+    "GGGGGGGGGGGG",
+    "GGGGGGGGGGGG",
+    "GGGGGGGGGGGG"
+  ],
+  "resources": [
+    { "x": 1, "y": 3, "type": "food", "amount": 100 },
+    { "x": 2, "y": 7, "type": "stone", "amount": 100 }
+  ],
+  "player_start": { "x": 2, "y": 5 },
+  "starting_resources": { "food": 20, "stone": 20, "parts": 0, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 2, "y": 5, "team": "player" },
+    { "building_id": "culture", "x": 3, "y": 5, "team": "player" },
+    { "building_id": "barracks", "x": 9, "y": 4, "team": "enemy" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 2, "y": 4, "team": "player" },
+    { "unit_id": "builder", "x": 2, "y": 6, "team": "player" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "barracks"
+  ],
+  "enemy_spawns": [],
+  "enemy_ai_plans": [
+    {
+      "building_id": "barracks",
+      "x": 9,
+      "y": 4,
+      "width": 1,
+      "height": 1,
+      "unit_id": "basher",
+      "interval": 2.0,
+      "cap": 2,
+      "max_queue": 1,
+      "start_after": 0.2
+    }
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [],
+  "mission_events": [],
+  "diplomacy_targets": []
+}

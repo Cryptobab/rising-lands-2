@@ -53,6 +53,7 @@ var combat_units: Array = []
 var enemy_units: Array = []
 var diplomacy_targets: Array = []
 var pending_enemy_spawns: Array = []
+var enemy_ai_state: Array = []
 var mission_events: Array = []
 var alert_log: Array[String] = []
 var allied_clans: Array[String] = []
@@ -149,6 +150,7 @@ func _bootstrap_runtime_state() -> void:
     _load_mission_events_from_map()
     _spawn_vertical_slice_entities()
     pending_enemy_spawns = map_state.enemy_spawns.duplicate(true)
+    enemy_ai_state = map_state.enemy_ai_plans.duplicate(true)
     alert_log = []
     command_markers = []
     build_mode = ""
@@ -187,6 +189,7 @@ func advance_simulation(delta: float) -> void:
     world_state.tick(delta)
     _update_command_markers(delta)
     _update_enemy_spawns()
+    _update_enemy_ai()
     _update_buildings(delta)
     _update_worker_home_positions()
 
@@ -504,6 +507,7 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
         _load_diplomacy_targets_from_payload(payload.get("diplomacy_targets", []))
 
     pending_enemy_spawns = payload.get("pending_enemy_spawns", []).duplicate(true)
+    enemy_ai_state = payload.get("enemy_ai_state", map_state.enemy_ai_plans).duplicate(true)
     alert_log = []
     for alert_entry in payload.get("alert_log", []):
         alert_log.append(str(alert_entry))
@@ -542,6 +546,7 @@ func serialize_runtime() -> Dictionary:
         "allied_clans": allied_clans.duplicate(true),
         "hostile_clans": hostile_clans.duplicate(true),
         "pending_enemy_spawns": pending_enemy_spawns.duplicate(true),
+        "enemy_ai_state": enemy_ai_state.duplicate(true),
         "mission_events": _serialize_collection(mission_events),
         "alert_log": alert_log.duplicate(true),
         "mission_resolution_recorded": mission_resolution_recorded,
@@ -977,6 +982,87 @@ func _update_enemy_spawns() -> void:
             remaining_spawns.append(spawn_payload)
 
     pending_enemy_spawns = remaining_spawns
+
+
+func _update_enemy_ai() -> void:
+    if not auto_enemy_pressure_enabled or enemy_ai_state.is_empty():
+        return
+
+    for index in range(enemy_ai_state.size()):
+        var plan: Dictionary = enemy_ai_state[index].duplicate(true)
+        if not bool(plan.get("enabled", true)):
+            enemy_ai_state[index] = plan
+            continue
+        if world_state.elapsed_time < float(plan.get("start_after", 0.0)):
+            enemy_ai_state[index] = plan
+            continue
+
+        var unit_id: String = str(plan.get("unit_id", ""))
+        if unit_id.is_empty():
+            enemy_ai_state[index] = plan
+            continue
+
+        if _enemy_unit_count(unit_id) >= int(plan.get("cap", 1)):
+            enemy_ai_state[index] = plan
+            continue
+
+        var interval: float = maxf(1.0, float(plan.get("interval", 12.0)))
+        var last_enqueue_time: float = float(plan.get("last_enqueue_time", -interval))
+        if (world_state.elapsed_time - last_enqueue_time) < interval:
+            enemy_ai_state[index] = plan
+            continue
+
+        var building = _find_enemy_training_building(plan)
+        if building == null:
+            enemy_ai_state[index] = plan
+            continue
+
+        var max_queue: int = maxi(1, int(plan.get("max_queue", 1)))
+        if _queued_enemy_jobs(building, unit_id) >= max_queue:
+            enemy_ai_state[index] = plan
+            continue
+
+        var unit_record: Dictionary = classic_database.find_unit(unit_id)
+        if unit_record.is_empty():
+            enemy_ai_state[index] = plan
+            continue
+
+        var duration: float = maxf(2.0, float(unit_record.get("recruit_time", 600)) / 300.0)
+        building.enqueue_job("train", unit_id, duration, {"unit_id": unit_id})
+        plan["last_enqueue_time"] = world_state.elapsed_time
+        enemy_ai_state[index] = plan
+
+
+func _enemy_unit_count(unit_id: String) -> int:
+    var count: int = 0
+    for enemy_unit in enemy_units:
+        if enemy_unit.unit_id == unit_id and enemy_unit.is_alive():
+            count += 1
+    return count
+
+
+func _find_enemy_training_building(plan: Dictionary):
+    var building_id: String = str(plan.get("building_id", ""))
+    var search_rect := _action_rect(plan)
+    for building in buildings:
+        if building == null or building.team != "enemy" or not building.is_alive():
+            continue
+        if not building_id.is_empty() and building.building_id != building_id:
+            continue
+        if search_rect != null and not search_rect.has_point(building.center_position()):
+            continue
+        if not building.can_train_unit(str(plan.get("unit_id", ""))):
+            continue
+        return building
+    return null
+
+
+func _queued_enemy_jobs(building, unit_id: String) -> int:
+    var count: int = 0
+    for job in building.production_queue:
+        if str(job.get("kind", "")) == "train" and str(job.get("id", "")) == unit_id:
+            count += 1
+    return count
 
 
 func _finalize_construction_sites() -> void:

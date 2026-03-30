@@ -15,6 +15,7 @@ var starting_units: Array = []
 var storehouse_goal: Dictionary = {}
 var build_palette: Array = []
 var enemy_spawns: Array = []
+var enemy_ai_plans: Array = []
 var objectives: Array = []
 var mission_events: Array = []
 var diplomacy_targets: Array = []
@@ -42,6 +43,7 @@ func load_from_file(path: String) -> bool:
     storehouse_goal = payload.get("storehouse_goal", {})
     build_palette = payload.get("build_palette", [])
     enemy_spawns = payload.get("enemy_spawns", [])
+    enemy_ai_plans = payload.get("enemy_ai_plans", [])
     objectives = payload.get("objectives", [])
     mission_events = payload.get("mission_events", [])
     diplomacy_targets = payload.get("diplomacy_targets", [])
