@@ -1,0 +1,137 @@
+{
+  "id": "monde19_map",
+  "name": "Mission 19 - Volcanic Passage",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "GGGGGGGGGGGGGGGGGRRR",
+    "GGGGGGGGGGGGGGGGGRRR",
+    "GGGGGGDGGGGGGGGGRRRR",
+    "GGGGFGDDGGGGGGGGRRRR",
+    "GGGFFGDDGGGGGGGGRRRR",
+    "GGGFGGGDGGGGGGGGRRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "SSSSSGGGGGGGGGGGGRRR",
+    "WSSSSGFGGGGGGGGGGRRR",
+    "WWSSSGFGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR",
+    "WWWWSGGGGGGGGGGGGRRR",
+    "WWWWWSSSSGGGGGGGRRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 5, "type": "food", "amount": 130 },
+    { "x": 5, "y": 9, "type": "food", "amount": 120 },
+    { "x": 10, "y": 4, "type": "stone", "amount": 120 },
+    { "x": 13, "y": 10, "type": "stone", "amount": 115 },
+    { "x": 16, "y": 7, "type": "parts", "amount": 85 }
+  ],
+  "player_start": { "x": 3, "y": 8 },
+  "starting_resources": { "food": 34, "stone": 24, "parts": 12, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 3, "y": 8, "team": "player" },
+    { "building_id": "culture", "x": 5, "y": 8, "team": "player" },
+    { "building_id": "barracks", "x": 5, "y": 6, "team": "player" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 2, "y": 7, "team": "player" },
+    { "unit_id": "farmer", "x": 2, "y": 9, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 7, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 9, "team": "player" },
+    { "unit_id": "mechanic", "x": 3, "y": 10, "team": "player" },
+    { "unit_id": "swordsman", "x": 6, "y": 8, "team": "player" },
+    { "unit_id": "archer", "x": 6, "y": 9, "team": "player" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "barracks",
+    "sanctuary",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "build_southeast_sanctuary",
+      "type": "build_in_area",
+      "building_id": "sanctuary",
+      "x": 15,
+      "y": 8,
+      "width": 4,
+      "height": 5,
+      "target": 1,
+      "label": "Build your Sanctuary to the Southeast",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_19_intro",
+      "trigger": { "type": "time_elapsed", "value": 3.0 },
+      "actions": [
+        { "type": "message", "text": "Cross the volcanic passage quickly and found a sanctuary in the southeast before the creatures overrun the route." }
+      ]
+    },
+    {
+      "id": "mission_19_cinder_supply",
+      "trigger": { "type": "demand_status", "clan_id": "cinder_clan", "value": "fulfilled" },
+      "actions": [
+        { "type": "spawn_unit", "unit_id": "archer", "x": 14, "y": 9, "team": "player", "count": 2 },
+        { "type": "message", "text": "The Cinder Clan opens the volcanic pass and sends escorts." }
+      ]
+    },
+    {
+      "id": "mission_19_cinder_hostile",
+      "trigger": { "type": "clan_stance", "clan_id": "cinder_clan", "value": "hostile" },
+      "actions": [
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 8, "count": 2, "delay": 0.5, "stagger": 0.3 },
+        { "type": "message", "text": "The Cinder Clan turns and the volcanic pass erupts with raiders." }
+      ]
+    },
+    {
+      "id": "mission_19_pressure",
+      "trigger": { "type": "time_elapsed", "value": 14.0 },
+      "actions": [
+        { "type": "schedule_enemy_wave", "unit_id": "hurler", "x": 18, "y": 6, "count": 1, "delay": 0.6 },
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 10, "count": 1, "delay": 0.9 }
+      ]
+    }
+  ],
+  "diplomacy_targets": [
+    {
+      "clan_id": "cinder_clan",
+      "clan_name": "Cinder Clan",
+      "x": 14,
+      "y": 9,
+      "stance": "neutral",
+      "trust": 0,
+      "alliance_threshold": 1,
+      "color_hex": "c47f52",
+      "demand": {
+        "id": "cinder_parts_tribute",
+        "label": "Stockpile 30 parts for the Cinder Clan guides",
+        "type": "stockpile",
+        "resource": "parts",
+        "target": 30,
+        "deadline": 32.0,
+        "trust_reward": 1,
+        "trust_penalty": -1,
+        "success_message": "The Cinder Clan accepts the tribute and guides your convoy through the ash.",
+        "on_success_stance": "allied",
+        "failure_message": "The Cinder Clan bars the volcanic road.",
+        "on_failure_stance": "hostile",
+        "revenge_on_failure": true
+      }
+    }
+  ]
+}

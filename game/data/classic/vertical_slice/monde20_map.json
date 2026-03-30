@@ -1,0 +1,147 @@
+{
+  "id": "monde20_map",
+  "name": "Mission 20 - Treacherous South-East",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "GGGGGGGGGGGGGGGGGRRR",
+    "GGGGGGGGGGGGGGGGGRRR",
+    "GGGGGGDGGGGGGGGGRRRR",
+    "GGGGFGDDGGGGGGGGRRRR",
+    "GGGFFGDDGGGGGGGGRRRR",
+    "GGGFGGGDGGGGGGGGRRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "SGGGGGGGGGGGGGGGGRRR",
+    "SSGGGGFGGGGGGGGGGRRR",
+    "WSSGGGFGGGGGGGGGGRRR",
+    "WWSSGGGGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR",
+    "WWWWSSSSSGGGGGGGRRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 4, "type": "food", "amount": 145 },
+    { "x": 4, "y": 10, "type": "food", "amount": 130 },
+    { "x": 9, "y": 3, "type": "stone", "amount": 120 },
+    { "x": 11, "y": 10, "type": "stone", "amount": 115 },
+    { "x": 15, "y": 7, "type": "parts", "amount": 85 }
+  ],
+  "player_start": { "x": 3, "y": 8 },
+  "starting_resources": { "food": 36, "stone": 28, "parts": 8, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 3, "y": 8, "team": "player" },
+    { "building_id": "culture", "x": 5, "y": 8, "team": "player" },
+    { "building_id": "barracks", "x": 5, "y": 6, "team": "player" },
+    { "building_id": "storehouse", "x": 15, "y": 5, "team": "enemy" },
+    { "building_id": "tower_cannon", "x": 16, "y": 6, "team": "enemy" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 2, "y": 7, "team": "player" },
+    { "unit_id": "farmer", "x": 2, "y": 9, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 7, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 9, "team": "player" },
+    { "unit_id": "messenger", "x": 5, "y": 10, "team": "player" },
+    { "unit_id": "swordsman", "x": 6, "y": 8, "team": "player" },
+    { "unit_id": "archer", "x": 6, "y": 9, "team": "player" },
+    { "unit_id": "basher", "x": 15, "y": 4, "team": "enemy" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "barracks",
+    "sanctuary",
+    "tower_catapult",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "build_sanctuary_southeast",
+      "type": "build_in_area",
+      "building_id": "sanctuary",
+      "x": 15,
+      "y": 8,
+      "width": 4,
+      "height": 5,
+      "target": 1,
+      "label": "Build a Sanctuary Southeast",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_20_intro",
+      "trigger": { "type": "time_elapsed", "value": 3.0 },
+      "actions": [
+        { "type": "message", "text": "The southeast refuge is close, but rival clans and Shadow creatures are preparing one last ambush on the route." }
+      ]
+    },
+    {
+      "id": "mission_20_traitor_offer",
+      "trigger": { "type": "time_elapsed", "value": 6.0 },
+      "actions": [
+        { "type": "set_clan_demand", "clan_id": "ember_clan", "message": "The Ember Clan offers safe passage if you fortify the line with a tower.", "demand": {
+          "id": "ember_border_tower",
+          "label": "Build one tower cannon before the Ember deadline",
+          "type": "building_count",
+          "building_id": "tower_cannon",
+          "target": 1,
+          "deadline": 26.0,
+          "trust_reward": 1,
+          "trust_penalty": -2,
+          "success_message": "The Ember Clan keeps its word and holds back the raiders.",
+          "on_success_stance": "allied",
+          "failure_message": "The Ember Clan betrays you and opens the flank.",
+          "on_failure_stance": "hostile",
+          "revenge_on_failure": true
+        } }
+      ]
+    },
+    {
+      "id": "mission_20_ember_support",
+      "trigger": { "type": "clan_stance", "clan_id": "ember_clan", "value": "allied" },
+      "actions": [
+        { "type": "spawn_unit", "unit_id": "archer", "x": 14, "y": 9, "team": "player", "count": 2 },
+        { "type": "message", "text": "Ember Clan sentries screen the southeast approach." }
+      ]
+    },
+    {
+      "id": "mission_20_ember_betrayal",
+      "trigger": { "type": "clan_stance", "clan_id": "ember_clan", "value": "hostile" },
+      "actions": [
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 8, "count": 2, "delay": 0.4, "stagger": 0.35 },
+        { "type": "schedule_enemy_wave", "unit_id": "hurler", "x": 18, "y": 6, "count": 1, "delay": 0.9 },
+        { "type": "message", "text": "The Ember Clan betrays the convoy and raiders pour through the flank." }
+      ]
+    },
+    {
+      "id": "mission_20_shadow_pressure",
+      "trigger": { "type": "time_elapsed", "value": 18.0 },
+      "actions": [
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 4, "count": 2, "delay": 0.6, "stagger": 0.4 }
+      ]
+    }
+  ],
+  "diplomacy_targets": [
+    {
+      "clan_id": "ember_clan",
+      "clan_name": "Ember Clan",
+      "x": 14,
+      "y": 9,
+      "stance": "neutral",
+      "trust": 0,
+      "alliance_threshold": 1,
+      "color_hex": "cf765c"
+    }
+  ]
+}

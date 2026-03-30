@@ -75,6 +75,11 @@ func evaluate(snapshot: Dictionary) -> Array[String]:
             "unit_in_area":
                 current_value = _count_units_in_area(snapshot, objective)
                 completed = current_value >= maxi(1, target_value)
+            "reach_area_once":
+                current_value = _count_units_in_area(snapshot, objective)
+                completed = was_completed or current_value >= maxi(1, target_value)
+                if completed:
+                    current_value = maxi(current_value, maxi(1, target_value))
             "tech_count":
                 current_value = int(snapshot.get("unlocked_tech_count", 0))
                 completed = current_value >= target_value

@@ -1,0 +1,148 @@
+{
+  "id": "monde18_map",
+  "name": "Mission 18 - Hidden Sanctuary",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "GGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGDGGGGGGGGGFFFR",
+    "GGGGFGDDGGGGGGGGFFRR",
+    "GGGFFGDDGGGGGGGGFRRR",
+    "GGGFGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "SGGGGGGGGGGGGGGGGRRR",
+    "SSGGGGFGGGGGGGGGGRRR",
+    "WSSGGGFGGGGGGGGGGRRR",
+    "WWSSGGGGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR",
+    "WWWWSSGGGGGGGGGGGRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 5, "type": "food", "amount": 140 },
+    { "x": 4, "y": 10, "type": "food", "amount": 130 },
+    { "x": 8, "y": 3, "type": "stone", "amount": 120 },
+    { "x": 11, "y": 9, "type": "stone", "amount": 120 },
+    { "x": 14, "y": 6, "type": "parts", "amount": 80 }
+  ],
+  "player_start": { "x": 3, "y": 9 },
+  "starting_resources": { "food": 32, "stone": 26, "parts": 10, "tech": 2 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 3, "y": 9, "team": "player" },
+    { "building_id": "culture", "x": 5, "y": 9, "team": "player" },
+    { "building_id": "library", "x": 5, "y": 7, "team": "player" },
+    { "building_id": "market", "x": 7, "y": 7, "team": "player" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 2, "y": 8, "team": "player" },
+    { "unit_id": "farmer", "x": 2, "y": 10, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 8, "team": "player" },
+    { "unit_id": "builder", "x": 4, "y": 10, "team": "player" },
+    { "unit_id": "messenger", "x": 6, "y": 8, "team": "player" },
+    { "unit_id": "archer", "x": 7, "y": 9, "team": "player" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "library",
+    "market",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "find_hidden_sanctuary",
+      "type": "reach_area_once",
+      "unit_id": "builder",
+      "x": 15,
+      "y": 3,
+      "width": 4,
+      "height": 5,
+      "target": 1,
+      "label": "Find the hidden Sanctuary",
+      "required": true
+    },
+    {
+      "id": "reactivate_hidden_sanctuary",
+      "type": "build_in_area",
+      "building_id": "sanctuary",
+      "x": 15,
+      "y": 3,
+      "width": 4,
+      "height": 5,
+      "target": 1,
+      "label": "Reactivate the hidden Sanctuary",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_18_intro",
+      "trigger": { "type": "time_elapsed", "value": 3.0 },
+      "actions": [
+        { "type": "message", "text": "Search the eastern wilds, uncover the lost sanctuary, and restore it before rival clans reach the site." }
+      ]
+    },
+    {
+      "id": "mission_18_hidden_site",
+      "trigger": { "type": "objective_complete", "objective_id": "find_hidden_sanctuary" },
+      "actions": [
+        { "type": "unlock_build_palette", "building_ids": ["sanctuary"], "message": "The hidden altar is found. Sanctuary rites are now available." },
+        { "type": "set_clan_demand", "clan_id": "azure_clan", "message": "The Azure Clan offers help if you prove the sanctuary can be held.", "demand": {
+          "id": "azure_sanctuary_supplies",
+          "label": "Stockpile 40 stone to secure the sanctuary",
+          "type": "stockpile",
+          "resource": "stone",
+          "target": 40,
+          "deadline": 48.0,
+          "trust_reward": 1,
+          "trust_penalty": -2,
+          "success_message": "The Azure Clan sends guardians to the hidden sanctuary.",
+          "on_success_stance": "allied",
+          "failure_message": "The Azure Clan abandons the sanctuary to chaos.",
+          "on_failure_stance": "hostile",
+          "revenge_on_failure": true
+        } }
+      ]
+    },
+    {
+      "id": "mission_18_azure_support",
+      "trigger": { "type": "clan_stance", "clan_id": "azure_clan", "value": "allied" },
+      "actions": [
+        { "type": "spawn_unit", "unit_id": "archer", "x": 15, "y": 8, "team": "player", "count": 2 },
+        { "type": "message", "text": "Azure guardians answer the sanctuary beacon." }
+      ]
+    },
+    {
+      "id": "mission_18_azure_betrayal",
+      "trigger": { "type": "clan_stance", "clan_id": "azure_clan", "value": "hostile" },
+      "actions": [
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 4, "count": 2, "delay": 0.4, "stagger": 0.35 },
+        { "type": "message", "text": "The Azure Clan falls into Shadow influence and attacks the sanctuary route." }
+      ]
+    }
+  ],
+  "diplomacy_targets": [
+    {
+      "clan_id": "azure_clan",
+      "clan_name": "Azure Clan",
+      "x": 15,
+      "y": 8,
+      "stance": "neutral",
+      "trust": 0,
+      "alliance_threshold": 1,
+      "color_hex": "67aee6"
+    }
+  ]
+}

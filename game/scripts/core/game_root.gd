@@ -434,6 +434,8 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
     map_state = MapStateScript.new()
     if not map_state.load_from_file(current_map_path):
         return false
+    if payload.has("build_palette"):
+        map_state.build_palette = payload.get("build_palette", []).duplicate(true)
 
     mission_state = MissionStateScript.new()
     var mission_record: Dictionary = classic_database.find_mission(current_mission_id)
@@ -528,6 +530,7 @@ func serialize_runtime() -> Dictionary:
         "map_path": current_map_path,
         "mission_id": current_mission_id,
         "save_slot_id": active_save_slot_id,
+        "build_palette": map_state.build_palette.duplicate(true),
         "world_state": world_state.serialize(),
         "resource_nodes": _serialize_collection(resource_nodes),
         "buildings": _serialize_collection(buildings),
@@ -1227,6 +1230,10 @@ func _execute_mission_event_action(action_payload: Dictionary) -> void:
                 action_payload.get("demand", {}).duplicate(true),
                 str(action_payload.get("message", ""))
             )
+        "unlock_build_palette":
+            _unlock_build_palette(action_payload.get("building_ids", []).duplicate(true), str(action_payload.get("message", "")))
+        "set_build_palette":
+            _set_build_palette(action_payload.get("building_ids", []).duplicate(true), str(action_payload.get("message", "")))
         "set_mission_outcome":
             _set_mission_outcome(str(action_payload.get("status", "active")), str(action_payload.get("message", "")))
         _:
@@ -1294,6 +1301,35 @@ func _set_clan_demand(clan_id: String, demand_payload: Dictionary, message: Stri
         return
 
     diplomacy_target.set_demand(demand_payload)
+    if not message.is_empty():
+        _push_alert(message)
+
+
+func _unlock_build_palette(building_ids: Array, message: String = "") -> void:
+    if map_state == null:
+        return
+
+    for building_id in building_ids:
+        var normalized_id: String = str(building_id)
+        if normalized_id.is_empty() or map_state.build_palette.has(normalized_id):
+            continue
+        map_state.build_palette.append(normalized_id)
+
+    if not message.is_empty():
+        _push_alert(message)
+
+
+func _set_build_palette(building_ids: Array, message: String = "") -> void:
+    if map_state == null:
+        return
+
+    map_state.build_palette = []
+    for building_id in building_ids:
+        var normalized_id: String = str(building_id)
+        if normalized_id.is_empty() or map_state.build_palette.has(normalized_id):
+            continue
+        map_state.build_palette.append(normalized_id)
+
     if not message.is_empty():
         _push_alert(message)
 

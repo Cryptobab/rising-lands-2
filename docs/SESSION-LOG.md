@@ -70,6 +70,11 @@
 - authored Mission 13 through Mission 16 scenario maps for the next mid-campaign slice
 - added a diplomacy-demands smoke test for trust fulfillment, save/load persistence, and revenge failure
 - added a mid-campaign content smoke test covering Mission 13 through Mission 16 progression
+- extended mission objectives with a latched reach-area-once mode for escape/discovery scenarios
+- extended mission-event actions with dynamic build-palette unlock and replacement support, including save/load persistence
+- authored Mission 17 through Mission 20 scenario maps for the next late-campaign slice
+- added a dynamic build-palette smoke test for runtime palette unlock persistence
+- added a late-campaign content smoke test covering Mission 17 through Mission 20 progression
 
 ### Files Added Or Changed
 
@@ -124,6 +129,10 @@
 - [`game/data/classic/vertical_slice/monde14_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde14_map.json)
 - [`game/data/classic/vertical_slice/monde15_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde15_map.json)
 - [`game/data/classic/vertical_slice/monde16_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde16_map.json)
+- [`game/data/classic/vertical_slice/monde17_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde17_map.json)
+- [`game/data/classic/vertical_slice/monde18_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde18_map.json)
+- [`game/data/classic/vertical_slice/monde19_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde19_map.json)
+- [`game/data/classic/vertical_slice/monde20_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde20_map.json)
 - [`tools/importers/extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/extract_classic_data.py)
 - [`tools/importers/tests/test_extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/tests/test_extract_classic_data.py)
 - [`game/scripts/tests/chapter_two_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/chapter_two_content_smoke.gd)
@@ -131,6 +140,8 @@
 - [`game/scripts/tests/mission_event_actions_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mission_event_actions_smoke.gd)
 - [`game/scripts/tests/diplomacy_demands_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/diplomacy_demands_smoke.gd)
 - [`game/scripts/tests/mid_campaign_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mid_campaign_content_smoke.gd)
+- [`game/scripts/tests/dynamic_build_palette_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/dynamic_build_palette_smoke.gd)
+- [`game/scripts/tests/late_campaign_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/late_campaign_content_smoke.gd)
 
 ### Validation
 
@@ -158,8 +169,10 @@
 - Godot headless mission-event actions smoke test completed without reported errors
 - Godot headless diplomacy-demands smoke test completed without reported errors
 - Godot headless mid-campaign content smoke test completed without reported errors through Mission 16
+- Godot headless dynamic build-palette smoke test completed without reported errors
+- Godot headless late-campaign content smoke test completed without reported errors through Mission 20
 
 ### Outstanding
 
 - validate the project in the interactive Godot editor
-- extend the current campaign shell slice into broader content parity, deeper diplomacy, and stronger multi-mission scenario coverage beyond Mission 16
+- extend the current campaign shell slice into broader content parity, deeper diplomacy, and stronger multi-mission scenario coverage beyond Mission 20

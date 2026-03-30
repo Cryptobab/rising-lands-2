@@ -1,0 +1,131 @@
+{
+  "id": "monde17_map",
+  "name": "Mission 17 - Prison Break",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "GGGGGGGGGGGGGGGGRRRR",
+    "GGGGGGGGGGGGGGGGRRRR",
+    "GGGGGGGGGGGGGGGGRRRR",
+    "GGGGGGDGGGGGGGGGRRRR",
+    "GGGGFGDDGGGGGGGGRRRR",
+    "GGGFFGDDGGGGGGGGRRRR",
+    "GGGFGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "SGGGGGGGGGGGGGGGGRRR",
+    "SSGGGGFGGGGGGGGGGRRR",
+    "WSSGGGFGGGGGGGGGGRRR",
+    "WWSSGGGGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR",
+    "WWWWSSGGGGGGGGGGGRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 8, "type": "food", "amount": 120 },
+    { "x": 4, "y": 11, "type": "food", "amount": 110 },
+    { "x": 8, "y": 6, "type": "stone", "amount": 95 },
+    { "x": 10, "y": 10, "type": "stone", "amount": 90 },
+    { "x": 13, "y": 8, "type": "parts", "amount": 70 }
+  ],
+  "player_start": { "x": 3, "y": 10 },
+  "starting_resources": { "food": 22, "stone": 10, "parts": 6, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 3, "y": 10, "team": "player" },
+    { "building_id": "culture", "x": 5, "y": 10, "team": "player" },
+    { "building_id": "storehouse", "x": 15, "y": 3, "team": "enemy" },
+    { "building_id": "tower_cannon", "x": 16, "y": 4, "team": "enemy" }
+  ],
+  "starting_units": [
+    { "unit_id": "builder", "x": 15, "y": 5, "team": "player" },
+    { "unit_id": "swordsman", "x": 16, "y": 5, "team": "player" },
+    { "unit_id": "farmer", "x": 3, "y": 9, "team": "player" },
+    { "unit_id": "basher", "x": 15, "y": 2, "team": "enemy" },
+    { "unit_id": "hurler", "x": 17, "y": 4, "team": "enemy" },
+    { "unit_id": "basher", "x": 14, "y": 6, "team": "enemy" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "barracks",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "escape_the_prison",
+      "type": "reach_area_once",
+      "unit_id": "builder",
+      "x": 9,
+      "y": 6,
+      "width": 4,
+      "height": 4,
+      "target": 1,
+      "label": "Escape from prison",
+      "required": true
+    },
+    {
+      "id": "return_to_the_clan",
+      "type": "reach_area_once",
+      "unit_id": "builder",
+      "x": 1,
+      "y": 8,
+      "width": 6,
+      "height": 5,
+      "target": 1,
+      "label": "Return to your Clan",
+      "required": true
+    },
+    {
+      "id": "destroy_enemy_clans",
+      "type": "clear_hostiles",
+      "target": 0,
+      "label": "Destroy enemy Clans",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_17_intro",
+      "trigger": { "type": "time_elapsed", "value": 3.0 },
+      "actions": [
+        { "type": "message", "text": "Break out of the prison camp, reach the clan refuge, and return with enough strength to wipe out the captors." }
+      ]
+    },
+    {
+      "id": "mission_17_alarm",
+      "trigger": { "type": "time_elapsed", "value": 10.0 },
+      "actions": [
+        { "type": "message", "text": "The prison alarm sounds. Shadow jailers are sweeping the pass." },
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 4, "count": 2, "delay": 0.6, "stagger": 0.35 }
+      ]
+    },
+    {
+      "id": "mission_17_escape_support",
+      "trigger": { "type": "objective_complete", "objective_id": "escape_the_prison" },
+      "actions": [
+        { "type": "message", "text": "Other prisoners break free and scatter toward the refuge." },
+        { "type": "spawn_unit", "unit_id": "builder", "x": 4, "y": 9, "team": "player", "count": 1 },
+        { "type": "spawn_unit", "unit_id": "farmer", "x": 2, "y": 10, "team": "player", "count": 1 }
+      ]
+    },
+    {
+      "id": "mission_17_rally_home",
+      "trigger": { "type": "objective_complete", "objective_id": "return_to_the_clan" },
+      "actions": [
+        { "type": "message", "text": "The clan rallies to your banner and turns on the captors." },
+        { "type": "spawn_unit", "unit_id": "swordsman", "x": 6, "y": 9, "team": "player", "count": 2 },
+        { "type": "spawn_unit", "unit_id": "archer", "x": 6, "y": 11, "team": "player", "count": 1 }
+      ]
+    }
+  ],
+  "diplomacy_targets": []
+}
