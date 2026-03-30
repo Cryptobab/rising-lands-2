@@ -74,6 +74,7 @@
   ],
   "enemy_ai_plans": [
     {
+      "id": "mission_25_shadow_siege",
       "building_id": "barracks",
       "x": 17,
       "y": 5,
@@ -83,9 +84,21 @@
       "interval": 10.0,
       "cap": 4,
       "max_queue": 1,
-      "start_after": 8.0
+      "start_after": 8.0,
+      "behavior_profile": "siege",
+      "attack_mode": "rally",
+      "pressure_rule": "target_point",
+      "rally_x": 16,
+      "rally_y": 6,
+      "pressure_x": 5,
+      "pressure_y": 8,
+      "min_group_size": 2,
+      "release_radius": 1.6,
+      "hold_radius": 0.8,
+      "target_priority": ["deposit", "building", "worker", "unit"]
     },
     {
+      "id": "mission_25_shadow_raiders",
       "building_id": "barracks",
       "x": 17,
       "y": 5,
@@ -95,7 +108,16 @@
       "interval": 16.0,
       "cap": 2,
       "max_queue": 1,
-      "start_after": 12.0
+      "start_after": 12.0,
+      "behavior_profile": "raider",
+      "pressure_rule": "workers",
+      "rally_x": 17,
+      "rally_y": 7,
+      "pressure_x": 4,
+      "pressure_y": 9,
+      "release_radius": 1.2,
+      "hold_radius": 0.8,
+      "target_priority": ["worker", "deposit", "building", "unit"]
     }
   ],
   "storehouse_goal": { "food": 0, "stone": 0 },

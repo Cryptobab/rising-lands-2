@@ -43,6 +43,7 @@
   "enemy_spawns": [],
   "enemy_ai_plans": [
     {
+      "id": "test_rally_raiders",
       "building_id": "barracks",
       "x": 9,
       "y": 4,
@@ -52,7 +53,18 @@
       "interval": 2.0,
       "cap": 2,
       "max_queue": 1,
-      "start_after": 0.2
+      "start_after": 0.2,
+      "behavior_profile": "raider",
+      "attack_mode": "rally",
+      "pressure_rule": "target_point",
+      "rally_x": 8,
+      "rally_y": 4,
+      "pressure_x": 3,
+      "pressure_y": 5,
+      "min_group_size": 2,
+      "release_radius": 1.1,
+      "hold_radius": 0.6,
+      "target_priority": ["worker", "deposit", "building", "unit"]
     }
   ],
   "storehouse_goal": { "food": 0, "stone": 0 },

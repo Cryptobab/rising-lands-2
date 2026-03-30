@@ -150,7 +150,8 @@ func _bootstrap_runtime_state() -> void:
     _load_mission_events_from_map()
     _spawn_vertical_slice_entities()
     pending_enemy_spawns = map_state.enemy_spawns.duplicate(true)
-    enemy_ai_state = map_state.enemy_ai_plans.duplicate(true)
+    enemy_ai_state = _normalize_enemy_ai_plans(map_state.enemy_ai_plans)
+    _apply_enemy_ai_to_existing_units()
     alert_log = []
     command_markers = []
     build_mode = ""
@@ -191,6 +192,8 @@ func advance_simulation(delta: float) -> void:
     _update_enemy_spawns()
     _update_enemy_ai()
     _update_buildings(delta)
+    _sync_enemy_ai_assignments()
+    var enemy_ai_contexts: Dictionary = _build_enemy_ai_contexts()
     _update_worker_home_positions()
 
     for worker in workers:
@@ -200,7 +203,15 @@ func advance_simulation(delta: float) -> void:
         combat_unit.update(delta, world_state, enemy_units)
 
     for enemy_unit in enemy_units:
-        enemy_unit.update(delta, world_state, combat_units, workers, buildings)
+        enemy_unit.update(
+            delta,
+            world_state,
+            combat_units,
+            workers,
+            buildings,
+            enemy_units,
+            _enemy_ai_context_for_unit(enemy_unit, enemy_ai_contexts)
+        )
 
     _update_clan_demands(_build_mission_snapshot())
     _update_diplomacy_state()
@@ -507,7 +518,8 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
         _load_diplomacy_targets_from_payload(payload.get("diplomacy_targets", []))
 
     pending_enemy_spawns = payload.get("pending_enemy_spawns", []).duplicate(true)
-    enemy_ai_state = payload.get("enemy_ai_state", map_state.enemy_ai_plans).duplicate(true)
+    enemy_ai_state = _normalize_enemy_ai_plans(payload.get("enemy_ai_state", map_state.enemy_ai_plans))
+    _apply_enemy_ai_to_existing_units()
     alert_log = []
     for alert_entry in payload.get("alert_log", []):
         alert_log.append(str(alert_entry))
@@ -947,6 +959,8 @@ func _handle_completed_building_job(building, completed_job: Dictionary) -> void
             if trained_actor == null:
                 simulation_status = "failed to train %s" % str(completed_job.get("id", "unit"))
             else:
+                if building.team == "enemy":
+                    _apply_enemy_ai_to_actor(trained_actor, completed_job)
                 simulation_status = "%s trained %s" % [building.name, str(completed_job.get("id", "unit"))]
         "research":
             var tech_record: Dictionary = classic_database.find_tech(str(completed_job.get("id", "")))
@@ -976,6 +990,7 @@ func _update_enemy_spawns() -> void:
             var spawn_position := Vector2(float(spawn_payload.get("x", 0)) + 0.5, float(spawn_payload.get("y", 0)) + 0.5)
             var enemy_actor: Variant = spawn_unit(unit_id, spawn_position, "enemy")
             if enemy_actor != null:
+                _apply_enemy_ai_to_actor(enemy_actor, spawn_payload)
                 world_state.enemy_waves_spawned += 1
                 _push_alert("enemy sighted: %s" % unit_id)
         else:
@@ -989,7 +1004,7 @@ func _update_enemy_ai() -> void:
         return
 
     for index in range(enemy_ai_state.size()):
-        var plan: Dictionary = enemy_ai_state[index].duplicate(true)
+        var plan: Dictionary = _normalize_enemy_ai_plan(enemy_ai_state[index], index)
         if not bool(plan.get("enabled", true)):
             enemy_ai_state[index] = plan
             continue
@@ -1028,7 +1043,10 @@ func _update_enemy_ai() -> void:
             continue
 
         var duration: float = maxf(2.0, float(unit_record.get("recruit_time", 600)) / 300.0)
-        building.enqueue_job("train", unit_id, duration, {"unit_id": unit_id})
+        building.enqueue_job("train", unit_id, duration, {
+            "unit_id": unit_id,
+            "enemy_ai_directive": _enemy_ai_directive_from_plan(plan)
+        })
         plan["last_enqueue_time"] = world_state.elapsed_time
         enemy_ai_state[index] = plan
 
@@ -1063,6 +1081,319 @@ func _queued_enemy_jobs(building, unit_id: String) -> int:
         if str(job.get("kind", "")) == "train" and str(job.get("id", "")) == unit_id:
             count += 1
     return count
+
+
+func _normalize_enemy_ai_plans(plans: Array) -> Array:
+    var normalized: Array = []
+    for index in range(plans.size()):
+        if typeof(plans[index]) != TYPE_DICTIONARY:
+            continue
+        normalized.append(_normalize_enemy_ai_plan(plans[index], index))
+    return normalized
+
+
+func _normalize_enemy_ai_plan(plan_payload: Dictionary, index: int) -> Dictionary:
+    var plan: Dictionary = plan_payload.duplicate(true)
+    var building_id: String = str(plan.get("building_id", "front"))
+    var unit_id: String = str(plan.get("unit_id", "enemy"))
+    var plan_id: String = str(plan.get("id", ""))
+    if plan_id.is_empty():
+        plan_id = "enemy_plan_%02d_%s_%s" % [index + 1, building_id, unit_id]
+    plan["id"] = plan_id
+
+    var behavior_profile: String = str(plan.get("behavior_profile", ""))
+    if behavior_profile.is_empty():
+        behavior_profile = _default_enemy_ai_profile(plan)
+    plan["behavior_profile"] = behavior_profile
+
+    var attack_mode: String = str(plan.get("attack_mode", ""))
+    if attack_mode.is_empty():
+        attack_mode = _default_enemy_ai_attack_mode(plan, behavior_profile)
+    plan["attack_mode"] = attack_mode
+
+    var pressure_rule: String = str(plan.get("pressure_rule", ""))
+    if pressure_rule.is_empty():
+        pressure_rule = _default_enemy_ai_pressure_rule(attack_mode, behavior_profile)
+    plan["pressure_rule"] = pressure_rule
+
+    var target_priority: Array = _string_array(plan.get("target_priority", []))
+    if target_priority.is_empty():
+        target_priority = _default_enemy_ai_target_priority(attack_mode, pressure_rule, behavior_profile)
+    plan["target_priority"] = target_priority
+
+    var default_group_size: int = 2 if attack_mode == "rally" else 1
+    plan["min_group_size"] = maxi(1, int(plan.get("min_group_size", default_group_size)))
+    plan["release_radius"] = maxf(0.85, float(plan.get("release_radius", 2.25)))
+    plan["hold_radius"] = maxf(0.55, float(plan.get("hold_radius", 1.35)))
+    plan["assignment_radius"] = maxf(float(plan.get("assignment_radius", 6.0)), float(plan.get("release_radius", 2.25)) + 1.5)
+
+    var plan_anchor: Vector2 = _enemy_ai_plan_anchor(plan)
+    var has_rally_point: bool = (
+        plan.has("rally_point")
+        or plan.has("rally_x")
+        or plan.has("rally_y")
+        or attack_mode == "hold"
+        or int(plan.get("min_group_size", 1)) > 1
+    )
+    plan["has_rally_point"] = has_rally_point
+    if has_rally_point:
+        var rally_point: Vector2 = _enemy_ai_plan_point(plan, "rally", plan_anchor)
+        plan["rally_point"] = {"x": rally_point.x, "y": rally_point.y}
+
+    var has_pressure_point: bool = plan.has("pressure_point") or plan.has("pressure_x") or plan.has("pressure_y")
+    plan["has_pressure_point"] = has_pressure_point
+    if has_pressure_point:
+        var pressure_point: Vector2 = _enemy_ai_plan_point(plan, "pressure", Vector2.ZERO)
+        plan["pressure_point"] = {"x": pressure_point.x, "y": pressure_point.y}
+
+    plan["group_released"] = bool(plan.get("group_released", false))
+    return plan
+
+
+func _default_enemy_ai_profile(plan: Dictionary) -> String:
+    var planned_group_size: int = int(plan.get("min_group_size", 1))
+    if planned_group_size > 1:
+        return "siege"
+
+    var unit_id: String = str(plan.get("unit_id", ""))
+    if unit_id in ["hurler", "scorcher", "speeder"]:
+        return "raider"
+    return "assault"
+
+
+func _default_enemy_ai_attack_mode(plan: Dictionary, behavior_profile: String) -> String:
+    match behavior_profile:
+        "sentinel":
+            return "hold"
+        "siege":
+            return "rally"
+        "raider":
+            return "raid"
+        _:
+            return "rally" if int(plan.get("min_group_size", 1)) > 1 else "assault"
+
+
+func _default_enemy_ai_pressure_rule(attack_mode: String, behavior_profile: String) -> String:
+    match attack_mode:
+        "hold":
+            return "defend"
+        "raid":
+            return "workers"
+        "rally":
+            return "buildings" if behavior_profile == "siege" else "settlement"
+        _:
+            return "workers" if behavior_profile == "raider" else "settlement"
+
+
+func _default_enemy_ai_target_priority(attack_mode: String, pressure_rule: String, behavior_profile: String) -> Array:
+    match pressure_rule:
+        "workers":
+            return ["worker", "deposit", "building", "unit"]
+        "buildings":
+            return ["deposit", "building", "worker", "unit"]
+        "units":
+            return ["unit", "worker", "deposit", "building"]
+        "defend":
+            return ["unit", "worker", "deposit", "building"]
+        _:
+            if attack_mode == "raid" or behavior_profile == "raider":
+                return ["worker", "deposit", "building", "unit"]
+            if attack_mode == "rally" or behavior_profile == "siege":
+                return ["deposit", "building", "worker", "unit"]
+            return ["unit", "worker", "deposit", "building"]
+
+
+func _string_array(values: Array) -> Array:
+    var normalized: Array = []
+    for value in values:
+        normalized.append(str(value))
+    return normalized
+
+
+func _enemy_ai_plan_anchor(plan: Dictionary) -> Vector2:
+    var width: float = maxf(1.0, float(plan.get("width", 1)))
+    var height: float = maxf(1.0, float(plan.get("height", 1)))
+    return Vector2(
+        float(plan.get("x", 0)) + (width * 0.5),
+        float(plan.get("y", 0)) + (height * 0.5)
+    )
+
+
+func _enemy_ai_plan_point(plan: Dictionary, prefix: String, fallback: Vector2) -> Vector2:
+    var point_key: String = "%s_point" % prefix
+    var point_payload: Variant = plan.get(point_key, null)
+    if typeof(point_payload) == TYPE_DICTIONARY:
+        return _point_from_payload(point_payload, fallback)
+
+    var x_key: String = "%s_x" % prefix
+    var y_key: String = "%s_y" % prefix
+    if plan.has(x_key) or plan.has(y_key):
+        var fallback_tile := Vector2(floor(fallback.x), floor(fallback.y))
+        return Vector2(
+            float(plan.get(x_key, fallback_tile.x)) + 0.5,
+            float(plan.get(y_key, fallback_tile.y)) + 0.5
+        )
+
+    return fallback
+
+
+func _point_from_payload(payload: Variant, fallback: Vector2) -> Vector2:
+    if typeof(payload) != TYPE_DICTIONARY:
+        return fallback
+
+    var point_dict: Dictionary = payload
+    return Vector2(
+        float(point_dict.get("x", fallback.x)),
+        float(point_dict.get("y", fallback.y))
+    )
+
+
+func _enemy_ai_directive_from_plan(plan: Dictionary) -> Dictionary:
+    return {
+        "plan_id": str(plan.get("id", "")),
+        "behavior_profile": str(plan.get("behavior_profile", "assault")),
+        "attack_mode": str(plan.get("attack_mode", "assault")),
+        "pressure_rule": str(plan.get("pressure_rule", "settlement")),
+        "target_priority": _string_array(plan.get("target_priority", [])),
+        "has_rally_point": bool(plan.get("has_rally_point", false)),
+        "rally_point": plan.get("rally_point", {"x": 0.0, "y": 0.0}).duplicate(true),
+        "has_pressure_point": bool(plan.get("has_pressure_point", false)),
+        "pressure_point": plan.get("pressure_point", {"x": 0.0, "y": 0.0}).duplicate(true),
+        "min_group_size": int(plan.get("min_group_size", 1)),
+        "release_radius": float(plan.get("release_radius", 2.25)),
+        "hold_radius": float(plan.get("hold_radius", 1.35))
+    }
+
+
+func _apply_enemy_ai_to_existing_units() -> void:
+    _sync_enemy_ai_assignments()
+
+
+func _sync_enemy_ai_assignments() -> void:
+    if enemy_ai_state.is_empty():
+        return
+
+    for enemy_unit in enemy_units:
+        if enemy_unit == null or not enemy_unit.is_alive():
+            continue
+        if not str(enemy_unit.enemy_ai.get("plan_id", "")).is_empty():
+            continue
+        _apply_enemy_ai_to_actor(enemy_unit)
+
+
+func _apply_enemy_ai_to_actor(actor: Variant, directive_source: Dictionary = {}) -> void:
+    if actor == null or not actor.has_method("set_enemy_ai_directive"):
+        return
+    if str(actor.team) != "enemy":
+        return
+
+    var directive: Dictionary = {}
+    if typeof(directive_source.get("enemy_ai_directive", {})) == TYPE_DICTIONARY:
+        directive = directive_source.get("enemy_ai_directive", {}).duplicate(true)
+
+    if directive.is_empty():
+        var requested_plan_id: String = str(directive_source.get("enemy_ai_plan_id", ""))
+        var matching_plan: Dictionary = _enemy_ai_plan_by_id(requested_plan_id)
+        if matching_plan.is_empty():
+            matching_plan = _matching_enemy_ai_plan_for_unit(actor)
+        if matching_plan.is_empty():
+            return
+        directive = _enemy_ai_directive_from_plan(matching_plan)
+
+    actor.set_enemy_ai_directive(directive)
+
+
+func _enemy_ai_plan_by_id(plan_id: String) -> Dictionary:
+    if plan_id.is_empty():
+        return {}
+
+    for plan in enemy_ai_state:
+        if str(plan.get("id", "")) == plan_id:
+            return plan
+    return {}
+
+
+func _matching_enemy_ai_plan_for_unit(enemy_unit) -> Dictionary:
+    var best_plan: Dictionary = {}
+    var best_distance: float = INF
+
+    for plan in enemy_ai_state:
+        if not bool(plan.get("enabled", true)):
+            continue
+        if str(plan.get("unit_id", "")) != str(enemy_unit.unit_id):
+            continue
+
+        var anchor_point: Vector2 = _point_from_payload(
+            plan.get("rally_point", plan.get("pressure_point", {})),
+            _enemy_ai_plan_anchor(plan)
+        )
+        var distance_to_anchor: float = enemy_unit.position.distance_to(anchor_point)
+        if distance_to_anchor > float(plan.get("assignment_radius", 6.0)):
+            continue
+        if distance_to_anchor < best_distance:
+            best_distance = distance_to_anchor
+            best_plan = plan
+
+    return best_plan
+
+
+func _build_enemy_ai_contexts() -> Dictionary:
+    var contexts: Dictionary = {}
+    if enemy_ai_state.is_empty():
+        return contexts
+
+    var units_by_plan: Dictionary = {}
+    for enemy_unit in enemy_units:
+        if enemy_unit == null or not enemy_unit.is_alive():
+            continue
+        var plan_id: String = str(enemy_unit.enemy_ai.get("plan_id", ""))
+        if plan_id.is_empty():
+            continue
+        if not units_by_plan.has(plan_id):
+            units_by_plan[plan_id] = []
+        units_by_plan[plan_id].append(enemy_unit)
+
+    for index in range(enemy_ai_state.size()):
+        var plan: Dictionary = enemy_ai_state[index].duplicate(true)
+        var plan_id: String = str(plan.get("id", ""))
+        var assigned_units: Array = units_by_plan.get(plan_id, [])
+        var unit_count: int = assigned_units.size()
+        var rally_count: int = unit_count
+
+        if bool(plan.get("has_rally_point", false)):
+            rally_count = 0
+            var rally_point: Vector2 = _point_from_payload(plan.get("rally_point", {}), _enemy_ai_plan_anchor(plan))
+            var release_radius: float = maxf(0.85, float(plan.get("release_radius", 2.25)))
+            for enemy_unit in assigned_units:
+                if enemy_unit.position.distance_to(rally_point) <= release_radius:
+                    rally_count += 1
+
+        var group_released: bool = bool(plan.get("group_released", false))
+        var min_group_size: int = maxi(1, int(plan.get("min_group_size", 1)))
+        if unit_count <= 0:
+            group_released = false
+        elif not group_released and rally_count >= min_group_size:
+            group_released = true
+        plan["group_released"] = group_released
+        enemy_ai_state[index] = plan
+
+        contexts[plan_id] = {
+            "plan_unit_count": unit_count,
+            "plan_rally_count": rally_count,
+            "group_ready": group_released or unit_count >= min_group_size
+        }
+    return contexts
+
+
+func _enemy_ai_context_for_unit(enemy_unit, contexts: Dictionary) -> Dictionary:
+    if enemy_unit == null:
+        return {}
+
+    var plan_id: String = str(enemy_unit.enemy_ai.get("plan_id", ""))
+    if plan_id.is_empty():
+        return {}
+
+    return contexts.get(plan_id, {})
 
 
 func _finalize_construction_sites() -> void:

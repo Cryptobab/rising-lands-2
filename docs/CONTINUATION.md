@@ -65,6 +65,7 @@ Working now:
 - mission victory and defeat now surface a shell-side result panel with retry and next-mission actions
 - shell options now persist runtime pressure and menu-pause behavior in `user://shell_settings.json`
 - enemy combat units now advance on the player settlement when idle instead of stalling outside vision range
+- enemy production plans now normalize into persisted plan ids with rally points, aggression modes, pressure targets, target priorities, and latched group-release coordination for trained and preplaced enemy units
 - Mission 5 through Mission 25 now have authored scenario maps with diplomacy-count, exploration-area, build-in-area, survival, prison-break escape chains, trust-demand deadlines, takeover scripts, and queued guardian-wave behavior
 - diplomacy targets now track clan trust, alliance thresholds, active demands, and revenge-on-failure state
 - mission objectives now support alliance-count, unit-in-area, reach-area-once, build-in-area, control-building, clear-hostiles, clan-trust, and demand-status checks
@@ -95,7 +96,8 @@ Working now:
 - a twenty-second Godot smoke-test script exists for ownership-transfer takeover scripting
 - a twenty-third Godot smoke-test script exists for Mission 21 through Mission 25 progression and full campaign completion
 - a twenty-fourth Godot smoke-test script exists for enemy building production-plan persistence
-- a twenty-fifth Godot smoke-test script exists for full mission-board shell rendering and campaign-complete shell state
+- a twenty-fifth Godot smoke-test script exists for rally, aggression, target-priority, and save/load enemy AI behavior
+- a twenty-sixth Godot smoke-test script exists for full mission-board shell rendering and campaign-complete shell state
 - issue and PR templates exist for public repo workflow
 - the old browser prototype files have been removed from the active codebase
 
@@ -174,14 +176,15 @@ Not done yet:
 - Ownership-transfer smoke test: [`game/scripts/tests/ownership_transfer_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/ownership_transfer_smoke.gd)
 - Final-campaign smoke test: [`game/scripts/tests/final_campaign_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/final_campaign_smoke.gd)
 - Enemy-AI pressure smoke test: [`game/scripts/tests/enemy_ai_pressure_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_pressure_smoke.gd)
+- Enemy-AI behavior smoke test: [`game/scripts/tests/enemy_ai_behaviors_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_behaviors_smoke.gd)
 - Campaign-board smoke test: [`game/scripts/tests/campaign_board_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_board_smoke.gd)
 
 ## Next Session Start Here
 
-1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate enemy-building pressure plus mission-board readability on real missions, especially late-campaign pacing.
-2. Extend the current enemy-production runtime into broader faction AI behavior, rally logic, and map-specific aggression rules.
-3. Expand shell polish with richer campaign summaries, chapter framing, and post-campaign front-end flow.
-4. Push next into expanded-mode data layering and AI depth rather than adding more placeholder classic-campaign maps.
+1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate rally-release timing plus mission-board readability on real missions, especially Mission 25 shell presentation.
+2. Expand shell polish with richer campaign summaries, chapter framing, and post-campaign front-end flow.
+3. Push next into expanded-mode data layering and faction-specific AI hooks rather than adding placeholder classic-campaign systems.
+4. Broaden mission-event-driven enemy waves so scheduled reinforcements can opt into the same authored AI directives when needed.
 5. Keep the repo trace clean by updating this file and the session log whenever systems behavior changes.
 
 ## Commands
@@ -416,6 +419,15 @@ Run the enemy-AI pressure smoke test:
   --headless `
   --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
   --script res://scripts/tests/enemy_ai_pressure_smoke.gd
+```
+
+Run the enemy-AI behavior smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/enemy_ai_behaviors_smoke.gd
 ```
 
 Run the campaign-board smoke test:

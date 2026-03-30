@@ -28,6 +28,7 @@ var state: String = "idle"
 var target_ref: Variant = null
 var target_kind: String = ""
 var last_action: String = "spawned"
+var enemy_ai: Dictionary = {}
 
 
 func configure_from_record(record: Dictionary, spawn_position: Vector2, new_team: String = "player") -> void:
@@ -59,6 +60,7 @@ func configure_from_record(record: Dictionary, spawn_position: Vector2, new_team
     target_kind = ""
     state = "idle"
     last_action = "awaiting orders"
+    enemy_ai = {}
 
     if team == "enemy":
         unit_color = Color("e15c55")
@@ -86,7 +88,9 @@ func update(
     world_state,
     hostile_units: Array,
     hostile_workers: Array = [],
-    hostile_buildings: Array = []
+    hostile_buildings: Array = [],
+    allied_units: Array = [],
+    runtime_context: Dictionary = {}
 ) -> void:
     if not is_alive():
         state = "dead"
@@ -99,17 +103,35 @@ func update(
         target_kind = ""
 
     if target_ref == null and diplomacy_target_id.is_empty() and role != "civilian":
-        var target_payload: Dictionary = _find_nearest_target(hostile_units, hostile_workers, hostile_buildings)
+        var target_payload: Dictionary = _find_nearest_target(
+            hostile_units,
+            hostile_workers,
+            hostile_buildings,
+            _enemy_target_priority(),
+            _enemy_target_focus_position(),
+            _enemy_target_focus_bias()
+        )
         target_ref = target_payload.get("target", null)
         target_kind = str(target_payload.get("kind", ""))
 
     if team == "enemy" and target_ref == null and diplomacy_target_id.is_empty() and role != "civilian":
-        var pressure_target: Vector2 = _enemy_pressure_target(hostile_workers, hostile_buildings)
+        var pressure_target: Vector2 = _enemy_pressure_target(hostile_units, hostile_workers, hostile_buildings)
+        var attack_mode: String = str(enemy_ai.get("attack_mode", "assault"))
+        var rally_point: Vector2 = _enemy_rally_point()
+        var has_rally_point: bool = bool(enemy_ai.get("has_rally_point", false))
+        var group_ready: bool = bool(runtime_context.get("group_ready", true))
+        if attack_mode == "hold":
+            var hold_point: Vector2 = rally_point if has_rally_point else pressure_target
+            if hold_point != Vector2.ZERO:
+                _hold_position(hold_point, float(enemy_ai.get("hold_radius", 1.35)), "holding ground")
+        elif attack_mode == "rally" and has_rally_point and not group_ready:
+            _hold_position(rally_point, float(enemy_ai.get("release_radius", 2.25)), "forming attack group")
         if pressure_target != Vector2.ZERO and (not has_move_target or position.distance_to(move_target) <= 0.35):
-            move_target = pressure_target
-            has_move_target = true
-            state = "advancing"
-            last_action = "advancing on settlement"
+            if attack_mode != "hold" and not (attack_mode == "rally" and has_rally_point and not group_ready):
+                move_target = pressure_target
+                has_move_target = true
+                state = "advancing"
+                last_action = "advancing on settlement"
 
     if target_ref != null:
         var target_position: Vector2 = _target_position(target_ref)
@@ -194,6 +216,12 @@ func clear_runtime_references() -> void:
     target_kind = ""
 
 
+func set_enemy_ai_directive(directive: Dictionary) -> void:
+    if team != "enemy":
+        return
+    enemy_ai = directive.duplicate(true)
+
+
 func apply_damage(amount: float) -> bool:
     var mitigated: float = maxf(1.0, amount - (armor * 1.4))
     health = maxf(0.0, health - mitigated)
@@ -237,7 +265,8 @@ func serialize() -> Dictionary:
         "health": health,
         "damage_profile": damage_profile.duplicate(true),
         "state": state,
-        "last_action": last_action
+        "last_action": last_action,
+        "enemy_ai": enemy_ai.duplicate(true)
     }
 
 
@@ -274,6 +303,7 @@ func load_from_payload(payload: Dictionary, record: Dictionary) -> void:
     damage_profile = payload.get("damage_profile", damage_profile).duplicate(true)
     state = str(payload.get("state", state))
     last_action = str(payload.get("last_action", last_action))
+    enemy_ai = payload.get("enemy_ai", {}).duplicate(true)
     target_ref = null
     target_kind = ""
 
@@ -282,7 +312,34 @@ func _move_towards(target_position: Vector2, delta: float) -> void:
     position = position.move_toward(target_position, base_speed * delta)
 
 
-func _find_nearest_target(hostile_units: Array, hostile_workers: Array, hostile_buildings: Array) -> Dictionary:
+func _find_nearest_target(
+    hostile_units: Array,
+    hostile_workers: Array,
+    hostile_buildings: Array,
+    priority_order: Array = [],
+    focus_position: Vector2 = Vector2.ZERO,
+    focus_bias: float = 0.0
+) -> Dictionary:
+    var immediate_target: Dictionary = _find_immediate_target(hostile_units, hostile_workers)
+    if immediate_target.get("target", null) != null:
+        return immediate_target
+
+    var effective_priority: Array = priority_order.duplicate()
+    if effective_priority.is_empty():
+        effective_priority = ["unit", "worker", "building"]
+
+    for target_kind_id in effective_priority:
+        var target_payload: Dictionary = _find_nearest_target_of_kind(
+            str(target_kind_id),
+            hostile_units,
+            hostile_workers,
+            hostile_buildings,
+            focus_position,
+            focus_bias
+        )
+        if target_payload.get("target", null) != null:
+            return target_payload
+
     var best_target: Variant = null
     var best_kind: String = ""
     var best_distance: float = INF
@@ -318,6 +375,91 @@ func _find_nearest_target(hostile_units: Array, hostile_workers: Array, hostile_
             best_kind = "building"
 
     return {"target": best_target, "kind": best_kind}
+
+
+func _find_immediate_target(hostile_units: Array, hostile_workers: Array) -> Dictionary:
+    var threat_radius: float = maxf(attack_range + 1.2, 2.75)
+    var best_target: Variant = null
+    var best_kind: String = ""
+    var best_distance: float = INF
+
+    for hostile_unit in hostile_units:
+        if hostile_unit == null or not hostile_unit.is_alive():
+            continue
+
+        var distance_to_target: float = position.distance_to(hostile_unit.position)
+        if distance_to_target <= threat_radius and distance_to_target < best_distance:
+            best_distance = distance_to_target
+            best_target = hostile_unit
+            best_kind = "unit"
+
+    for hostile_worker in hostile_workers:
+        if hostile_worker == null or not hostile_worker.is_alive():
+            continue
+
+        var distance_to_target: float = position.distance_to(hostile_worker.position)
+        if distance_to_target <= threat_radius and distance_to_target < best_distance:
+            best_distance = distance_to_target
+            best_target = hostile_worker
+            best_kind = "worker"
+
+    return {"target": best_target, "kind": best_kind}
+
+
+func _find_nearest_target_of_kind(
+    kind: String,
+    hostile_units: Array,
+    hostile_workers: Array,
+    hostile_buildings: Array,
+    focus_position: Vector2,
+    focus_bias: float
+) -> Dictionary:
+    var best_target: Variant = null
+    var best_score: float = INF
+
+    match kind:
+        "unit":
+            for hostile_unit in hostile_units:
+                if hostile_unit == null or not hostile_unit.is_alive():
+                    continue
+                var distance_to_target: float = position.distance_to(hostile_unit.position)
+                if distance_to_target > vision:
+                    continue
+                var score: float = _target_score(hostile_unit.position, focus_position, focus_bias)
+                if score < best_score:
+                    best_score = score
+                    best_target = hostile_unit
+        "worker":
+            for hostile_worker in hostile_workers:
+                if hostile_worker == null or not hostile_worker.is_alive():
+                    continue
+                var distance_to_target: float = position.distance_to(hostile_worker.position)
+                if distance_to_target > vision:
+                    continue
+                var score: float = _target_score(hostile_worker.position, focus_position, focus_bias)
+                if score < best_score:
+                    best_score = score
+                    best_target = hostile_worker
+        "deposit", "building":
+            for hostile_building in hostile_buildings:
+                if hostile_building == null or not hostile_building.is_alive():
+                    continue
+                if kind == "deposit" and not hostile_building.supports_deposit():
+                    continue
+                var target_position: Vector2 = hostile_building.center_position()
+                var distance_to_target: float = position.distance_to(target_position)
+                if distance_to_target > vision:
+                    continue
+                var score: float = _target_score(target_position, focus_position, focus_bias)
+                if kind == "deposit":
+                    score -= 0.4
+                if score < best_score:
+                    best_score = score
+                    best_target = hostile_building
+        _:
+            pass
+
+    return {"target": best_target, "kind": kind if best_target != null else ""}
 
 
 func _target_position(target: Variant) -> Vector2:
@@ -363,7 +505,29 @@ func _regenerate(delta: float, world_state) -> void:
     health = minf(max_health, health + (delta * regeneration_rate * 4.0))
 
 
-func _enemy_pressure_target(hostile_workers: Array, hostile_buildings: Array) -> Vector2:
+func _enemy_pressure_target(hostile_units: Array, hostile_workers: Array, hostile_buildings: Array) -> Vector2:
+    if not enemy_ai.is_empty():
+        var pressure_priority: Array = _enemy_pressure_priority()
+        var focus_position: Vector2 = _enemy_target_focus_position()
+        var focus_bias: float = _enemy_target_focus_bias()
+        for pressure_kind in pressure_priority:
+            var pressure_payload: Dictionary = _find_nearest_target_of_kind(
+                str(pressure_kind),
+                hostile_units,
+                hostile_workers,
+                hostile_buildings,
+                focus_position,
+                focus_bias
+            )
+            var pressure_target = pressure_payload.get("target", null)
+            if pressure_target == null:
+                continue
+            return _target_position(pressure_target)
+
+        var pressure_point: Vector2 = _enemy_pressure_point()
+        if pressure_point != Vector2.ZERO:
+            return pressure_point
+
     var best_position: Vector2 = Vector2.ZERO
     var best_distance: float = INF
 
@@ -390,3 +554,102 @@ func _enemy_pressure_target(hostile_workers: Array, hostile_buildings: Array) ->
             best_position = hostile_worker.position
 
     return best_position
+
+
+func _enemy_target_priority() -> Array:
+    if team != "enemy":
+        return []
+
+    var configured_priority: Array = enemy_ai.get("target_priority", [])
+    if not configured_priority.is_empty():
+        return configured_priority.duplicate()
+
+    var attack_mode: String = str(enemy_ai.get("attack_mode", "assault"))
+    match attack_mode:
+        "raid":
+            return ["worker", "deposit", "building", "unit"]
+        "siege":
+            return ["deposit", "building", "worker", "unit"]
+        "hold":
+            return ["unit", "worker", "deposit", "building"]
+        _:
+            return ["unit", "worker", "deposit", "building"]
+
+
+func _enemy_pressure_priority() -> Array:
+    var pressure_rule: String = str(enemy_ai.get("pressure_rule", "settlement"))
+    match pressure_rule:
+        "workers":
+            return ["worker", "deposit", "building", "unit"]
+        "buildings":
+            return ["deposit", "building", "worker", "unit"]
+        "units":
+            return ["unit", "worker", "deposit", "building"]
+        "defend":
+            return []
+        _:
+            return _enemy_target_priority()
+
+
+func _enemy_target_focus_position() -> Vector2:
+    var pressure_point: Vector2 = _enemy_pressure_point()
+    if pressure_point != Vector2.ZERO:
+        return pressure_point
+
+    return _enemy_rally_point()
+
+
+func _enemy_target_focus_bias() -> float:
+    var pressure_rule: String = str(enemy_ai.get("pressure_rule", "settlement"))
+    match pressure_rule:
+        "workers":
+            return 0.2
+        "buildings":
+            return 0.35
+        "target_point":
+            return 0.8
+        _:
+            return 0.1 if _enemy_target_focus_position() != Vector2.ZERO else 0.0
+
+
+func _enemy_rally_point() -> Vector2:
+    if not bool(enemy_ai.get("has_rally_point", false)):
+        return Vector2.ZERO
+    return _vector_from_payload(enemy_ai.get("rally_point", {}), Vector2.ZERO)
+
+
+func _enemy_pressure_point() -> Vector2:
+    if not bool(enemy_ai.get("has_pressure_point", false)):
+        return Vector2.ZERO
+    return _vector_from_payload(enemy_ai.get("pressure_point", {}), Vector2.ZERO)
+
+
+func _hold_position(target_position: Vector2, radius: float, action_text: String) -> void:
+    var effective_radius: float = maxf(0.35, radius)
+    if position.distance_to(target_position) > effective_radius:
+        move_target = target_position
+        has_move_target = true
+        state = "rallying"
+        last_action = action_text
+    else:
+        has_move_target = false
+        state = "holding"
+        last_action = action_text
+
+
+func _target_score(target_position: Vector2, focus_position: Vector2, focus_bias: float) -> float:
+    var score: float = position.distance_to(target_position)
+    if focus_position != Vector2.ZERO and focus_bias > 0.0:
+        score += target_position.distance_to(focus_position) * focus_bias
+    return score
+
+
+func _vector_from_payload(payload: Variant, fallback: Vector2) -> Vector2:
+    if typeof(payload) != TYPE_DICTIONARY:
+        return fallback
+
+    var point_payload: Dictionary = payload
+    return Vector2(
+        float(point_payload.get("x", fallback.x)),
+        float(point_payload.get("y", fallback.y))
+    )

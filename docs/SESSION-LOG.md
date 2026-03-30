@@ -85,6 +85,9 @@
 - authored a dedicated enemy-AI pressure map and applied enemy production plans to Mission 25
 - expanded the shell mission board to show all missions, locked/completed state, win/loss record, and best clear time
 - added an enemy-AI pressure smoke test and a campaign-board shell smoke test
+- extended enemy production plans into persisted rally, aggression, pressure-target, and target-priority directives for trained and preplaced enemy units
+- added latched group-release coordination so rally plans can stage waves before committing across the map
+- added an enemy-AI behaviors smoke test and authored coordinated Mission 25 pressure metadata on top of the late-campaign baseline
 
 ### Files Added Or Changed
 
@@ -162,6 +165,7 @@
 - [`game/scripts/tests/ownership_transfer_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/ownership_transfer_smoke.gd)
 - [`game/scripts/tests/final_campaign_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/final_campaign_smoke.gd)
 - [`game/scripts/tests/enemy_ai_pressure_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_pressure_smoke.gd)
+- [`game/scripts/tests/enemy_ai_behaviors_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_behaviors_smoke.gd)
 - [`game/scripts/tests/campaign_board_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_board_smoke.gd)
 
 ### Validation
@@ -195,9 +199,10 @@
 - Godot headless ownership-transfer smoke test completed without reported errors
 - Godot headless final-campaign smoke test completed without reported errors through Mission 25
 - Godot headless enemy-AI pressure smoke test completed without reported errors
+- Godot headless enemy-AI behaviors smoke test completed without reported errors
 - Godot headless campaign-board smoke test completed without reported errors
 
 ### Outstanding
 
 - validate the project in the interactive Godot editor
-- extend the current campaign shell slice into broader faction AI, shell polish, and expanded-mode systems now that all 25 classic missions have authored runtime coverage
+- extend authored AI further into mission-event reinforcement waves, shell polish, and expanded-mode systems now that the base rally/aggression layer exists
