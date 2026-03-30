@@ -88,6 +88,9 @@
 - extended enemy production plans into persisted rally, aggression, pressure-target, and target-priority directives for trained and preplaced enemy units
 - added latched group-release coordination so rally plans can stage waves before committing across the map
 - added an enemy-AI behaviors smoke test and authored coordinated Mission 25 pressure metadata on top of the late-campaign baseline
+- extended `schedule_enemy_wave` so scripted reinforcements can carry authored AI directives or attach to existing plan ids with save/load persistence
+- polished the shell with chapter-framed mission labels, synopsis-aware mission-board rows, richer campaign record summaries, and clearer next-mission result copy
+- added an enemy-AI wave-directives smoke test plus shell assertions for the new chapter/synopsis presentation
 
 ### Files Added Or Changed
 
@@ -166,6 +169,7 @@
 - [`game/scripts/tests/final_campaign_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/final_campaign_smoke.gd)
 - [`game/scripts/tests/enemy_ai_pressure_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_pressure_smoke.gd)
 - [`game/scripts/tests/enemy_ai_behaviors_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_behaviors_smoke.gd)
+- [`game/scripts/tests/enemy_ai_wave_directives_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_wave_directives_smoke.gd)
 - [`game/scripts/tests/campaign_board_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_board_smoke.gd)
 
 ### Validation
@@ -200,9 +204,10 @@
 - Godot headless final-campaign smoke test completed without reported errors through Mission 25
 - Godot headless enemy-AI pressure smoke test completed without reported errors
 - Godot headless enemy-AI behaviors smoke test completed without reported errors
+- Godot headless enemy-AI wave-directives smoke test completed without reported errors
 - Godot headless campaign-board smoke test completed without reported errors
 
 ### Outstanding
 
 - validate the project in the interactive Godot editor
-- extend authored AI further into mission-event reinforcement waves, shell polish, and expanded-mode systems now that the base rally/aggression layer exists
+- start explicit expanded-mode layering and loader hooks now that the classic shell and AI continuation tranche is in place

@@ -21,7 +21,7 @@ What exists now:
 - a new Godot project scaffold in [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game)
 - importer tooling in [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers)
 - planning and continuation docs in [`docs/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs)
-- playable Mission 1 through Mission 25 scenario maps with worker economy, mission-scoped and dynamically unlockable build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, reactive clan stances, clan trust/demand/revenge rules, ownership-transfer takeover scenarios, late-campaign prison/sanctuary relocation scenarios, enemy building production plans with rally, aggression, and target-priority hooks, full classic-campaign result flow, better RTS control UX, a real menu/HUD shell, command-card buttons, mission result flow, persistent shell options, a full mission board with locked/completed states, and a complete classic-campaign playable slice
+- playable Mission 1 through Mission 25 scenario maps with worker economy, mission-scoped and dynamically unlockable build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, reactive clan stances, clan trust/demand/revenge rules, ownership-transfer takeover scenarios, late-campaign prison/sanctuary relocation scenarios, enemy building production plans and scheduled waves with rally, aggression, and target-priority hooks, full classic-campaign result flow, better RTS control UX, a real menu/HUD shell, command-card buttons, richer chapter-framed campaign summaries, persistent shell options, a full mission board with locked/completed states, and a complete classic-campaign playable slice
 
 ## Project Layout
 
@@ -75,7 +75,7 @@ In the current Godot shell:
 - some missions now use diplomacy-count, exploration-area, build-in-area, and clear-hostiles objectives instead of only stockpile/build checks
 - the available build palette is now mission-scoped, so early missions only expose the structures that scenario allows
 - some missions can now unlock new build options mid-run through scripted events, and those runtime palette changes persist through save/load
-- some missions can now drive enemy building production plans with rally points, aggression modes, pressure targets, and target priorities, and those runtime AI plans also persist through save/load
+- some missions can now drive enemy building production plans and scheduled reinforcement waves with rally points, aggression modes, pressure targets, and target priorities, and those runtime AI plans also persist through save/load
 - `culture`, `barracks`, `sanctuary`, `workshop`, `garage`, and `hangar` now expose broader trainable rosters
 - `market` now trains `messenger` for diplomacy scenarios
 - `library` and `laboratory` both support branch-based research
@@ -108,7 +108,8 @@ In the current Godot shell:
 - Mission 23 now introduces Great Library takeover scripting with building and unit ownership transfer
 - Mission 24 now pushes a final southeast sanctuary rush under heavy enemy presence
 - Mission 25 now delivers the final campaign annihilation battle and campaign-complete result flow
-- the mission board now shows the full campaign instead of only unlocked missions, including locked/completed state, win-loss record, and best clear time
+- the mission board now shows the full campaign instead of only unlocked missions, including chapter framing, synopsis snippets, locked/completed state, win-loss record, and best clear time
+- the shell briefing and result panels now frame the active mission with chapter/mission labels plus richer campaign record and next-mission presentation
 - `F5` saves to `user://save_slot_1.json`
 - `F6` saves the active named slot profile
 - `F7` loads the active named slot profile

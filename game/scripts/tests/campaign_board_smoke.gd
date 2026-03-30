@@ -21,6 +21,11 @@ func _run_test() -> void:
         await _fail(shell, "Campaign board smoke test did not render the full mission board.")
         return
 
+    var first_button: Button = shell.mission_button_container.get_child(0)
+    if not first_button.text.contains("Chapter I") or not first_button.text.contains("Mission 01"):
+        await _fail(shell, "Campaign board smoke test did not frame mission-board entries with chapter and mission metadata.")
+        return
+
     var locked_button: Button = shell.mission_button_container.get_child(shell.mission_button_container.get_child_count() - 1)
     if not locked_button.disabled:
         await _fail(shell, "Campaign board smoke test did not disable locked missions.")
@@ -35,11 +40,16 @@ func _run_test() -> void:
         await _fail(shell, "Campaign board smoke test did not surface campaign completion in the shell.")
         return
 
+    if shell.menu_campaign_label.text.find("Record:") < 0:
+        await _fail(shell, "Campaign board smoke test did not surface the richer campaign record summary.")
+        return
+
     print(
-        "Campaign board smoke test: buttons=%d complete=%s"
+        "Campaign board smoke test: buttons=%d complete=%s record=%s"
         % [
             shell.mission_button_container.get_child_count(),
-            str(shell.menu_campaign_label.text.find("COMPLETE") >= 0)
+            str(shell.menu_campaign_label.text.find("COMPLETE") >= 0),
+            str(shell.menu_campaign_label.text.find("Record:") >= 0)
         ]
     )
     await _shutdown(shell, 0)

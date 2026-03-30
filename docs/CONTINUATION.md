@@ -66,12 +66,14 @@ Working now:
 - shell options now persist runtime pressure and menu-pause behavior in `user://shell_settings.json`
 - enemy combat units now advance on the player settlement when idle instead of stalling outside vision range
 - enemy production plans now normalize into persisted plan ids with rally points, aggression modes, pressure targets, target priorities, and latched group-release coordination for trained and preplaced enemy units
+- scheduled enemy waves can now carry the same AI directives or attach to an authored plan id, and those queued-wave directives persist through save/load until spawn
 - Mission 5 through Mission 25 now have authored scenario maps with diplomacy-count, exploration-area, build-in-area, survival, prison-break escape chains, trust-demand deadlines, takeover scripts, and queued guardian-wave behavior
 - diplomacy targets now track clan trust, alliance thresholds, active demands, and revenge-on-failure state
 - mission objectives now support alliance-count, unit-in-area, reach-area-once, build-in-area, control-building, clear-hostiles, clan-trust, and demand-status checks
 - mission events now support alliance-count, clan-stance, clan-trust, demand-status, and unit-in-area triggers plus queued enemy-wave scheduling, explicit clan-stance shifts, trust changes, demand injection, dynamic build-palette updates, building transfer, unit transfer, enemy-building production plans, and mission-outcome actions
 - campaign results now distinguish between mission victory and full campaign completion in the shell snapshot
-- the shell mission board now renders the full 25-mission campaign with locked/completed states, best times, and win/loss summaries
+- the shell mission board now renders the full 25-mission campaign with chapter framing, synopsis snippets, locked/completed states, best times, and win/loss summaries
+- the shell briefing, HUD header, and result panel now surface richer chapter/mission framing plus campaign record summaries and clearer next-mission state
 - a Godot smoke-test script exists for the vertical-slice resource loop
 - a second Godot smoke-test script exists for builder construction
 - a third Godot smoke-test script exists for production, research, combat, and save/load
@@ -98,6 +100,7 @@ Working now:
 - a twenty-fourth Godot smoke-test script exists for enemy building production-plan persistence
 - a twenty-fifth Godot smoke-test script exists for rally, aggression, target-priority, and save/load enemy AI behavior
 - a twenty-sixth Godot smoke-test script exists for full mission-board shell rendering and campaign-complete shell state
+- a twenty-seventh Godot smoke-test script exists for scheduled-wave AI directives and their save/load release behavior
 - issue and PR templates exist for public repo workflow
 - the old browser prototype files have been removed from the active codebase
 
@@ -177,14 +180,15 @@ Not done yet:
 - Final-campaign smoke test: [`game/scripts/tests/final_campaign_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/final_campaign_smoke.gd)
 - Enemy-AI pressure smoke test: [`game/scripts/tests/enemy_ai_pressure_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_pressure_smoke.gd)
 - Enemy-AI behavior smoke test: [`game/scripts/tests/enemy_ai_behaviors_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_behaviors_smoke.gd)
+- Enemy-AI wave-directives smoke test: [`game/scripts/tests/enemy_ai_wave_directives_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_wave_directives_smoke.gd)
 - Campaign-board smoke test: [`game/scripts/tests/campaign_board_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_board_smoke.gd)
 
 ## Next Session Start Here
 
-1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate rally-release timing plus mission-board readability on real missions, especially Mission 25 shell presentation.
-2. Expand shell polish with richer campaign summaries, chapter framing, and post-campaign front-end flow.
-3. Push next into expanded-mode data layering and faction-specific AI hooks rather than adding placeholder classic-campaign systems.
-4. Broaden mission-event-driven enemy waves so scheduled reinforcements can opt into the same authored AI directives when needed.
+1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate the refreshed shell copy/layout plus Mission 25 reinforcement pacing on live interaction.
+2. Push next into expanded-mode data layering with explicit loader hooks and isolated `game/data/expanded` scaffolding.
+3. Broaden faction-specific AI hooks beyond the current classic rally/aggression/wave-directive layer only where late-campaign missions need it.
+4. Keep trimming shell readability gaps instead of adding placeholder systems: chapter framing is in, but post-campaign flow and deeper mission metadata are still open.
 5. Keep the repo trace clean by updating this file and the session log whenever systems behavior changes.
 
 ## Commands
@@ -428,6 +432,15 @@ Run the enemy-AI behavior smoke test:
   --headless `
   --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
   --script res://scripts/tests/enemy_ai_behaviors_smoke.gd
+```
+
+Run the enemy-AI wave-directives smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/enemy_ai_wave_directives_smoke.gd
 ```
 
 Run the campaign-board smoke test:

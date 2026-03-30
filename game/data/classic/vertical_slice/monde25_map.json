@@ -143,8 +143,8 @@
       "id": "mission_25_final_battle",
       "trigger": { "type": "time_elapsed", "value": 16.0 },
       "actions": [
-        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 8, "count": 3, "delay": 0.6, "stagger": 0.35 },
-        { "type": "schedule_enemy_wave", "unit_id": "hurler", "x": 18, "y": 5, "count": 2, "delay": 1.1, "stagger": 0.35 },
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 8, "count": 3, "delay": 0.6, "stagger": 0.35, "enemy_ai_plan_id": "mission_25_shadow_siege" },
+        { "type": "schedule_enemy_wave", "unit_id": "hurler", "x": 18, "y": 5, "count": 2, "delay": 1.1, "stagger": 0.35, "enemy_ai_plan_id": "mission_25_shadow_raiders" },
         { "type": "message", "text": "The Shadow warlords commit their final reserves." }
       ]
     }

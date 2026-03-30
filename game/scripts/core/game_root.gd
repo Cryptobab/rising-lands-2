@@ -1265,6 +1265,44 @@ func _enemy_ai_directive_from_plan(plan: Dictionary) -> Dictionary:
     }
 
 
+func _enemy_ai_wave_directive(action_payload: Dictionary, unit_id: String, base_delay: float) -> Dictionary:
+    if not _payload_has_enemy_ai_fields(action_payload):
+        return {}
+
+    var plan_payload: Dictionary = action_payload.duplicate(true)
+    plan_payload["unit_id"] = unit_id
+    plan_payload["building_id"] = str(plan_payload.get("building_id", "wave"))
+    plan_payload["id"] = str(plan_payload.get("id", "enemy_wave_%s_%d_%d" % [
+        unit_id,
+        int(round(base_delay * 10.0)),
+        pending_enemy_spawns.size()
+    ]))
+    var normalized_plan: Dictionary = _normalize_enemy_ai_plan(plan_payload, pending_enemy_spawns.size())
+    return _enemy_ai_directive_from_plan(normalized_plan)
+
+
+func _payload_has_enemy_ai_fields(payload: Dictionary) -> bool:
+    for key in [
+        "behavior_profile",
+        "attack_mode",
+        "pressure_rule",
+        "target_priority",
+        "rally_point",
+        "rally_x",
+        "rally_y",
+        "pressure_point",
+        "pressure_x",
+        "pressure_y",
+        "min_group_size",
+        "release_radius",
+        "hold_radius",
+        "assignment_radius"
+    ]:
+        if payload.has(str(key)):
+            return true
+    return false
+
+
 func _apply_enemy_ai_to_existing_units() -> void:
     _sync_enemy_ai_assignments()
 
@@ -1669,15 +1707,22 @@ func _schedule_enemy_wave(action_payload: Dictionary) -> void:
     var spacing: float = maxf(0.0, float(action_payload.get("spacing", 0.8)))
     var stagger: float = maxf(0.0, float(action_payload.get("stagger", 0.0)))
     var unit_id: String = str(action_payload.get("unit_id", "basher"))
+    var enemy_ai_plan_id: String = str(action_payload.get("enemy_ai_plan_id", ""))
+    var enemy_ai_directive: Dictionary = _enemy_ai_wave_directive(action_payload, unit_id, base_delay)
 
     for index in range(spawn_count):
-        pending_enemy_spawns.append({
+        var spawn_payload := {
             "unit_id": unit_id,
             "x": base_x + int(index % 2),
             "y": base_y + int(floor(float(index) / 2.0)),
             "delay": base_delay + (stagger * index),
             "spacing": spacing
-        })
+        }
+        if not enemy_ai_plan_id.is_empty():
+            spawn_payload["enemy_ai_plan_id"] = enemy_ai_plan_id
+        if not enemy_ai_directive.is_empty():
+            spawn_payload["enemy_ai_directive"] = enemy_ai_directive.duplicate(true)
+        pending_enemy_spawns.append(spawn_payload)
 
 
 func _set_clan_stance(clan_id: String, stance: String) -> void:
@@ -1999,8 +2044,89 @@ func _remap_selection_indices(indices: Array[int], index_map: Dictionary) -> Arr
 func _mission_display_name(mission_id: String) -> String:
     var mission_record: Dictionary = classic_database.find_mission(mission_id)
     if not mission_record.is_empty():
-        return str(mission_record.get("title", mission_id))
+        return _mission_frame_text(mission_record, mission_id)
     return mission_id
+
+
+func _mission_frame_text(mission_record: Dictionary, fallback_mission_id: String = "") -> String:
+    var chapter_text: String = _mission_chapter_text(mission_record)
+    var mission_label: String = _mission_label(mission_record, fallback_mission_id)
+    if chapter_text.is_empty():
+        return mission_label
+    return "%s | %s" % [chapter_text, mission_label]
+
+
+func _mission_label(mission_record: Dictionary, fallback_mission_id: String = "") -> String:
+    var mission_number: int = int(mission_record.get("mission_number", 0))
+    if mission_number > 0:
+        return "Mission %02d" % mission_number
+
+    var title: String = str(mission_record.get("title", fallback_mission_id)).strip_edges()
+    if not title.is_empty():
+        return title
+    return fallback_mission_id
+
+
+func _mission_chapter_text(mission_record: Dictionary) -> String:
+    var explicit_chapter: String = str(mission_record.get("chapter", "")).strip_edges()
+    if not explicit_chapter.is_empty():
+        return explicit_chapter.replace("\n", " ")
+
+    var mission_number: int = int(mission_record.get("mission_number", 0))
+    if mission_number <= 0:
+        return ""
+    if mission_number <= 4:
+        return "Chapter I"
+    if mission_number <= 8:
+        return "Chapter II"
+    if mission_number <= 12:
+        return "Chapter III"
+    if mission_number <= 16:
+        return "Chapter IV"
+    if mission_number <= 20:
+        return "Chapter V"
+    return "Chapter VI"
+
+
+func _mission_synopsis_text(mission_record: Dictionary) -> String:
+    var briefing: String = str(mission_record.get("briefing", ""))
+    if briefing.is_empty():
+        return ""
+
+    var synopsis_index: int = briefing.find("Synopsis:")
+    if synopsis_index < 0:
+        return ""
+
+    var synopsis_block: String = briefing.substr(synopsis_index + "Synopsis:".length()).strip_edges()
+    var fragments: Array[String] = []
+    for line in synopsis_block.split("\n"):
+        var stripped: String = str(line).strip_edges()
+        if stripped.is_empty():
+            continue
+        fragments.append(stripped)
+        if fragments.size() >= 3:
+            break
+    return " | ".join(fragments)
+
+
+func _campaign_record_totals() -> Dictionary:
+    var totals := {
+        "wins": 0,
+        "losses": 0,
+        "best_time": -1.0
+    }
+    if campaign_state == null:
+        return totals
+
+    for record in campaign_state.mission_records.values():
+        totals["wins"] = int(totals.get("wins", 0)) + int(record.get("wins", 0))
+        totals["losses"] = int(totals.get("losses", 0)) + int(record.get("losses", 0))
+        var best_time: float = float(record.get("best_time", -1.0))
+        if best_time >= 0.0:
+            var current_best: float = float(totals.get("best_time", -1.0))
+            if current_best < 0.0 or best_time < current_best:
+                totals["best_time"] = best_time
+    return totals
 
 
 func _map_origin(viewport_size: Vector2) -> Vector2:
@@ -2828,9 +2954,27 @@ func mission_record_for_id(mission_id: String = "") -> Dictionary:
     return classic_database.find_mission(resolved_id)
 
 
+func mission_frame_for_id(mission_id: String = "") -> String:
+    var mission_record: Dictionary = mission_record_for_id(mission_id)
+    if mission_record.is_empty():
+        return mission_id
+    return _mission_frame_text(mission_record, mission_id if not mission_id.is_empty() else current_mission_id)
+
+
+func mission_synopsis_for_id(mission_id: String = "") -> String:
+    var mission_record: Dictionary = mission_record_for_id(mission_id)
+    return _mission_synopsis_text(mission_record)
+
+
 func build_ui_snapshot() -> Dictionary:
     var summary: Dictionary = classic_database.summary()
+    var active_record: Dictionary = mission_record_for_id()
+    var mission_label: String = _mission_label(active_record, current_mission_id)
+    var chapter_text: String = _mission_chapter_text(active_record)
+    var synopsis_text: String = _mission_synopsis_text(active_record)
+    var campaign_record_totals: Dictionary = _campaign_record_totals()
     var campaign_text: String = "Campaign: offline"
+    var campaign_summary_lines: Array[String] = []
     if campaign_state != null:
         campaign_text = "Campaign: %d/%d complete | %d unlocked" % [
             campaign_state.completed_count(),
@@ -2839,6 +2983,16 @@ func build_ui_snapshot() -> Dictionary:
         ]
         if campaign_state.campaign_complete():
             campaign_text += " | COMPLETE"
+        campaign_summary_lines.append(campaign_text)
+        campaign_summary_lines.append("Record: %d wins | %d losses" % [
+            int(campaign_record_totals.get("wins", 0)),
+            int(campaign_record_totals.get("losses", 0))
+        ])
+        var best_campaign_time: float = float(campaign_record_totals.get("best_time", -1.0))
+        if best_campaign_time >= 0.0:
+            campaign_summary_lines.append("Best mission clear: %.1fs" % best_campaign_time)
+    else:
+        campaign_summary_lines.append(campaign_text)
 
     var objective_lines: Array[String] = mission_state.objective_lines()
     if objective_lines.is_empty():
@@ -2847,13 +3001,23 @@ func build_ui_snapshot() -> Dictionary:
     if objective_lines.is_empty():
         objective_lines.append("[ ] No objectives loaded")
 
-    var goal_text: String = "Stockpile: %d/%d food | %d/%d stone | Allies: %d" % [
-        int(world_state.resources.get("food", 0)),
-        int(map_state.storehouse_goal.get("food", 0)),
-        int(world_state.resources.get("stone", 0)),
-        int(map_state.storehouse_goal.get("stone", 0)),
-        allied_clans.size()
-    ]
+    var food_target: int = int(map_state.storehouse_goal.get("food", 0))
+    var stone_target: int = int(map_state.storehouse_goal.get("stone", 0))
+    var goal_text: String = ""
+    if food_target > 0 or stone_target > 0:
+        goal_text = "Stockpile: %d/%d food | %d/%d stone | Allies: %d" % [
+            int(world_state.resources.get("food", 0)),
+            food_target,
+            int(world_state.resources.get("stone", 0)),
+            stone_target,
+            allied_clans.size()
+        ]
+    else:
+        goal_text = "Pressure: %d enemies | %d pending waves | Allies: %d" % [
+            enemy_units.size(),
+            pending_enemy_spawns.size(),
+            allied_clans.size()
+        ]
 
     var selection_text := "Selection: none"
     if not selected_worker_indices.is_empty() or not selected_combat_indices.is_empty():
@@ -2883,33 +3047,49 @@ func build_ui_snapshot() -> Dictionary:
         "title": "",
         "body": "",
         "next_mission_id": "",
-        "next_mission_title": ""
+        "next_mission_title": "",
+        "next_mission_label": "",
+        "next_chapter_text": ""
     }
     if world_state.mission_status == "victory":
         var next_mission_id: String = ""
         var campaign_complete: bool = false
+        var next_record: Dictionary = {}
         if campaign_state != null:
             next_mission_id = campaign_state.next_mission_id_after(current_mission_id)
             if not next_mission_id.is_empty() and not campaign_state.is_mission_unlocked(next_mission_id):
                 next_mission_id = ""
             campaign_complete = campaign_state.campaign_complete()
+            if not next_mission_id.is_empty():
+                next_record = mission_record_for_id(next_mission_id)
         result_payload["visible"] = true
         result_payload["title"] = "Campaign Complete" if campaign_complete else "Mission Complete"
         result_payload["body"] = (
-            "The clan secured the Rising Lands after %d completed missions."
-            % [campaign_state.completed_count()]
+            "The clan secured the Rising Lands after %d completed missions.\nRecord: %d wins | %d losses."
+            % [
+                campaign_state.completed_count(),
+                int(campaign_record_totals.get("wins", 0)),
+                int(campaign_record_totals.get("losses", 0))
+            ]
             if campaign_complete
-            else "The clan secured %s in %d ticks." % [mission_state.title, world_state.tick_count]
+            else "%s secured in %d ticks.\nNext deployment: %s." % [
+                _mission_frame_text(active_record, current_mission_id),
+                world_state.tick_count,
+                _mission_frame_text(next_record, next_mission_id) if not next_mission_id.is_empty() else "Return to the campaign shell"
+            ]
         )
         result_payload["next_mission_id"] = next_mission_id
-        result_payload["next_mission_title"] = str(mission_record_for_id(next_mission_id).get("title", next_mission_id))
+        result_payload["next_mission_title"] = str(next_record.get("title", next_mission_id))
+        result_payload["next_mission_label"] = _mission_label(next_record, next_mission_id)
+        result_payload["next_chapter_text"] = _mission_chapter_text(next_record)
     elif world_state.mission_status == "defeat":
         result_payload["visible"] = true
         result_payload["title"] = "Mission Failed"
-        result_payload["body"] = "The settlement collapsed. Retry the mission or return to the campaign shell."
+        result_payload["body"] = "%s broke under pressure. Retry the mission or regroup in the campaign shell." % _mission_frame_text(active_record, current_mission_id)
 
     return {
         "campaign_text": campaign_text,
+        "campaign_summary_lines": campaign_summary_lines,
         "objective_lines": objective_lines,
         "goal_text": goal_text,
         "selection_text": selection_text,
@@ -2920,6 +3100,9 @@ func build_ui_snapshot() -> Dictionary:
         "selection_detail_lines": _selection_detail_lines(),
         "selected_building_actions": selected_building_actions(),
         "mission_title": mission_state.title,
+        "mission_label": mission_label,
+        "chapter_text": chapter_text,
+        "mission_synopsis": synopsis_text,
         "mission_state": world_state.mission_status,
         "current_mission_id": current_mission_id,
         "active_save_slot_id": active_save_slot_id,

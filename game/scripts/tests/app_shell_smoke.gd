@@ -24,6 +24,16 @@ func _init() -> void:
         quit(1)
         return
 
+    if not shell.menu_briefing_title.text.contains("Mission 01") or not shell.menu_briefing_title.text.contains("Chapter I"):
+        push_error("App shell smoke test did not frame the briefing with chapter and mission metadata.")
+        quit(1)
+        return
+
+    if not shell.menu_briefing_body.text.contains("Synopsis:"):
+        push_error("App shell smoke test did not surface the mission synopsis in the shell briefing.")
+        quit(1)
+        return
+
     if not shell.start_campaign():
         push_error("App shell smoke test could not launch the campaign from the menu.")
         quit(1)
@@ -43,6 +53,11 @@ func _init() -> void:
 
     if not shell.hud_resource_label.text.contains("Food"):
         push_error("App shell smoke test did not populate the top resource bar.")
+        quit(1)
+        return
+
+    if not shell.hud_mission_label.text.contains("Mission 01") or not shell.hud_mission_label.text.contains("Chapter I"):
+        push_error("App shell smoke test did not carry the chapter framing into the HUD header.")
         quit(1)
         return
 
@@ -85,6 +100,11 @@ func _init() -> void:
 
     if not shell.next_mission_button.visible:
         push_error("App shell smoke test did not expose the next mission action after victory.")
+        quit(1)
+        return
+
+    if not shell.next_mission_button.text.contains("Mission 02"):
+        push_error("App shell smoke test did not label the next mission action with the richer mission metadata.")
         quit(1)
         return
 
