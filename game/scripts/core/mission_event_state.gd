@@ -32,6 +32,10 @@ func should_fire(snapshot: Dictionary, mission_state) -> bool:
 			return int(snapshot.get("allied_clans", []).size()) >= int(trigger.get("value", 0))
 		"clan_stance":
 			return str(snapshot.get("clan_stances", {}).get(str(trigger.get("clan_id", "")), "")) == str(trigger.get("value", ""))
+		"clan_trust":
+			return int(snapshot.get("clan_trust", {}).get(str(trigger.get("clan_id", "")), 0)) >= int(trigger.get("value", 0))
+		"demand_status":
+			return str(snapshot.get("clan_demands", {}).get(str(trigger.get("clan_id", "")), {}).get("status", "")) == str(trigger.get("value", ""))
 		"enemy_waves_spawned":
 			return int(snapshot.get("enemy_waves_spawned", 0)) >= int(trigger.get("value", 0))
 		"resource_stockpile":

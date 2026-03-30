@@ -65,6 +65,11 @@
 - authored Mission 9 through Mission 12 scenario maps for the chapter-three campaign slice
 - added a chapter-three content smoke test that covers Mission 9 through Mission 12 progression
 - added a mission-event actions smoke test for hostile-clan and forced-outcome scripting
+- expanded diplomacy again with per-clan trust, alliance thresholds, active demands, and revenge-on-failure state
+- extended mission objectives and mission-event triggers/actions for clan trust and demand-status flows
+- authored Mission 13 through Mission 16 scenario maps for the next mid-campaign slice
+- added a diplomacy-demands smoke test for trust fulfillment, save/load persistence, and revenge failure
+- added a mid-campaign content smoke test covering Mission 13 through Mission 16 progression
 
 ### Files Added Or Changed
 
@@ -115,11 +120,17 @@
 - [`game/data/classic/vertical_slice/monde10_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde10_map.json)
 - [`game/data/classic/vertical_slice/monde11_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde11_map.json)
 - [`game/data/classic/vertical_slice/monde12_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde12_map.json)
+- [`game/data/classic/vertical_slice/monde13_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde13_map.json)
+- [`game/data/classic/vertical_slice/monde14_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde14_map.json)
+- [`game/data/classic/vertical_slice/monde15_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde15_map.json)
+- [`game/data/classic/vertical_slice/monde16_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde16_map.json)
 - [`tools/importers/extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/extract_classic_data.py)
 - [`tools/importers/tests/test_extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/tests/test_extract_classic_data.py)
 - [`game/scripts/tests/chapter_two_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/chapter_two_content_smoke.gd)
 - [`game/scripts/tests/chapter_three_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/chapter_three_content_smoke.gd)
 - [`game/scripts/tests/mission_event_actions_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mission_event_actions_smoke.gd)
+- [`game/scripts/tests/diplomacy_demands_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/diplomacy_demands_smoke.gd)
+- [`game/scripts/tests/mid_campaign_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mid_campaign_content_smoke.gd)
 
 ### Validation
 
@@ -145,8 +156,10 @@
 - Godot headless chapter-two content smoke test completed without reported errors through Mission 8
 - Godot headless chapter-three content smoke test completed without reported errors through Mission 12
 - Godot headless mission-event actions smoke test completed without reported errors
+- Godot headless diplomacy-demands smoke test completed without reported errors
+- Godot headless mid-campaign content smoke test completed without reported errors through Mission 16
 
 ### Outstanding
 
 - validate the project in the interactive Godot editor
-- extend the current campaign shell slice into broader content parity, deeper diplomacy, and stronger multi-mission scenario coverage beyond Mission 12
+- extend the current campaign shell slice into broader content parity, deeper diplomacy, and stronger multi-mission scenario coverage beyond Mission 16

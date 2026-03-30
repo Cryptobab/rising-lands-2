@@ -86,6 +86,12 @@ func evaluate(snapshot: Dictionary) -> Array[String]:
                 var allied_clans: Array = snapshot.get("allied_clans", [])
                 current_value = 1 if allied_clans.has(clan_id) else 0
                 completed = current_value >= maxi(1, target_value)
+            "clan_trust":
+                current_value = int(snapshot.get("clan_trust", {}).get(str(objective.get("clan_id", "")), 0))
+                completed = current_value >= target_value
+            "demand_status":
+                current_value = 1 if str(snapshot.get("clan_demands", {}).get(str(objective.get("clan_id", "")), {}).get("status", "")) == str(objective.get("status", "fulfilled")) else 0
+                completed = current_value >= maxi(1, target_value)
             "alliance_count":
                 current_value = int(snapshot.get("allied_clans", []).size())
                 completed = current_value >= maxi(1, target_value)

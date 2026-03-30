@@ -1,0 +1,156 @@
+{
+  "id": "monde15_map",
+  "name": "Mission 15 - Coalition Frontier",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "GGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGDGGGGGGGGGFFFR",
+    "GGGGFGDDGGGGGGGGFFRR",
+    "GGGFFGDDGGGGGGGGFRRR",
+    "GGGFGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "SGGGGGGGGGGGGGGGGRRR",
+    "SSGGGGFGGGGGGGGGGRRR",
+    "WSSGGGFGGGGGGGGGGRRR",
+    "WWSSGGGGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR",
+    "WWWWSSGGGGGGGGGGGRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 5, "type": "food", "amount": 160 },
+    { "x": 4, "y": 10, "type": "food", "amount": 150 },
+    { "x": 10, "y": 3, "type": "stone", "amount": 130 },
+    { "x": 12, "y": 9, "type": "stone", "amount": 120 },
+    { "x": 15, "y": 6, "type": "parts", "amount": 95 }
+  ],
+  "player_start": { "x": 4, "y": 8 },
+  "starting_resources": { "food": 40, "stone": 34, "parts": 14, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 4, "y": 8, "team": "player" },
+    { "building_id": "culture", "x": 6, "y": 8, "team": "player" },
+    { "building_id": "market", "x": 5, "y": 6, "team": "player" },
+    { "building_id": "barracks", "x": 7, "y": 6, "team": "player" },
+    { "building_id": "storehouse", "x": 14, "y": 4, "team": "enemy" },
+    { "building_id": "tower_catapult", "x": 15, "y": 5, "team": "enemy" },
+    { "building_id": "storehouse", "x": 16, "y": 9, "team": "enemy" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 3, "y": 7, "team": "player" },
+    { "unit_id": "farmer", "x": 3, "y": 9, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 7, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 9, "team": "player" },
+    { "unit_id": "messenger", "x": 6, "y": 7, "team": "player" },
+    { "unit_id": "swordsman", "x": 7, "y": 8, "team": "player" },
+    { "unit_id": "archer", "x": 7, "y": 9, "team": "player" },
+    { "unit_id": "basher", "x": 14, "y": 3, "team": "enemy" },
+    { "unit_id": "basher", "x": 15, "y": 8, "team": "enemy" },
+    { "unit_id": "hurler", "x": 16, "y": 6, "team": "enemy" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "market",
+    "barracks",
+    "sanctuary",
+    "tower_catapult",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "expand_the_clan",
+      "type": "build",
+      "building_id": "culture",
+      "target": 2,
+      "label": "Expand your Clan",
+      "required": true
+    },
+    {
+      "id": "secure_one_alliance",
+      "type": "alliance_count",
+      "target": 1,
+      "label": "Secure one allied clan",
+      "required": true
+    },
+    {
+      "id": "destroy_the_enemy",
+      "type": "clear_hostiles",
+      "target": 0,
+      "label": "Destroy the enemy",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_15_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "Grow the settlement, win the frontier clans, and break the enemy strongholds." }
+      ]
+    },
+    {
+      "id": "mission_15_silver_ready",
+      "trigger": { "type": "clan_trust", "clan_id": "silver_clan", "value": 2 },
+      "actions": [
+        { "type": "message", "text": "The Silver Clan respects your expansion and will hear a messenger." },
+        { "type": "grant_resources", "resources": { "parts": 10 } }
+      ]
+    },
+    {
+      "id": "mission_15_silver_failed",
+      "trigger": { "type": "demand_status", "clan_id": "silver_clan", "value": "failed" },
+      "actions": [
+        { "type": "set_clan_stance", "clan_id": "silver_clan", "stance": "hostile", "message": "The Silver Clan decides your realm is too weak and joins the enemy." },
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 17, "y": 4, "count": 2, "delay": 0.4, "stagger": 0.3 }
+      ]
+    },
+    {
+      "id": "mission_15_alliance_support",
+      "trigger": { "type": "clan_stance", "clan_id": "silver_clan", "value": "allied" },
+      "actions": [
+        { "type": "spawn_unit", "unit_id": "archer", "x": 13, "y": 8, "team": "player", "count": 2 },
+        { "type": "message", "text": "Silver Clan skirmishers reinforce your advance." }
+      ]
+    }
+  ],
+  "diplomacy_targets": [
+    {
+      "clan_id": "silver_clan",
+      "clan_name": "Silver Clan",
+      "x": 14,
+      "y": 8,
+      "stance": "neutral",
+      "trust": 1,
+      "alliance_threshold": 2,
+      "color_hex": "b7c5d1",
+      "demand": {
+        "id": "frontier_growth",
+        "label": "Raise a second Culture hall for the frontier clans",
+        "type": "building_count",
+        "building_id": "culture",
+        "target": 2,
+        "deadline": 44.0,
+        "trust_reward": 1,
+        "trust_penalty": -2,
+        "success_message": "The Silver Clan sees your settlement expanding with discipline.",
+        "failure_message": "The Silver Clan abandons the frontier bargain.",
+        "on_failure_stance": "hostile",
+        "revenge_on_failure": true,
+        "allow_auto_alliance": false
+      }
+    }
+  ]
+}

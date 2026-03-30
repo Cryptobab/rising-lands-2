@@ -1,0 +1,141 @@
+{
+  "id": "monde16_map",
+  "name": "Mission 16 - Knowledge Under Fire",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "GGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGDGGGGGGGGGFFFR",
+    "GGGGFGDDGGGGGGGGFFRR",
+    "GGGFFGDDGGGGGGGGFRRR",
+    "GGGFGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGGGGGGGGGGGRRR",
+    "SGGGGGFGGGGGGGGGGRRR",
+    "SSGGGGFGGGGGGGGGGRRR",
+    "WSSGGGGGGGGGGGGGGRRR",
+    "WWSSGGGGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 4, "type": "food", "amount": 150 },
+    { "x": 4, "y": 10, "type": "food", "amount": 130 },
+    { "x": 9, "y": 3, "type": "stone", "amount": 120 },
+    { "x": 11, "y": 9, "type": "stone", "amount": 115 },
+    { "x": 14, "y": 6, "type": "parts", "amount": 100 }
+  ],
+  "player_start": { "x": 4, "y": 8 },
+  "starting_resources": { "food": 36, "stone": 28, "parts": 16, "tech": 4 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 4, "y": 8, "team": "player" },
+    { "building_id": "culture", "x": 6, "y": 8, "team": "player" },
+    { "building_id": "library", "x": 5, "y": 6, "team": "player" },
+    { "building_id": "laboratory", "x": 7, "y": 6, "team": "player" },
+    { "building_id": "barracks", "x": 7, "y": 8, "team": "player" },
+    { "building_id": "storehouse", "x": 14, "y": 4, "team": "enemy" },
+    { "building_id": "tower_cannon", "x": 15, "y": 5, "team": "enemy" },
+    { "building_id": "tower_catapult", "x": 16, "y": 7, "team": "enemy" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 3, "y": 7, "team": "player" },
+    { "unit_id": "farmer", "x": 3, "y": 9, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 7, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 9, "team": "player" },
+    { "unit_id": "mechanic", "x": 4, "y": 10, "team": "player" },
+    { "unit_id": "swordsman", "x": 8, "y": 8, "team": "player" },
+    { "unit_id": "archer", "x": 8, "y": 9, "team": "player" },
+    { "unit_id": "basher", "x": 14, "y": 3, "team": "enemy" },
+    { "unit_id": "basher", "x": 16, "y": 8, "team": "enemy" },
+    { "unit_id": "hurler", "x": 17, "y": 6, "team": "enemy" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "library",
+    "laboratory",
+    "barracks",
+    "tower_catapult",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "develop_new_technology",
+      "type": "tech_count",
+      "target": 1,
+      "label": "Develop a new technology",
+      "required": true
+    },
+    {
+      "id": "destroy_enemy_clans",
+      "type": "clear_hostiles",
+      "target": 0,
+      "label": "Destroy enemy Clans",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_16_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "Advance your knowledge under pressure. The Ash Clan will judge your rule by the speed of your discoveries." }
+      ]
+    },
+    {
+      "id": "mission_16_ash_support",
+      "trigger": { "type": "demand_status", "clan_id": "ash_clan", "value": "fulfilled" },
+      "actions": [
+        { "type": "message", "text": "The Ash Clan respects your scholars and sends scouts to the line." },
+        { "type": "spawn_unit", "unit_id": "archer", "x": 13, "y": 7, "team": "player", "count": 2 }
+      ]
+    },
+    {
+      "id": "mission_16_ash_revenge",
+      "trigger": { "type": "clan_stance", "clan_id": "ash_clan", "value": "hostile" },
+      "actions": [
+        { "type": "message", "text": "The Ash Clan joins the war and drives raiders toward your libraries." },
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 5, "count": 2, "delay": 0.4, "stagger": 0.3 },
+        { "type": "schedule_enemy_wave", "unit_id": "hurler", "x": 18, "y": 7, "count": 1, "delay": 0.9 }
+      ]
+    }
+  ],
+  "diplomacy_targets": [
+    {
+      "clan_id": "ash_clan",
+      "clan_name": "Ash Clan",
+      "x": 14,
+      "y": 7,
+      "stance": "neutral",
+      "trust": 0,
+      "alliance_threshold": 1,
+      "color_hex": "94827a",
+      "demand": {
+        "id": "ash_proof_of_knowledge",
+        "label": "Complete one discovery before the Ash Clan deadline",
+        "type": "tech_count",
+        "target": 1,
+        "deadline": 24.0,
+        "trust_reward": 1,
+        "trust_penalty": -2,
+        "success_message": "The Ash Clan is convinced your realm can survive this war.",
+        "on_success_stance": "allied",
+        "failure_message": "The Ash Clan decides your rule is too weak and turns on you.",
+        "on_failure_stance": "hostile",
+        "revenge_on_failure": true
+      }
+    }
+  ]
+}

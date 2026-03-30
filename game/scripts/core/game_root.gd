@@ -199,6 +199,7 @@ func advance_simulation(delta: float) -> void:
     for enemy_unit in enemy_units:
         enemy_unit.update(delta, world_state, combat_units, workers, buildings)
 
+    _update_clan_demands(_build_mission_snapshot())
     _update_diplomacy_state()
     _finalize_construction_sites()
     _cleanup_destroyed_entities()
@@ -627,7 +628,9 @@ func _build_mission_snapshot() -> Dictionary:
         "pending_enemy_spawns": pending_enemy_spawns.size(),
         "allied_clans": allied_clans.duplicate(true),
         "hostile_clans": hostile_clans.duplicate(true),
-        "clan_stances": _clan_stance_map()
+        "clan_stances": _clan_stance_map(),
+        "clan_trust": _clan_trust_map(),
+        "clan_demands": _clan_demand_map()
     }
 
 
@@ -1070,6 +1073,17 @@ func _update_diplomacy_state() -> void:
             continue
         if combat_unit.position.distance_to(diplomacy_target.center_position()) > 0.45:
             continue
+        if not diplomacy_target.can_form_alliance():
+            combat_unit.clear_diplomacy_target()
+            combat_unit.has_move_target = false
+            combat_unit.state = "holding"
+            if diplomacy_target.demand_status == "active":
+                combat_unit.last_action = "awaiting %s demand" % diplomacy_target.clan_name
+                _push_alert("%s demands: %s" % [diplomacy_target.clan_name, diplomacy_target.demand_label()])
+            else:
+                combat_unit.last_action = "trust too low with %s" % diplomacy_target.clan_name
+                _push_alert("%s requires more trust before alliance" % diplomacy_target.clan_name)
+            continue
 
         _form_alliance(diplomacy_target, combat_unit)
 
@@ -1200,6 +1214,19 @@ func _execute_mission_event_action(action_payload: Dictionary) -> void:
             _set_clan_stance(str(action_payload.get("clan_id", "")), str(action_payload.get("stance", "neutral")))
             if action_payload.has("message"):
                 _push_alert(str(action_payload.get("message", "")))
+        "modify_clan_trust":
+            _modify_clan_trust(
+                str(action_payload.get("clan_id", "")),
+                int(action_payload.get("value", 0)),
+                str(action_payload.get("message", "")),
+                bool(action_payload.get("allow_auto_alliance", true))
+            )
+        "set_clan_demand":
+            _set_clan_demand(
+                str(action_payload.get("clan_id", "")),
+                action_payload.get("demand", {}).duplicate(true),
+                str(action_payload.get("message", ""))
+            )
         "set_mission_outcome":
             _set_mission_outcome(str(action_payload.get("status", "active")), str(action_payload.get("message", "")))
         _:
@@ -1246,6 +1273,31 @@ func _set_clan_stance(clan_id: String, stance: String) -> void:
         diplomacy_target.set_stance(stance)
 
 
+func _modify_clan_trust(clan_id: String, value: int, message: String = "", allow_auto_alliance: bool = true) -> void:
+    var diplomacy_target = _find_diplomacy_target_by_id(clan_id)
+    if diplomacy_target == null:
+        return
+
+    diplomacy_target.trust += value
+    if not message.is_empty():
+        _push_alert(message)
+
+    var auto_alliance: bool = allow_auto_alliance and bool(diplomacy_target.demand.get("auto_alliance_on_threshold", false))
+    if auto_alliance and diplomacy_target.stance != "allied" and diplomacy_target.can_form_alliance():
+        _set_clan_stance(clan_id, "allied")
+        _push_alert("%s joins the coalition" % diplomacy_target.clan_name)
+
+
+func _set_clan_demand(clan_id: String, demand_payload: Dictionary, message: String = "") -> void:
+    var diplomacy_target = _find_diplomacy_target_by_id(clan_id)
+    if diplomacy_target == null:
+        return
+
+    diplomacy_target.set_demand(demand_payload)
+    if not message.is_empty():
+        _push_alert(message)
+
+
 func _set_mission_outcome(status: String, message: String = "") -> void:
     match status:
         "victory":
@@ -1271,6 +1323,83 @@ func _clan_stance_map() -> Dictionary:
     for clan_id in hostile_clans:
         payload[str(clan_id)] = "hostile"
     return payload
+
+
+func _clan_trust_map() -> Dictionary:
+    var payload: Dictionary = {}
+    for diplomacy_target in diplomacy_targets:
+        payload[diplomacy_target.clan_id] = diplomacy_target.trust
+    return payload
+
+
+func _clan_demand_map() -> Dictionary:
+    var payload: Dictionary = {}
+    for diplomacy_target in diplomacy_targets:
+        payload[diplomacy_target.clan_id] = {
+            "status": diplomacy_target.demand_status,
+            "label": diplomacy_target.demand_label()
+        }
+    return payload
+
+
+func _update_clan_demands(snapshot: Dictionary) -> void:
+    for diplomacy_target in diplomacy_targets:
+        if diplomacy_target == null or diplomacy_target.demand_status != "active" or diplomacy_target.demand.is_empty():
+            continue
+
+        if _clan_demand_satisfied(snapshot, diplomacy_target):
+            diplomacy_target.demand_status = "fulfilled"
+            _modify_clan_trust(
+                diplomacy_target.clan_id,
+                int(diplomacy_target.demand.get("trust_reward", 1)),
+                str(diplomacy_target.demand.get("success_message", "")),
+                bool(diplomacy_target.demand.get("allow_auto_alliance", true))
+            )
+
+            var success_stance: String = str(diplomacy_target.demand.get("on_success_stance", ""))
+            if not success_stance.is_empty():
+                _set_clan_stance(diplomacy_target.clan_id, success_stance)
+
+            var success_resources: Dictionary = diplomacy_target.demand.get("grant_resources", {})
+            for resource_type in success_resources.keys():
+                world_state.add_resource(str(resource_type), int(success_resources.get(resource_type, 0)))
+            continue
+
+        var deadline: float = float(diplomacy_target.demand.get("deadline", -1.0))
+        if deadline >= 0.0 and world_state.elapsed_time >= deadline:
+            diplomacy_target.demand_status = "failed"
+            _modify_clan_trust(
+                diplomacy_target.clan_id,
+                int(diplomacy_target.demand.get("trust_penalty", -1)),
+                str(diplomacy_target.demand.get("failure_message", "")),
+                false
+            )
+
+            var failure_stance: String = str(diplomacy_target.demand.get("on_failure_stance", "hostile" if diplomacy_target.revenge_on_failure else ""))
+            if not failure_stance.is_empty():
+                _set_clan_stance(diplomacy_target.clan_id, failure_stance)
+
+
+func _clan_demand_satisfied(snapshot: Dictionary, diplomacy_target) -> bool:
+    var demand: Dictionary = diplomacy_target.demand
+    var demand_type: String = str(demand.get("type", ""))
+    match demand_type:
+        "stockpile":
+            return int(snapshot.get("resources", {}).get(str(demand.get("resource", "")), 0)) >= int(demand.get("target", 0))
+        "building_count":
+            return int(snapshot.get("building_counts", {}).get(str(demand.get("building_id", "")), 0)) >= int(demand.get("target", 0))
+        "unit_count":
+            return int(snapshot.get("unit_counts", {}).get(str(demand.get("unit_id", "")), 0)) >= int(demand.get("target", 0))
+        "tech_count":
+            return int(snapshot.get("unlocked_tech_count", 0)) >= int(demand.get("target", 0))
+        "branch_level":
+            return int(snapshot.get("branch_levels", {}).get(str(demand.get("branch", "")), 0)) >= int(demand.get("target", 0))
+        "objective_complete":
+            return mission_state.objective_completed(str(demand.get("objective_id", "")))
+        "alliance_count":
+            return int(snapshot.get("allied_clans", []).size()) >= int(demand.get("target", 0))
+        _:
+            return false
 
 
 func _goal_complete() -> bool:

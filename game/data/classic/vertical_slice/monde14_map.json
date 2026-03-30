@@ -1,0 +1,174 @@
+{
+  "id": "monde14_map",
+  "name": "Mission 14 - The Creature Siege",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "GGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGGGGGGGGGGGFFFF",
+    "GGGGGDDGGGGGGGGGFFFR",
+    "GGGGFDDWGGGGGGGGFFRR",
+    "GGGFFGDWWGGGGGGGFRRR",
+    "GGGFGGDWWGGGGGGGGRRR",
+    "GGGGGGDWGGGGGGGGGRRR",
+    "GGGGGGDWGGGGGGGGGRRR",
+    "GGGGGGGGGGGGGGGGGRRR",
+    "SGGGGGFGGGGGGGGGGRRR",
+    "SSGGGGFGGGGGGGGGGRRR",
+    "WSSGGGGGGGGGGGGGGRRR",
+    "WWSSGGGGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 4, "type": "food", "amount": 170 },
+    { "x": 3, "y": 9, "type": "food", "amount": 160 },
+    { "x": 9, "y": 2, "type": "stone", "amount": 140 },
+    { "x": 11, "y": 9, "type": "stone", "amount": 130 },
+    { "x": 14, "y": 7, "type": "parts", "amount": 80 }
+  ],
+  "player_start": { "x": 4, "y": 8 },
+  "starting_resources": { "food": 44, "stone": 28, "parts": 8, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 4, "y": 8, "team": "player" },
+    { "building_id": "culture", "x": 6, "y": 8, "team": "player" },
+    { "building_id": "barracks", "x": 6, "y": 6, "team": "player" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 3, "y": 7, "team": "player" },
+    { "unit_id": "farmer", "x": 3, "y": 9, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 7, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 9, "team": "player" },
+    { "unit_id": "mechanic", "x": 4, "y": 10, "team": "player" },
+    { "unit_id": "swordsman", "x": 7, "y": 8, "team": "player" },
+    { "unit_id": "archer", "x": 7, "y": 9, "team": "player" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "barracks",
+    "sanctuary",
+    "tower_catapult",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "resist_creatures",
+      "type": "survive_until",
+      "target": 36,
+      "label": "Resist the creatures",
+      "required": true
+    },
+    {
+      "id": "build_sanctuary",
+      "type": "build",
+      "building_id": "sanctuary",
+      "target": 1,
+      "label": "Build a Sanctuary",
+      "required": true
+    },
+    {
+      "id": "build_second_storehouse",
+      "type": "build",
+      "building_id": "storehouse",
+      "target": 2,
+      "label": "Build a Storehouse",
+      "required": true
+    },
+    {
+      "id": "stockpile_stone",
+      "type": "stockpile",
+      "resource": "stone",
+      "target": 50,
+      "label": "Produce 50 blocks of stone",
+      "required": true
+    },
+    {
+      "id": "stockpile_food",
+      "type": "stockpile",
+      "resource": "food",
+      "target": 100,
+      "label": "Produce 100 sacks of food",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_14_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "Hold the settlement, fortify the ridge, and feed the clan before the creature siege closes in." }
+      ]
+    },
+    {
+      "id": "mission_14_first_wave",
+      "trigger": { "type": "time_elapsed", "value": 10.0 },
+      "actions": [
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 4, "count": 2, "delay": 0.5, "stagger": 0.4 },
+        { "type": "schedule_enemy_wave", "unit_id": "hurler", "x": 18, "y": 6, "count": 1, "delay": 1.2 }
+      ]
+    },
+    {
+      "id": "mission_14_second_wave",
+      "trigger": { "type": "time_elapsed", "value": 22.0 },
+      "actions": [
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 18, "y": 7, "count": 3, "delay": 0.8, "stagger": 0.35 },
+        { "type": "message", "text": "The siege thickens. Keep the ridge supplied." }
+      ]
+    },
+    {
+      "id": "mission_14_ridge_secured",
+      "trigger": { "type": "demand_status", "clan_id": "moss_clan", "value": "fulfilled" },
+      "actions": [
+        { "type": "message", "text": "The Moss Clan fortifies the ridge and opens extra supply caches." },
+        { "type": "spawn_unit", "unit_id": "archer", "x": 14, "y": 5, "team": "player", "count": 2 }
+      ]
+    },
+    {
+      "id": "mission_14_ridge_lost",
+      "trigger": { "type": "demand_status", "clan_id": "moss_clan", "value": "failed" },
+      "actions": [
+        { "type": "message", "text": "The Moss Clan abandons the ridge. The creatures surge through the breach." },
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 17, "y": 3, "count": 2, "delay": 0.2, "stagger": 0.3 },
+        { "type": "schedule_enemy_wave", "unit_id": "hurler", "x": 17, "y": 5, "count": 2, "delay": 0.6, "stagger": 0.3 }
+      ]
+    }
+  ],
+  "diplomacy_targets": [
+    {
+      "clan_id": "moss_clan",
+      "clan_name": "Moss Clan",
+      "x": 15,
+      "y": 5,
+      "stance": "neutral",
+      "trust": 0,
+      "alliance_threshold": 1,
+      "color_hex": "78a85a",
+      "demand": {
+        "id": "ridge_stockpile",
+        "label": "Reach 50 stone before the ridge deadline",
+        "type": "stockpile",
+        "resource": "stone",
+        "target": 50,
+        "deadline": 28.0,
+        "trust_reward": 1,
+        "trust_penalty": -1,
+        "success_message": "The Moss Clan sees the ridge stores filling and commits their sentries.",
+        "on_success_stance": "allied",
+        "failure_message": "The Moss Clan loses faith and leaves the ridge exposed.",
+        "on_failure_stance": "hostile",
+        "revenge_on_failure": true
+      }
+    }
+  ]
+}

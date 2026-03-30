@@ -1,0 +1,148 @@
+{
+  "id": "monde13_map",
+  "name": "Mission 13 - Eastern Covenant",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "GGGGGGGGGGGGGGGGGFFF",
+    "GGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGDGGGGGGGGGFFFR",
+    "GGGGFGDDGGGGGGGGFFRR",
+    "GGGFFGDDGGGGGGGGFRRR",
+    "GGGFGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGGGGGGGGGGGRRR",
+    "SGGGGGFGGGGGGGGGGRRR",
+    "SSGGGGFGGGGGGGGGGRRR",
+    "WSSGGGGGGGGGGGGGGRRR",
+    "WWSSGGGGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 4, "type": "food", "amount": 170 },
+    { "x": 4, "y": 9, "type": "food", "amount": 140 },
+    { "x": 10, "y": 3, "type": "stone", "amount": 120 },
+    { "x": 12, "y": 9, "type": "stone", "amount": 110 },
+    { "x": 15, "y": 7, "type": "parts", "amount": 85 }
+  ],
+  "player_start": { "x": 4, "y": 8 },
+  "starting_resources": { "food": 48, "stone": 24, "parts": 12, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 4, "y": 8, "team": "player" },
+    { "building_id": "culture", "x": 6, "y": 8, "team": "player" },
+    { "building_id": "market", "x": 5, "y": 6, "team": "player" },
+    { "building_id": "storehouse", "x": 14, "y": 5, "team": "enemy" },
+    { "building_id": "tower_cannon", "x": 15, "y": 6, "team": "enemy" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 3, "y": 7, "team": "player" },
+    { "unit_id": "farmer", "x": 3, "y": 9, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 7, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 9, "team": "player" },
+    { "unit_id": "messenger", "x": 6, "y": 7, "team": "player" },
+    { "unit_id": "swordsman", "x": 7, "y": 8, "team": "player" },
+    { "unit_id": "archer", "x": 7, "y": 9, "team": "player" },
+    { "unit_id": "basher", "x": 14, "y": 4, "team": "enemy" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "market",
+    "barracks",
+    "sanctuary",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "ally_brass_clan",
+      "type": "alliance",
+      "clan_id": "brass_clan",
+      "target": 1,
+      "label": "Forge an alliance with the Brass Clan",
+      "required": true
+    },
+    {
+      "id": "build_east_sanctuary",
+      "type": "build_in_area",
+      "building_id": "sanctuary",
+      "x": 15,
+      "y": 3,
+      "width": 4,
+      "height": 7,
+      "target": 1,
+      "label": "Build a Sanctuary in the East",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_13_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "Win the Brass Clan's trust, then carry a messenger east and consecrate a sanctuary before the route collapses." }
+      ]
+    },
+    {
+      "id": "mission_13_levy_met",
+      "trigger": { "type": "demand_status", "clan_id": "brass_clan", "value": "fulfilled" },
+      "actions": [
+        { "type": "message", "text": "The Brass Clan accepts your levy and will now hear your envoy." },
+        { "type": "grant_resources", "resources": { "stone": 12 } }
+      ]
+    },
+    {
+      "id": "mission_13_levy_failed",
+      "trigger": { "type": "demand_status", "clan_id": "brass_clan", "value": "failed" },
+      "actions": [
+        { "type": "set_mission_outcome", "status": "defeat", "message": "The Brass Clan closed the eastern road after you failed their levy." }
+      ]
+    },
+    {
+      "id": "mission_13_allied_support",
+      "trigger": { "type": "clan_stance", "clan_id": "brass_clan", "value": "allied" },
+      "actions": [
+        { "type": "spawn_unit", "unit_id": "archer", "x": 15, "y": 8, "team": "player", "count": 2 },
+        { "type": "message", "text": "Brass Clan outriders secure the sanctuary route." }
+      ]
+    }
+  ],
+  "diplomacy_targets": [
+    {
+      "clan_id": "brass_clan",
+      "clan_name": "Brass Clan",
+      "x": 16,
+      "y": 8,
+      "stance": "neutral",
+      "trust": 1,
+      "alliance_threshold": 2,
+      "color_hex": "cb9a48",
+      "demand": {
+        "id": "brass_levy",
+        "label": "Stockpile 70 food for the Brass Clan levy",
+        "type": "stockpile",
+        "resource": "food",
+        "target": 70,
+        "deadline": 38.0,
+        "trust_reward": 1,
+        "trust_penalty": -2,
+        "failure_message": "The Brass Clan brands your clan oathbreakers.",
+        "success_message": "The Brass Clan judges your stores sufficient for treaty talks.",
+        "on_failure_stance": "hostile",
+        "revenge_on_failure": true,
+        "allow_auto_alliance": false
+      }
+    }
+  ]
+}

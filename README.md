@@ -14,14 +14,14 @@ The active implementation targets a professional `Godot 4` codebase for PC, usin
 
 ## Current Status
 
-This repo is in `campaign content chapter-three full slice` state.
+This repo is in `campaign content mission-16 full slice` state.
 
 What exists now:
 
 - a new Godot project scaffold in [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game)
 - importer tooling in [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers)
 - planning and continuation docs in [`docs/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs)
-- playable Mission 1 through Mission 12 scenario maps with worker economy, mission-scoped build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, reactive clan stances, betrayal/reinforcement mission actions, better RTS control UX, a real menu/HUD shell, command-card buttons, mission result flow, persistent shell options, chapter-two exploration and beachhead objectives, chapter-three conquest scenarios, and stronger enemy assault behavior
+- playable Mission 1 through Mission 16 scenario maps with worker economy, mission-scoped build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, reactive clan stances, clan trust/demand/revenge rules, better RTS control UX, a real menu/HUD shell, command-card buttons, mission result flow, persistent shell options, chapter-two exploration and beachhead objectives, chapter-three conquest scenarios, and a deeper mid-campaign diplomacy-pressure slice
 
 ## Project Layout
 
@@ -94,6 +94,10 @@ In the current Godot shell:
 - Mission 10 now introduces clan betrayal and full hostile-force clearance objectives
 - Mission 11 now introduces swamp-crossing progression with tech and economy pressure
 - Mission 12 now introduces breakout, northeastern sanctuary expansion, allied relief, and final counterattack scripting
+- Mission 13 now introduces levy-based clan trust, messenger-gated alliance formation, and an eastern sanctuary race
+- Mission 14 now introduces siege survival, secondary logistics objectives, and ridge-clan support or betrayal based on supply deadlines
+- Mission 15 now introduces expansion-driven trust building, coalition support, and frontier-clearance pacing
+- Mission 16 now introduces research-timed clan judgment, knowledge-driven alliance or revenge, and a combat-research victory mix
 - `F5` saves to `user://save_slot_1.json`
 - `F6` saves the active named slot profile
 - `F7` loads the active named slot profile
