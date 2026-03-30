@@ -115,16 +115,105 @@ func _init() -> void:
         quit(1)
         return
 
+    if not game_root.campaign_state.is_mission_unlocked("monde07"):
+        push_error("Chapter two content smoke test did not unlock Mission 7.")
+        quit(1)
+        return
+
+    if not game_root.start_mission("monde07"):
+        push_error("Chapter two content smoke test could not start Mission 7.")
+        quit(1)
+        return
+
+    if not game_root.current_map_path.ends_with("monde07_map.json"):
+        push_error("Chapter two content smoke test did not load the Mission 7 map.")
+        quit(1)
+        return
+
+    game_root.spawn_completed_building("tower_cannon", Vector2i(9, 6))
+    game_root.spawn_completed_building("tower_cannon", Vector2i(9, 8))
+    game_root.world_state.add_resource("tech", 8)
+
+    var mission_seven_library: int = _find_building_index(game_root.buildings, "library")
+    var mission_seven_lab: int = _find_building_index(game_root.buildings, "laboratory")
+    if mission_seven_library < 0 or mission_seven_lab < 0:
+        push_error("Chapter two content smoke test could not find Mission 7 research buildings.")
+        quit(1)
+        return
+
+    if not game_root.queue_research_for_building(mission_seven_library, "agriculture"):
+        push_error("Chapter two content smoke test could not queue the first Mission 7 research.")
+        quit(1)
+        return
+
+    if not game_root.queue_research_for_building(mission_seven_lab, "military"):
+        push_error("Chapter two content smoke test could not queue the second Mission 7 research.")
+        quit(1)
+        return
+
+    for _step in range(7200):
+        game_root.run_simulation_steps(1)
+        if game_root.world_state.mission_status != "active":
+            break
+
+    if game_root.world_state.mission_status != "victory":
+        push_error("Chapter two content smoke test did not complete Mission 7.")
+        quit(1)
+        return
+
+    if not game_root.campaign_state.is_mission_unlocked("monde08"):
+        push_error("Chapter two content smoke test did not unlock Mission 8.")
+        quit(1)
+        return
+
+    if not game_root.start_mission("monde08"):
+        push_error("Chapter two content smoke test could not start Mission 8.")
+        quit(1)
+        return
+
+    if not game_root.current_map_path.ends_with("monde08_map.json"):
+        push_error("Chapter two content smoke test did not load the Mission 8 map.")
+        quit(1)
+        return
+
+    var beach_builder = _find_player_worker(game_root.workers, "builder")
+    if beach_builder == null:
+        push_error("Chapter two content smoke test could not find a Mission 8 builder.")
+        quit(1)
+        return
+
+    beach_builder.assign_move_target(Vector2(16.5, 6.5))
+
+    var sanctuary_created: bool = false
+    for _step in range(3600):
+        game_root.run_simulation_steps(1)
+        if not sanctuary_created and game_root.mission_state.objective_completed("reach_eastern_shore"):
+            game_root.spawn_completed_building("sanctuary", Vector2i(16, 6))
+            sanctuary_created = true
+        if game_root.world_state.mission_status != "active":
+            break
+
+    if game_root.world_state.mission_status != "victory":
+        push_error("Chapter two content smoke test did not complete Mission 8.")
+        quit(1)
+        return
+
+    if not game_root.campaign_state.is_mission_unlocked("monde09"):
+        push_error("Chapter two content smoke test did not unlock Mission 9.")
+        quit(1)
+        return
+
     print(
-        "Chapter two content smoke test: allies=%d waves=%d mission=%s"
+        "Chapter two content smoke test: completed=%d unlocked=%d mission=%s"
         % [
-            game_root.allied_clans.size(),
-            game_root.world_state.enemy_waves_spawned,
+            game_root.campaign_state.completed_count(),
+            game_root.campaign_state.unlocked_missions.size(),
             game_root.current_mission_id
         ]
     )
     messenger = null
     scout = null
+    beach_builder = null
     first_target = null
     second_target = null
     game_root.free()
@@ -144,3 +233,10 @@ func _find_building_index(buildings: Array, building_id: String) -> int:
         if buildings[index].team == "player" and buildings[index].building_id == building_id and buildings[index].is_alive():
             return index
     return -1
+
+
+func _find_player_worker(workers: Array, unit_id: String):
+    for worker in workers:
+        if worker.team == "player" and worker.unit_id == unit_id and worker.is_alive():
+            return worker
+    return null

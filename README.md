@@ -14,14 +14,14 @@ The active implementation targets a professional `Godot 4` codebase for PC, usin
 
 ## Current Status
 
-This repo is in `campaign content chapter-two slice` state.
+This repo is in `campaign content chapter-two full slice` state.
 
 What exists now:
 
 - a new Godot project scaffold in [`game/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game)
 - importer tooling in [`tools/importers/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers)
 - planning and continuation docs in [`docs/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs)
-- playable Mission 1 through Mission 6 scenario maps with worker economy, mission-scoped build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, first-pass diplomacy, better RTS control UX, a real menu/HUD shell, command-card buttons, mission result flow, persistent shell options, chapter-two exploration objectives, and stronger enemy assault behavior
+- playable Mission 1 through Mission 8 scenario maps with worker economy, mission-scoped build palettes, expanded production buildings, defensive towers, research, combat, campaign progression, named save slots, runtime objectives, scripted mission events, first-pass diplomacy, better RTS control UX, a real menu/HUD shell, command-card buttons, mission result flow, persistent shell options, chapter-two exploration and beachhead objectives, and stronger enemy assault behavior
 
 ## Project Layout
 
@@ -72,7 +72,7 @@ In the current Godot shell:
 - right click on a construction site assigns the selected builder to build it
 - selected buildings use `Q/W/E/R/T/Y` for context actions
 - selected production and research buildings now expose clickable command-card buttons in the right HUD panel
-- some missions now use diplomacy-count and area-exploration objectives instead of only stockpile/build checks
+- some missions now use diplomacy-count, exploration-area, and build-in-area objectives instead of only stockpile/build checks
 - the available build palette is now mission-scoped, so early missions only expose the structures that scenario allows
 - `culture`, `barracks`, `sanctuary`, `workshop`, `garage`, and `hangar` now expose broader trainable rosters
 - `market` now trains `messenger` for diplomacy scenarios
@@ -88,6 +88,8 @@ In the current Godot shell:
 - shell options persist in `user://shell_settings.json`
 - Mission 5 now introduces multi-clan diplomacy pressure and hostile raider waves
 - Mission 6 now introduces a mine-exploration objective, scripted guardian wave scheduling, and chapter-two spiritual research flow
+- Mission 7 now introduces sustained creature assaults tied to survival-plus-research progression
+- Mission 8 now introduces an eastern-shore beachhead objective and sanctuary expansion across the channel
 - `F5` saves to `user://save_slot_1.json`
 - `F6` saves the active named slot profile
 - `F7` loads the active named slot profile

@@ -66,6 +66,9 @@ func evaluate(snapshot: Dictionary) -> Array[String]:
             "build":
                 current_value = int(snapshot.get("building_counts", {}).get(str(objective.get("building_id", "")), 0))
                 completed = current_value >= target_value
+            "build_in_area":
+                current_value = _count_buildings_in_area(snapshot, objective)
+                completed = current_value >= maxi(1, target_value)
             "unit_count":
                 current_value = int(snapshot.get("unit_counts", {}).get(str(objective.get("unit_id", "")), 0))
                 completed = current_value >= target_value
@@ -170,6 +173,28 @@ func _count_units_in_area(snapshot: Dictionary, objective: Dictionary) -> int:
 
         var unit_position := Vector2(float(payload.get("x", -9999.0)), float(payload.get("y", -9999.0)))
         if area_rect.has_point(unit_position):
+            count += 1
+
+    return count
+
+
+func _count_buildings_in_area(snapshot: Dictionary, objective: Dictionary) -> int:
+    var building_positions: Array = snapshot.get("player_building_positions", [])
+    var target_building_id: String = str(objective.get("building_id", ""))
+    var area_x: float = float(objective.get("x", 0))
+    var area_y: float = float(objective.get("y", 0))
+    var area_width: float = maxf(1.0, float(objective.get("width", 1.0)))
+    var area_height: float = maxf(1.0, float(objective.get("height", 1.0)))
+    var area_rect := Rect2(Vector2(area_x, area_y), Vector2(area_width, area_height))
+    var count: int = 0
+
+    for payload in building_positions:
+        var building_id: String = str(payload.get("building_id", ""))
+        if not target_building_id.is_empty() and building_id != target_building_id:
+            continue
+
+        var building_position := Vector2(float(payload.get("x", -9999.0)), float(payload.get("y", -9999.0)))
+        if area_rect.has_point(building_position):
             count += 1
 
     return count

@@ -569,10 +569,16 @@ func _objective_payloads_from_map() -> Array:
 
 func _build_mission_snapshot() -> Dictionary:
     var building_counts: Dictionary = {}
+    var player_building_positions: Array = []
     for building in buildings:
         if building.team != "player" or not building.is_alive():
             continue
         building_counts[building.building_id] = int(building_counts.get(building.building_id, 0)) + 1
+        player_building_positions.append({
+            "building_id": building.building_id,
+            "x": building.center_position().x,
+            "y": building.center_position().y
+        })
 
     var unit_counts: Dictionary = {}
     var player_unit_positions: Array = []
@@ -599,6 +605,7 @@ func _build_mission_snapshot() -> Dictionary:
     return {
         "resources": world_state.resources.duplicate(true),
         "building_counts": building_counts,
+        "player_building_positions": player_building_positions,
         "unit_counts": unit_counts,
         "player_unit_positions": player_unit_positions,
         "branch_levels": world_state.branch_levels.duplicate(true),

@@ -56,7 +56,9 @@
 - extended mission objectives with alliance-count and exploration-area support
 - extended mission-event triggers/actions with alliance-count, exploration-area, and queued enemy-wave scheduling
 - authored Mission 5 and Mission 6 scenario maps for the chapter-two campaign slice
-- added a chapter-two content smoke test that covers Mission 5 and Mission 6 progression
+- extended mission objectives with build-in-area support for beachhead scenarios
+- authored Mission 7 and Mission 8 scenario maps for the full chapter-two campaign slice
+- extended the chapter-two content smoke test through Mission 8 progression
 
 ### Files Added Or Changed
 
@@ -101,6 +103,8 @@
 - [`game/data/classic/vertical_slice/monde04_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde04_map.json)
 - [`game/data/classic/vertical_slice/monde05_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde05_map.json)
 - [`game/data/classic/vertical_slice/monde06_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde06_map.json)
+- [`game/data/classic/vertical_slice/monde07_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde07_map.json)
+- [`game/data/classic/vertical_slice/monde08_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde08_map.json)
 - [`tools/importers/extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/extract_classic_data.py)
 - [`tools/importers/tests/test_extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/tests/test_extract_classic_data.py)
 - [`game/scripts/tests/chapter_two_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/chapter_two_content_smoke.gd)
@@ -126,9 +130,9 @@
 - Godot headless selection-orders smoke test completed without reported errors
 - Godot headless app-shell smoke test completed without reported errors
 - Godot headless shell-settings smoke test completed without reported errors
-- Godot headless chapter-two content smoke test completed with a passing exit code; Godot still reports one resource-cleanup warning on exit for that script
+- Godot headless chapter-two content smoke test completed with a passing exit code through Mission 8; Godot still reports one resource-cleanup warning on exit for that script
 
 ### Outstanding
 
 - validate the project in the interactive Godot editor
-- extend the current campaign shell slice into broader content parity, deeper diplomacy, and stronger multi-mission scenario coverage beyond Mission 6
+- extend the current campaign shell slice into broader content parity, deeper diplomacy, and stronger multi-mission scenario coverage beyond Mission 8

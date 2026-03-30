@@ -64,8 +64,8 @@ Working now:
 - mission victory and defeat now surface a shell-side result panel with retry and next-mission actions
 - shell options now persist runtime pressure and menu-pause behavior in `user://shell_settings.json`
 - enemy combat units now advance on the player settlement when idle instead of stalling outside vision range
-- Mission 5 and Mission 6 now have authored scenario maps with diplomacy-count, exploration-area, and queued guardian-wave behavior
-- mission objectives now support alliance-count and unit-in-area checks
+- Mission 5 through Mission 8 now have authored scenario maps with diplomacy-count, exploration-area, build-in-area, survival, and queued guardian-wave behavior
+- mission objectives now support alliance-count, unit-in-area, and build-in-area checks
 - mission events now support alliance-count and unit-in-area triggers plus queued enemy-wave scheduling
 - a Godot smoke-test script exists for the vertical-slice resource loop
 - a second Godot smoke-test script exists for builder construction
@@ -81,7 +81,7 @@ Working now:
 - a twelfth Godot smoke-test script exists for grouped selection and grouped order behavior
 - a thirteenth Godot smoke-test script exists for the shell scene, mission board, and HUD boot flow
 - a fourteenth Godot smoke-test script exists for shell-settings persistence and live menu-pause behavior
-- a fifteenth Godot smoke-test script exists for Chapter II content progression through Missions 5 and 6
+- a fifteenth Godot smoke-test script exists for Chapter II content progression through Missions 5 and 8
 - issue and PR templates exist for public repo workflow
 - the old browser prototype files have been removed from the active codebase
 
@@ -90,7 +90,7 @@ Not done yet:
 - stronger command queueing, selection UX, and richer HUD feedback
 - broader diplomacy rules beyond the current messenger-to-clan alliance shell
 - broader mission scripting coverage across additional scenarios and campaign flow
-- more authored scenario maps beyond the first six campaign missions
+- more authored scenario maps beyond the first eight campaign missions
 - additional faction-specific buildings, support effects, and deeper unit parity beyond the current advanced roster slice
 - expanded-content ruleset layered cleanly on top of the classic remake
 
@@ -109,6 +109,8 @@ Not done yet:
 - Mission 4 map: [`game/data/classic/vertical_slice/monde04_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde04_map.json)
 - Mission 5 map: [`game/data/classic/vertical_slice/monde05_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde05_map.json)
 - Mission 6 map: [`game/data/classic/vertical_slice/monde06_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde06_map.json)
+- Mission 7 map: [`game/data/classic/vertical_slice/monde07_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde07_map.json)
+- Mission 8 map: [`game/data/classic/vertical_slice/monde08_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde08_map.json)
 - Godot map loader: [`game/scripts/core/map_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/map_state.gd)
 - Diplomacy runtime: [`game/scripts/core/diplomacy_target_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/diplomacy_target_state.gd)
 - Mission-event runtime: [`game/scripts/core/mission_event_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/mission_event_state.gd)
@@ -134,10 +136,10 @@ Not done yet:
 
 ## Next Session Start Here
 
-1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate Mission 5 and Mission 6 flow visually, especially diplomacy-target readability and the mine objective area.
-2. Extend the same scenario-authoring pattern through Missions 7 and 8 so Chapter II has a continuous playable run.
-3. Deepen faction behavior and diplomacy so clans can react beyond one-shot alliance toggles.
-4. Expand mission-event actions into fuller scripting primitives for escort, rescue, betrayal, and reinforcement scenarios.
+1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate Mission 7 and Mission 8 flow visually, especially the creature-raid pacing and eastern-shore objective readability.
+2. Deepen faction behavior and diplomacy so clans can react beyond one-shot alliance toggles.
+3. Expand mission-event actions into fuller scripting primitives for escort, rescue, betrayal, and reinforcement scenarios.
+4. Extend the same scenario-authoring pattern beyond Mission 8 so Chapter III has a continuous playable run.
 5. Keep the repo trace clean by updating this file and the session log whenever systems behavior changes.
 
 ## Commands

@@ -1,0 +1,114 @@
+{
+  "id": "monde07_map",
+  "name": "Mission 7 - Broken Frontier",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "SSGGGGGGGGGGGGGGFFFF",
+    "SGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGDGGGGGGGGGFFFR",
+    "GGGGFGDDGGGGGGGGFFRR",
+    "GGGFFGDDGGGGGGGGFRRR",
+    "GGGFGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "GGGGGGGDGGGGGGGGGRRR",
+    "SGGGGGGGGGGGGGGGGRRR",
+    "SSGGGGFGGGGGGGGGGRRR",
+    "WSSGGGFGGGGGGGGGGRRR",
+    "WWSSGGGGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR",
+    "WWWWSSGGGGGGGGGGGRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 4, "type": "food", "amount": 160 },
+    { "x": 3, "y": 9, "type": "food", "amount": 130 },
+    { "x": 11, "y": 3, "type": "stone", "amount": 140 },
+    { "x": 12, "y": 8, "type": "stone", "amount": 140 },
+    { "x": 15, "y": 6, "type": "parts", "amount": 100 }
+  ],
+  "player_start": { "x": 4, "y": 7 },
+  "starting_resources": { "food": 42, "stone": 32, "parts": 14, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 4, "y": 7, "team": "player" },
+    { "building_id": "culture", "x": 6, "y": 7, "team": "player" },
+    { "building_id": "library", "x": 5, "y": 5, "team": "player" },
+    { "building_id": "laboratory", "x": 7, "y": 5, "team": "player" },
+    { "building_id": "barracks", "x": 6, "y": 9, "team": "player" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 3, "y": 6, "team": "player" },
+    { "unit_id": "farmer", "x": 3, "y": 8, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 6, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 8, "team": "player" },
+    { "unit_id": "mechanic", "x": 4, "y": 9, "team": "player" },
+    { "unit_id": "swordsman", "x": 7, "y": 7, "team": "player" },
+    { "unit_id": "archer", "x": 7, "y": 8, "team": "player" },
+    { "unit_id": "archer", "x": 8, "y": 7, "team": "player" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "barracks",
+    "library",
+    "laboratory",
+    "sanctuary",
+    "tower_catapult",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "develop_two_technologies",
+      "type": "tech_count",
+      "target": 2,
+      "label": "Develop two technologies",
+      "required": true
+    },
+    {
+      "id": "survive_creature_raids",
+      "type": "survive_until",
+      "target": 90,
+      "label": "Survive the creature assaults",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [
+    { "x": 18, "y": 3, "unit_id": "raptor", "delay": 18.0 },
+    { "x": 18, "y": 10, "unit_id": "basher", "delay": 34.0 },
+    { "x": 17, "y": 6, "unit_id": "hurler", "delay": 52.0 }
+  ],
+  "mission_events": [
+    {
+      "id": "mission_7_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "Strange creatures sweep the frontier. Research fast and hold the valley." }
+      ]
+    },
+    {
+      "id": "mission_7_second_wave",
+      "trigger": { "type": "enemy_waves_spawned", "value": 2 },
+      "actions": [
+        { "type": "message", "text": "The abominations are probing every approach. Keep the scholars alive." },
+        { "type": "grant_resources", "resources": { "stone": 12 } }
+      ]
+    },
+    {
+      "id": "mission_7_tech_reward",
+      "trigger": { "type": "objective_complete", "objective_id": "develop_two_technologies" },
+      "actions": [
+        { "type": "message", "text": "Your engineers stabilize the frontier defenses with new plans." },
+        { "type": "grant_resources", "resources": { "parts": 10, "food": 10 } }
+      ]
+    }
+  ]
+}
