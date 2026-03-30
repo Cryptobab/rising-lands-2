@@ -48,6 +48,10 @@
 - added a mission board, save-slot operations panel, and top/left/right/bottom HUD layout in a dedicated UI script
 - added a `GameRoot` snapshot API so the shell can render mission state without depending on the debug label
 - added an app-shell smoke test that validates menu boot, mission launch, and HUD visibility
+- added clickable command-card buttons for selected production and research buildings in the shell HUD
+- added a shell-side mission result panel with retry and next-mission actions
+- added persistent shell options for enemy pressure and menu pause behavior
+- added a shell-settings smoke test that validates settings persistence and live menu runtime flow
 
 ### Files Added Or Changed
 
@@ -85,6 +89,7 @@
 - [`game/scripts/tests/diplomacy_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/diplomacy_smoke.gd)
 - [`game/scripts/tests/selection_orders_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/selection_orders_smoke.gd)
 - [`game/scripts/tests/app_shell_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/app_shell_smoke.gd)
+- [`game/scripts/tests/shell_settings_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/shell_settings_smoke.gd)
 - [`game/data/classic/vertical_slice/mission_001_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/mission_001_map.json)
 - [`game/data/classic/vertical_slice/monde02_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde02_map.json)
 - [`game/data/classic/vertical_slice/monde03_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde03_map.json)
@@ -112,8 +117,9 @@
 - Godot headless diplomacy smoke test completed without reported errors
 - Godot headless selection-orders smoke test completed without reported errors
 - Godot headless app-shell smoke test completed without reported errors
+- Godot headless shell-settings smoke test completed without reported errors
 
 ### Outstanding
 
 - validate the project in the interactive Godot editor
-- extend the current command-UX campaign slice into broader content parity, campaign flow, and stronger menu/UI shells
+- extend the current campaign shell slice into broader content parity, deeper AI, and stronger multi-mission scenario coverage

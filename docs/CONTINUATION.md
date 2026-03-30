@@ -60,6 +60,9 @@ Working now:
 - command markers and a minimap overlay now provide basic RTS spatial feedback in the active HUD
 - the project now boots into a real shell scene with a mission board, save-slot controls, and a structured in-game HUD layered over the RTS runtime
 - the active HUD now surfaces objective progress, recent mission alerts, deeper selection detail, and command-card style context
+- selected production and research buildings now expose clickable command-card buttons in the shell HUD
+- mission victory and defeat now surface a shell-side result panel with retry and next-mission actions
+- shell options now persist runtime pressure and menu-pause behavior in `user://shell_settings.json`
 - a Godot smoke-test script exists for the vertical-slice resource loop
 - a second Godot smoke-test script exists for builder construction
 - a third Godot smoke-test script exists for production, research, combat, and save/load
@@ -73,12 +76,13 @@ Working now:
 - an eleventh Godot smoke-test script exists for diplomacy order persistence and Mission 4 alliance completion
 - a twelfth Godot smoke-test script exists for grouped selection and grouped order behavior
 - a thirteenth Godot smoke-test script exists for the shell scene, mission board, and HUD boot flow
+- a fourteenth Godot smoke-test script exists for shell-settings persistence and live menu-pause behavior
 - issue and PR templates exist for public repo workflow
 - the old browser prototype files have been removed from the active codebase
 
 Not done yet:
 
-- stronger command queueing, selection UX, and HUD feedback
+- stronger command queueing, selection UX, and richer HUD feedback
 - broader diplomacy rules beyond the current messenger-to-clan alliance shell
 - broader mission scripting coverage across additional scenarios and campaign flow
 - more authored scenario maps beyond the first four campaign missions
@@ -118,13 +122,14 @@ Not done yet:
 - Diplomacy smoke test: [`game/scripts/tests/diplomacy_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/diplomacy_smoke.gd)
 - Selection-orders smoke test: [`game/scripts/tests/selection_orders_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/selection_orders_smoke.gd)
 - App-shell smoke test: [`game/scripts/tests/app_shell_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/app_shell_smoke.gd)
+- Shell-settings smoke test: [`game/scripts/tests/shell_settings_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/shell_settings_smoke.gd)
 
 ## Next Session Start Here
 
-1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate the shell scene, menu readability, and HUD spacing visually.
-2. Push the shell from label-driven panels into richer RTS widgets: command buttons, minimap interaction, mission results, and settings/options flow.
-3. Extend the mission-event system and map authoring from Mission 1 through Mission 4 into reusable scenario scripting for later missions.
-4. Author more actual mission-map content so the first campaign chapter extends beyond the current four playable scenarios.
+1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate the shell scene, command-card readability, result panel polish, and options layout visually.
+2. Extend the mission-event system and map authoring from Mission 1 through Mission 4 into reusable scenario scripting for later missions.
+3. Author more actual mission-map content so the first campaign chapter extends beyond the current four playable scenarios.
+4. Deepen AI, faction behavior, and diplomacy rules so the campaign shell is feeding richer scenarios instead of just better presentation.
 5. Keep the repo trace clean by updating this file and the session log whenever systems behavior changes.
 
 ## Commands
@@ -260,6 +265,15 @@ Run the app-shell smoke test:
   --headless `
   --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
   --script res://scripts/tests/app_shell_smoke.gd
+```
+
+Run the shell-settings smoke test:
+
+```powershell
+& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
+  --headless `
+  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
+  --script res://scripts/tests/shell_settings_smoke.gd
 ```
 
 ## Blockers

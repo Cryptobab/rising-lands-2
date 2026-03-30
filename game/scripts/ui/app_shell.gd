@@ -5,11 +5,16 @@ const GameRootScript = preload("res://scripts/core/game_root.gd")
 
 const UI_REFRESH_INTERVAL: float = 0.12
 const SLOT_IDS: Array[String] = ["slot_1", "slot_2", "slot_3"]
+const DEFAULT_SETTINGS_PATH: String = "user://shell_settings.json"
 
 var game_root
 var shell_bootstrapped: bool = false
 var game_started: bool = false
 var menu_content_dirty: bool = true
+var last_command_signature: String = ""
+var settings_path: String = DEFAULT_SETTINGS_PATH
+var enemy_pressure_enabled: bool = true
+var pause_on_menu_open: bool = true
 var ui_refresh_accumulator: float = 0.0
 var menu_root: Control
 var hud_root: Control
@@ -20,6 +25,14 @@ var menu_slot_label: Label
 var menu_status_label: Label
 var menu_briefing_title: Label
 var menu_briefing_body: RichTextLabel
+var menu_result_panel: PanelContainer
+var menu_result_title: Label
+var menu_result_body: Label
+var next_mission_button: Button
+var retry_mission_button: Button
+var menu_pressure_button: Button
+var menu_pause_button: Button
+var menu_settings_label: Label
 var resume_button: Button
 var continue_button: Button
 var start_button: Button
@@ -32,6 +45,7 @@ var hud_selection_body: RichTextLabel
 var hud_context_body: RichTextLabel
 var hud_controls_body: RichTextLabel
 var hud_slot_label: Label
+var hud_command_button_container: GridContainer
 
 
 func _ready() -> void:
@@ -62,6 +76,8 @@ func bootstrap_shell() -> void:
     set_anchors_preset(PRESET_FULL_RECT)
     mouse_filter = Control.MOUSE_FILTER_PASS
     _ensure_game_root()
+    _load_shell_settings()
+    _apply_shell_settings()
     _build_menu_overlay()
     _build_hud_overlay()
     shell_bootstrapped = true
@@ -111,6 +127,15 @@ func continue_active_session() -> bool:
     return launch_mission(game_root.current_mission_id)
 
 
+func _launch_next_mission() -> void:
+    var snapshot: Dictionary = game_root.build_ui_snapshot()
+    var result_payload: Dictionary = snapshot.get("result", {})
+    var next_mission_id: String = str(result_payload.get("next_mission_id", ""))
+    if next_mission_id.is_empty():
+        return
+    launch_mission(next_mission_id)
+
+
 func refresh_shell_ui() -> void:
     if not shell_bootstrapped:
         return
@@ -118,6 +143,7 @@ func refresh_shell_ui() -> void:
     var snapshot: Dictionary = game_root.build_ui_snapshot()
     var resources: Dictionary = snapshot.get("resources", {})
     var active_record: Dictionary = game_root.mission_record_for_id()
+    var result_payload: Dictionary = snapshot.get("result", {})
 
     menu_campaign_label.text = "%s\nActive mission: %s" % [
         str(snapshot.get("campaign_text", "")),
@@ -127,8 +153,21 @@ func refresh_shell_ui() -> void:
     menu_briefing_title.text = str(active_record.get("title", snapshot.get("mission_title", "Mission Briefing")))
     menu_briefing_body.text = _briefing_text_for_record(active_record)
     menu_status_label.text = "Status: %s" % str(snapshot.get("status_text", "standing by"))
-    resume_button.visible = game_started
+    resume_button.visible = game_started and str(snapshot.get("mission_state", "active")) == "active"
     continue_button.disabled = not _can_continue_session()
+    menu_result_panel.visible = bool(result_payload.get("visible", false))
+    menu_result_title.text = str(result_payload.get("title", ""))
+    menu_result_body.text = str(result_payload.get("body", ""))
+    next_mission_button.visible = not str(result_payload.get("next_mission_id", "")).is_empty()
+    next_mission_button.text = "Next Mission: %s" % str(result_payload.get("next_mission_title", result_payload.get("next_mission_id", "")))
+    retry_mission_button.visible = bool(result_payload.get("visible", false))
+    menu_pressure_button.text = "Enemy Pressure: %s" % ("Classic" if enemy_pressure_enabled else "Sandbox")
+    menu_pause_button.text = "Menu Pause: %s" % ("On" if pause_on_menu_open else "Off")
+    menu_settings_label.text = "Settings file: %s\nSimulation pressure %s | Menu pause %s" % [
+        settings_path,
+        "enabled" if enemy_pressure_enabled else "disabled",
+        "enabled" if pause_on_menu_open else "disabled"
+    ]
 
     hud_mission_label.text = "%s  |  %s" % [
         str(snapshot.get("mission_title", "")),
@@ -167,11 +206,45 @@ func refresh_shell_ui() -> void:
         str(snapshot.get("current_mission_id", "")),
         str(snapshot.get("tick_text", "0"))
     ]
+    _refresh_command_buttons(snapshot.get("selected_building_actions", []))
 
     if menu_root.visible and menu_content_dirty:
         _rebuild_mission_board()
         _rebuild_save_slot_rows()
         menu_content_dirty = false
+
+
+func _refresh_command_buttons(actions: Array) -> void:
+    var signature: Array[String] = []
+    for action in actions:
+        signature.append("%s:%s:%s" % [
+            str(action.get("slot", "")),
+            str(action.get("kind", "")),
+            str(action.get("id", ""))
+        ])
+    var next_signature: String = "|".join(signature)
+    if next_signature == last_command_signature:
+        return
+
+    last_command_signature = next_signature
+    _clear_container(hud_command_button_container)
+
+    if actions.is_empty():
+        var placeholder := _make_body_label("Select a production or research building to unlock command buttons.", Color("a8b4bb"))
+        placeholder.custom_minimum_size = Vector2(0, 52)
+        hud_command_button_container.add_child(placeholder)
+        return
+
+    for action in actions:
+        var slot_number: int = int(action.get("slot", 0))
+        var button_text: String = "%s  [%s]" % [str(action.get("label", action.get("id", ""))), str(action.get("key", ""))]
+        var action_button := _make_action_button(button_text, Color("3c6d78"))
+        action_button.custom_minimum_size = Vector2(0, 46)
+        action_button.pressed.connect(func(target_slot := slot_number) -> void:
+            game_root.invoke_selected_building_action(target_slot)
+            refresh_shell_ui()
+        )
+        hud_command_button_container.add_child(action_button)
 
 
 func show_menu(visible: bool) -> void:
@@ -180,7 +253,7 @@ func show_menu(visible: bool) -> void:
 
     menu_root.visible = visible
     hud_root.visible = game_started and not visible
-    game_root.set_interactive_runtime(game_started and not visible)
+    game_root.set_interactive_runtime(_runtime_should_run())
     if visible:
         menu_content_dirty = true
     refresh_shell_ui()
@@ -252,6 +325,41 @@ func _build_menu_overlay() -> void:
 
     menu_briefing_body = _make_rich_body("", 360)
     hero_column.add_child(menu_briefing_body)
+
+    menu_result_panel = _make_panel(Color("20272b"), Color("b78d4f"))
+    hero_column.add_child(menu_result_panel)
+    menu_result_panel.visible = false
+
+    var result_margin := MarginContainer.new()
+    result_margin.add_theme_constant_override("margin_left", 16)
+    result_margin.add_theme_constant_override("margin_top", 14)
+    result_margin.add_theme_constant_override("margin_right", 16)
+    result_margin.add_theme_constant_override("margin_bottom", 14)
+    menu_result_panel.add_child(result_margin)
+
+    var result_column := VBoxContainer.new()
+    result_column.add_theme_constant_override("separation", 10)
+    result_margin.add_child(result_column)
+
+    menu_result_title = _make_header_label("", 22, Color("f3e7bf"))
+    result_column.add_child(menu_result_title)
+    menu_result_body = _make_body_label("", Color("e7ecef"))
+    result_column.add_child(menu_result_body)
+
+    var result_button_row := HBoxContainer.new()
+    result_button_row.add_theme_constant_override("separation", 10)
+    result_column.add_child(result_button_row)
+
+    retry_mission_button = _make_action_button("Retry Mission", Color("8d6d43"))
+    retry_mission_button.pressed.connect(func() -> void:
+        if game_started:
+            launch_mission(game_root.current_mission_id)
+    )
+    result_button_row.add_child(retry_mission_button)
+
+    next_mission_button = _make_action_button("Next Mission", Color("648d48"))
+    next_mission_button.pressed.connect(func() -> void: _launch_next_mission())
+    result_button_row.add_child(next_mission_button)
 
     var hero_button_row := VBoxContainer.new()
     hero_button_row.add_theme_constant_override("separation", 10)
@@ -330,6 +438,33 @@ func _build_menu_overlay() -> void:
     save_slot_container.add_theme_constant_override("separation", 8)
     slot_column.add_child(save_slot_container)
 
+    var settings_panel := _make_panel(Color("1b222a"), Color("8d6d43"))
+    right_column.add_child(settings_panel)
+
+    var settings_margin := MarginContainer.new()
+    settings_margin.add_theme_constant_override("margin_left", 18)
+    settings_margin.add_theme_constant_override("margin_top", 18)
+    settings_margin.add_theme_constant_override("margin_right", 18)
+    settings_margin.add_theme_constant_override("margin_bottom", 18)
+    settings_panel.add_child(settings_margin)
+
+    var settings_column := VBoxContainer.new()
+    settings_column.add_theme_constant_override("separation", 12)
+    settings_margin.add_child(settings_column)
+    settings_column.add_child(_make_header_label("Options", 20, Color("f0c58a")))
+    settings_column.add_child(_make_body_label("Tune shell pacing and combat pressure without leaving the campaign frontend.", Color("c2c8cb")))
+
+    menu_pressure_button = _make_action_button("", Color("7b4c48"))
+    menu_pressure_button.pressed.connect(func() -> void: _toggle_enemy_pressure())
+    settings_column.add_child(menu_pressure_button)
+
+    menu_pause_button = _make_action_button("", Color("4d6d90"))
+    menu_pause_button.pressed.connect(func() -> void: _toggle_pause_on_menu())
+    settings_column.add_child(menu_pause_button)
+
+    menu_settings_label = _make_body_label("", Color("b7c7d0"))
+    settings_column.add_child(menu_settings_label)
+
     menu_status_label = _make_body_label("", Color("f0c58a"))
     right_column.add_child(menu_status_label)
 
@@ -388,6 +523,7 @@ func _build_hud_overlay() -> void:
     save_button.pressed.connect(func() -> void:
         if game_started:
             game_root.save_to_slot(game_root.active_save_slot_id)
+            menu_content_dirty = true
             refresh_shell_ui()
     )
     top_button_column.add_child(save_button)
@@ -397,6 +533,7 @@ func _build_hud_overlay() -> void:
     load_button.pressed.connect(func() -> void:
         if game_root.load_from_slot(game_root.active_save_slot_id):
             game_started = true
+            menu_content_dirty = true
             show_menu(false)
             refresh_shell_ui()
     )
@@ -459,6 +596,13 @@ func _build_hud_overlay() -> void:
     hud_selection_body = _make_rich_body("", 180)
     right_column.add_child(hud_selection_body)
     right_column.add_child(_make_header_label("Command Card", 18, Color("86c6d5")))
+
+    hud_command_button_container = GridContainer.new()
+    hud_command_button_container.columns = 2
+    hud_command_button_container.add_theme_constant_override("h_separation", 8)
+    hud_command_button_container.add_theme_constant_override("v_separation", 8)
+    right_column.add_child(hud_command_button_container)
+
     hud_context_body = _make_rich_body("", 160)
     right_column.add_child(hud_context_body)
     hud_slot_label = _make_body_label("", Color("f0c58a"))
@@ -597,6 +741,68 @@ func _briefing_text_for_record(record: Dictionary) -> String:
 
 func _can_continue_session() -> bool:
     return game_started or _slot_has_save(game_root.active_save_slot_id) or not game_root.current_mission_id.is_empty()
+
+
+func _runtime_should_run() -> bool:
+    return game_started and (menu_root == null or not menu_root.visible or not pause_on_menu_open)
+
+
+func _save_shell_settings() -> bool:
+    var file := FileAccess.open(settings_path, FileAccess.WRITE)
+    if file == null:
+        return false
+
+    file.store_string(JSON.stringify({
+        "enemy_pressure_enabled": enemy_pressure_enabled,
+        "pause_on_menu_open": pause_on_menu_open
+    }, "\t"))
+    file.close()
+    return true
+
+
+func _load_shell_settings() -> bool:
+    if settings_path.is_empty():
+        settings_path = DEFAULT_SETTINGS_PATH
+
+    if not FileAccess.file_exists(settings_path):
+        return false
+
+    var file := FileAccess.open(settings_path, FileAccess.READ)
+    if file == null:
+        return false
+
+    var parsed: Variant = JSON.parse_string(file.get_as_text())
+    file.close()
+    if typeof(parsed) != TYPE_DICTIONARY:
+        return false
+
+    var payload: Dictionary = parsed
+    enemy_pressure_enabled = bool(payload.get("enemy_pressure_enabled", true))
+    pause_on_menu_open = bool(payload.get("pause_on_menu_open", true))
+    return true
+
+
+func _apply_shell_settings() -> void:
+    if game_root != null:
+        game_root.auto_enemy_pressure_enabled = enemy_pressure_enabled
+        if shell_bootstrapped:
+            game_root.set_interactive_runtime(_runtime_should_run())
+
+
+func _toggle_enemy_pressure() -> void:
+    enemy_pressure_enabled = not enemy_pressure_enabled
+    _apply_shell_settings()
+    _save_shell_settings()
+    game_root.simulation_status = "enemy pressure %s" % ("enabled" if enemy_pressure_enabled else "disabled")
+    refresh_shell_ui()
+
+
+func _toggle_pause_on_menu() -> void:
+    pause_on_menu_open = not pause_on_menu_open
+    _apply_shell_settings()
+    _save_shell_settings()
+    game_root.simulation_status = "menu pause %s" % ("enabled" if pause_on_menu_open else "disabled")
+    refresh_shell_ui()
 
 
 func _slot_has_save(slot_id: String) -> bool:

@@ -1585,9 +1585,20 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _handle_context_action(slot: int) -> void:
+    invoke_selected_building_action(slot)
+
+
+func selected_building_actions() -> Array:
     var building = _selected_building()
     if building == null:
-        return
+        return []
+    return _building_actions(building.building_id).duplicate(true)
+
+
+func invoke_selected_building_action(slot: int) -> bool:
+    var building = _selected_building()
+    if building == null:
+        return false
 
     for action in _building_actions(building.building_id):
         if int(action.get("slot", 0)) != slot:
@@ -1597,12 +1608,12 @@ func _handle_context_action(slot: int) -> void:
         var action_id: String = str(action.get("id", ""))
         match action_kind:
             "train":
-                queue_training_for_building(selected_building_index, action_id)
+                return queue_training_for_building(selected_building_index, action_id)
             "research":
-                queue_research_for_building(selected_building_index, action_id)
+                return queue_research_for_building(selected_building_index, action_id)
             _:
-                pass
-        return
+                return false
+    return false
 
 
 func _build_mode_for_key(keycode: Key) -> String:
@@ -2065,6 +2076,30 @@ func build_ui_snapshot() -> Dictionary:
         var combat_unit = combat_units[index]
         actor_lines.append("%s: %s" % [combat_unit.name, combat_unit.status_text()])
 
+    var result_payload: Dictionary = {
+        "visible": false,
+        "status": str(world_state.mission_status),
+        "title": "",
+        "body": "",
+        "next_mission_id": "",
+        "next_mission_title": ""
+    }
+    if world_state.mission_status == "victory":
+        var next_mission_id: String = ""
+        if campaign_state != null:
+            next_mission_id = campaign_state.next_mission_id_after(current_mission_id)
+            if not next_mission_id.is_empty() and not campaign_state.is_mission_unlocked(next_mission_id):
+                next_mission_id = ""
+        result_payload["visible"] = true
+        result_payload["title"] = "Mission Complete"
+        result_payload["body"] = "The clan secured %s in %d ticks." % [mission_state.title, world_state.tick_count]
+        result_payload["next_mission_id"] = next_mission_id
+        result_payload["next_mission_title"] = str(mission_record_for_id(next_mission_id).get("title", next_mission_id))
+    elif world_state.mission_status == "defeat":
+        result_payload["visible"] = true
+        result_payload["title"] = "Mission Failed"
+        result_payload["body"] = "The settlement collapsed. Retry the mission or return to the campaign shell."
+
     return {
         "campaign_text": campaign_text,
         "objective_lines": objective_lines,
@@ -2075,6 +2110,7 @@ func build_ui_snapshot() -> Dictionary:
         "alert_lines": alert_log.duplicate(true),
         "actor_lines": actor_lines,
         "selection_detail_lines": _selection_detail_lines(),
+        "selected_building_actions": selected_building_actions(),
         "mission_title": mission_state.title,
         "mission_state": world_state.mission_status,
         "current_mission_id": current_mission_id,
@@ -2084,6 +2120,7 @@ func build_ui_snapshot() -> Dictionary:
         "research_text": "%d unlocked" % world_state.unlocked_techs.size(),
         "tick_text": str(world_state.tick_count),
         "summary": summary.duplicate(true),
+        "result": result_payload.duplicate(true),
         "resources": {
             "food": int(world_state.resources.get("food", 0)),
             "stone": int(world_state.resources.get("stone", 0)),
