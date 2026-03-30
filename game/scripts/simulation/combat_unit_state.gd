@@ -103,6 +103,14 @@ func update(
         target_ref = target_payload.get("target", null)
         target_kind = str(target_payload.get("kind", ""))
 
+    if team == "enemy" and target_ref == null and diplomacy_target_id.is_empty() and role != "civilian":
+        var pressure_target: Vector2 = _enemy_pressure_target(hostile_workers, hostile_buildings)
+        if pressure_target != Vector2.ZERO and (not has_move_target or position.distance_to(move_target) <= 0.35):
+            move_target = pressure_target
+            has_move_target = true
+            state = "advancing"
+            last_action = "advancing on settlement"
+
     if target_ref != null:
         var target_position: Vector2 = _target_position(target_ref)
         if position.distance_to(target_position) > attack_range:
@@ -348,3 +356,32 @@ func _regenerate(delta: float, world_state) -> void:
         return
 
     health = minf(max_health, health + (delta * regeneration_rate * 4.0))
+
+
+func _enemy_pressure_target(hostile_workers: Array, hostile_buildings: Array) -> Vector2:
+    var best_position: Vector2 = Vector2.ZERO
+    var best_distance: float = INF
+
+    for hostile_building in hostile_buildings:
+        if hostile_building == null or not hostile_building.is_alive():
+            continue
+
+        var building_position: Vector2 = hostile_building.center_position()
+        var building_distance: float = position.distance_to(building_position)
+        if hostile_building.supports_deposit():
+            building_distance -= 1.4
+
+        if building_distance < best_distance:
+            best_distance = building_distance
+            best_position = building_position
+
+    for hostile_worker in hostile_workers:
+        if hostile_worker == null or not hostile_worker.is_alive():
+            continue
+
+        var worker_distance: float = position.distance_to(hostile_worker.position)
+        if worker_distance < best_distance:
+            best_distance = worker_distance
+            best_position = hostile_worker.position
+
+    return best_position

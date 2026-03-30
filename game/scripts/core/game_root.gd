@@ -575,20 +575,32 @@ func _build_mission_snapshot() -> Dictionary:
         building_counts[building.building_id] = int(building_counts.get(building.building_id, 0)) + 1
 
     var unit_counts: Dictionary = {}
+    var player_unit_positions: Array = []
     for worker in workers:
         if not worker.is_alive():
             continue
         unit_counts[worker.unit_id] = int(unit_counts.get(worker.unit_id, 0)) + 1
+        player_unit_positions.append({
+            "unit_id": worker.unit_id,
+            "x": worker.position.x,
+            "y": worker.position.y
+        })
 
     for combat_unit in combat_units:
         if combat_unit.team != "player" or not combat_unit.is_alive():
             continue
         unit_counts[combat_unit.unit_id] = int(unit_counts.get(combat_unit.unit_id, 0)) + 1
+        player_unit_positions.append({
+            "unit_id": combat_unit.unit_id,
+            "x": combat_unit.position.x,
+            "y": combat_unit.position.y
+        })
 
     return {
         "resources": world_state.resources.duplicate(true),
         "building_counts": building_counts,
         "unit_counts": unit_counts,
+        "player_unit_positions": player_unit_positions,
         "branch_levels": world_state.branch_levels.duplicate(true),
         "unlocked_tech_count": world_state.unlocked_techs.size(),
         "elapsed_time": world_state.elapsed_time,
@@ -1142,8 +1154,29 @@ func _execute_mission_event_action(action_payload: Dictionary) -> void:
                 Vector2i(int(action_payload.get("x", map_state.player_start.x)), int(action_payload.get("y", map_state.player_start.y))),
                 str(action_payload.get("team", "player"))
             )
+        "schedule_enemy_wave":
+            _schedule_enemy_wave(action_payload)
         _:
             pass
+
+
+func _schedule_enemy_wave(action_payload: Dictionary) -> void:
+    var spawn_count: int = maxi(1, int(action_payload.get("count", 1)))
+    var base_delay: float = world_state.elapsed_time + maxf(0.0, float(action_payload.get("delay", 0.0)))
+    var base_x: int = int(action_payload.get("x", 0))
+    var base_y: int = int(action_payload.get("y", 0))
+    var spacing: float = maxf(0.0, float(action_payload.get("spacing", 0.8)))
+    var stagger: float = maxf(0.0, float(action_payload.get("stagger", 0.0)))
+    var unit_id: String = str(action_payload.get("unit_id", "basher"))
+
+    for index in range(spawn_count):
+        pending_enemy_spawns.append({
+            "unit_id": unit_id,
+            "x": base_x + int(index % 2),
+            "y": base_y + int(floor(float(index) / 2.0)),
+            "delay": base_delay + (stagger * index),
+            "spacing": spacing
+        })
 
 
 func _goal_complete() -> bool:

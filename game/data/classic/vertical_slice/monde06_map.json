@@ -1,0 +1,120 @@
+{
+  "id": "monde06_map",
+  "name": "Mission 6 - Mine of Whispers",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "WSSSGGGGGGGGGGGFFFFF",
+    "SSGGGGGGGGGGGGGFFFFF",
+    "SGGGGGGGDGGGGGGFFFRR",
+    "SGGGGFGGDDGGGGGFFRRR",
+    "SGGGFFGGDDGGGGFFRRRR",
+    "SGGGFGGGGDDGGGGRRRRR",
+    "SGGGFGGGGDDGGGGRRRRR",
+    "SGGGGGGGGGDGGGGRRRRR",
+    "SSGGGGGGGGGGGGGRRRRR",
+    "WSSGGGGFGGGGGGGRRRRR",
+    "WWSSGGGFGGGGGGGRRRRR",
+    "WWWSSGGGGGGGGGRRRRRR",
+    "WWWWSSGGGGGGGRRRRRRR",
+    "WWWWWSSGGGGGGRRRRRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 4, "type": "food", "amount": 150 },
+    { "x": 3, "y": 8, "type": "food", "amount": 120 },
+    { "x": 10, "y": 4, "type": "stone", "amount": 140 },
+    { "x": 11, "y": 8, "type": "stone", "amount": 120 },
+    { "x": 15, "y": 5, "type": "parts", "amount": 90 }
+  ],
+  "player_start": { "x": 4, "y": 7 },
+  "starting_resources": { "food": 34, "stone": 22, "parts": 10, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 4, "y": 7, "team": "player" },
+    { "building_id": "culture", "x": 6, "y": 7, "team": "player" },
+    { "building_id": "sanctuary", "x": 5, "y": 5, "team": "player" },
+    { "building_id": "library", "x": 7, "y": 5, "team": "player" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 3, "y": 6, "team": "player" },
+    { "unit_id": "farmer", "x": 3, "y": 8, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 6, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 8, "team": "player" },
+    { "unit_id": "mechanic", "x": 4, "y": 9, "team": "player" },
+    { "unit_id": "swordsman", "x": 7, "y": 7, "team": "player" },
+    { "unit_id": "archer", "x": 7, "y": 8, "team": "player" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "sanctuary",
+    "library",
+    "laboratory",
+    "barracks",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "explore_mine",
+      "type": "unit_in_area",
+      "x": 15,
+      "y": 4,
+      "width": 3,
+      "height": 3,
+      "target": 1,
+      "label": "Reach the abandoned mine",
+      "required": true
+    },
+    {
+      "id": "research_religious_path",
+      "type": "research_branch",
+      "branch": "religious",
+      "target": 1,
+      "label": "Develop a spiritual discovery",
+      "required": true
+    },
+    {
+      "id": "repel_mine_guardians",
+      "type": "repel_waves",
+      "target": 1,
+      "label": "Repel the mine guardians",
+      "required": false
+    }
+  ],
+  "enemy_spawns": [],
+  "mission_events": [
+    {
+      "id": "mission_6_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "An abandoned mine lies in the eastern ridge. Search it for spiritual knowledge." }
+      ]
+    },
+    {
+      "id": "mission_6_mine_found",
+      "trigger": { "type": "objective_complete", "objective_id": "explore_mine" },
+      "actions": [
+        { "type": "message", "text": "Ancient tablets stir in the mine. The guardians awaken." },
+        { "type": "grant_resources", "resources": { "tech": 6 } },
+        { "type": "schedule_enemy_wave", "unit_id": "basher", "x": 17, "y": 5, "count": 2, "delay": 1.0, "stagger": 0.5 },
+        { "type": "schedule_enemy_wave", "unit_id": "hurler", "x": 18, "y": 6, "count": 1, "delay": 1.5 }
+      ]
+    },
+    {
+      "id": "mission_6_research_reward",
+      "trigger": { "type": "objective_complete", "objective_id": "research_religious_path" },
+      "actions": [
+        { "type": "message", "text": "The clan binds the mine's teachings into a new spiritual doctrine." }
+      ]
+    }
+  ]
+}

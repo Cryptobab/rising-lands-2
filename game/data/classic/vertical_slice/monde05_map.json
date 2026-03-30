@@ -1,0 +1,139 @@
+{
+  "id": "monde05_map",
+  "name": "Mission 5 - Clan Crossroads",
+  "width": 20,
+  "height": 14,
+  "legend": {
+    "G": "grass",
+    "D": "dirt",
+    "F": "forest",
+    "R": "rock",
+    "S": "sand",
+    "W": "water"
+  },
+  "tiles": [
+    "SSGGGGGGGGGGGGGGFFFF",
+    "SGGGGGGGGGGGGGGGFFFF",
+    "GGGGGGGGDGGGGGGGFFFR",
+    "GGGGFGGGDDGGGGGGFFRR",
+    "GGGFFGGGDDGGGGGGFRRR",
+    "GGGFGGGGGDDGGGGGGRRR",
+    "GGGGGGGGGDDGGGGGGRRR",
+    "GGGGGGGGGDDGGGGGGRRR",
+    "SGGGGGGGGGDGGGGGGRRR",
+    "SSGGGGFGGGDGGGGGGRRR",
+    "WSSGGGFGGGGGGGGGGRRR",
+    "WWSSGGGGGGGGGGGGGRRR",
+    "WWWSSGGGGGGGGGGGGRRR",
+    "WWWWSSGGGGGGGGGGGRRR"
+  ],
+  "resources": [
+    { "x": 2, "y": 4, "type": "food", "amount": 140 },
+    { "x": 3, "y": 9, "type": "food", "amount": 120 },
+    { "x": 10, "y": 3, "type": "stone", "amount": 120 },
+    { "x": 11, "y": 9, "type": "stone", "amount": 120 },
+    { "x": 13, "y": 6, "type": "parts", "amount": 90 }
+  ],
+  "player_start": { "x": 4, "y": 7 },
+  "starting_resources": { "food": 40, "stone": 28, "parts": 12, "tech": 0 },
+  "starting_buildings": [
+    { "building_id": "storehouse", "x": 4, "y": 7, "team": "player" },
+    { "building_id": "culture", "x": 6, "y": 7, "team": "player" },
+    { "building_id": "market", "x": 6, "y": 5, "team": "player" },
+    { "building_id": "barracks", "x": 4, "y": 5, "team": "player" }
+  ],
+  "starting_units": [
+    { "unit_id": "farmer", "x": 3, "y": 6, "team": "player" },
+    { "unit_id": "farmer", "x": 3, "y": 8, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 6, "team": "player" },
+    { "unit_id": "builder", "x": 5, "y": 8, "team": "player" },
+    { "unit_id": "mechanic", "x": 4, "y": 9, "team": "player" },
+    { "unit_id": "messenger", "x": 6, "y": 6, "team": "player" },
+    { "unit_id": "swordsman", "x": 7, "y": 7, "team": "player" },
+    { "unit_id": "archer", "x": 7, "y": 8, "team": "player" },
+    { "unit_id": "basher", "x": 15, "y": 7, "team": "enemy" },
+    { "unit_id": "hurler", "x": 16, "y": 8, "team": "enemy" }
+  ],
+  "build_palette": [
+    "storehouse",
+    "culture",
+    "market",
+    "barracks",
+    "sanctuary",
+    "laboratory",
+    "library",
+    "tower_catapult",
+    "tower_cannon",
+    "wall"
+  ],
+  "storehouse_goal": { "food": 0, "stone": 0 },
+  "objectives": [
+    {
+      "id": "alliance_network",
+      "type": "alliance_count",
+      "target": 2,
+      "label": "Secure alliances with two neighboring clans",
+      "required": true
+    },
+    {
+      "id": "repel_black_banner",
+      "type": "repel_waves",
+      "target": 2,
+      "label": "Break the Black Banner raiders",
+      "required": true
+    }
+  ],
+  "enemy_spawns": [
+    { "x": 18, "y": 3, "unit_id": "basher", "delay": 18.0 },
+    { "x": 18, "y": 10, "unit_id": "hurler", "delay": 36.0 }
+  ],
+  "mission_events": [
+    {
+      "id": "mission_5_intro",
+      "trigger": { "type": "time_elapsed", "value": 4.0 },
+      "actions": [
+        { "type": "message", "text": "Two neighboring clans may join you. The Black Banner will not." }
+      ]
+    },
+    {
+      "id": "mission_5_first_contact",
+      "trigger": { "type": "alliance_count", "value": 1 },
+      "actions": [
+        { "type": "message", "text": "One pact is sealed. Win another clan before the Black Banner overruns the valley." },
+        { "type": "grant_resources", "resources": { "food": 8, "stone": 8 } }
+      ]
+    },
+    {
+      "id": "mission_5_wave_warning",
+      "trigger": { "type": "enemy_waves_spawned", "value": 1 },
+      "actions": [
+        { "type": "message", "text": "Black Banner raiders are marching straight for the settlement." }
+      ]
+    },
+    {
+      "id": "mission_5_alliance_reward",
+      "trigger": { "type": "objective_complete", "objective_id": "alliance_network" },
+      "actions": [
+        { "type": "message", "text": "The allied clans dispatch scouts and veterans to your camp." },
+        { "type": "spawn_unit", "unit_id": "archer", "x": 8, "y": 6, "team": "player", "count": 2 },
+        { "type": "grant_resources", "resources": { "tech": 3 } }
+      ]
+    }
+  ],
+  "diplomacy_targets": [
+    {
+      "clan_id": "red_clan",
+      "clan_name": "Red Clan",
+      "x": 14,
+      "y": 3,
+      "color_hex": "d86161"
+    },
+    {
+      "clan_id": "blue_clan",
+      "clan_name": "Blue Clan",
+      "x": 14,
+      "y": 11,
+      "color_hex": "61a0d8"
+    }
+  ]
+}

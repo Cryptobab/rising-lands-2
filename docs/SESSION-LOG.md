@@ -52,6 +52,11 @@
 - added a shell-side mission result panel with retry and next-mission actions
 - added persistent shell options for enemy pressure and menu pause behavior
 - added a shell-settings smoke test that validates settings persistence and live menu runtime flow
+- added idle enemy assault behavior so hostile combat units advance on the settlement instead of waiting outside vision range
+- extended mission objectives with alliance-count and exploration-area support
+- extended mission-event triggers/actions with alliance-count, exploration-area, and queued enemy-wave scheduling
+- authored Mission 5 and Mission 6 scenario maps for the chapter-two campaign slice
+- added a chapter-two content smoke test that covers Mission 5 and Mission 6 progression
 
 ### Files Added Or Changed
 
@@ -94,8 +99,11 @@
 - [`game/data/classic/vertical_slice/monde02_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde02_map.json)
 - [`game/data/classic/vertical_slice/monde03_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde03_map.json)
 - [`game/data/classic/vertical_slice/monde04_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde04_map.json)
+- [`game/data/classic/vertical_slice/monde05_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde05_map.json)
+- [`game/data/classic/vertical_slice/monde06_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde06_map.json)
 - [`tools/importers/extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/extract_classic_data.py)
 - [`tools/importers/tests/test_extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/tests/test_extract_classic_data.py)
+- [`game/scripts/tests/chapter_two_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/chapter_two_content_smoke.gd)
 
 ### Validation
 
@@ -118,8 +126,9 @@
 - Godot headless selection-orders smoke test completed without reported errors
 - Godot headless app-shell smoke test completed without reported errors
 - Godot headless shell-settings smoke test completed without reported errors
+- Godot headless chapter-two content smoke test completed with a passing exit code; Godot still reports one resource-cleanup warning on exit for that script
 
 ### Outstanding
 
 - validate the project in the interactive Godot editor
-- extend the current campaign shell slice into broader content parity, deeper AI, and stronger multi-mission scenario coverage
+- extend the current campaign shell slice into broader content parity, deeper diplomacy, and stronger multi-mission scenario coverage beyond Mission 6

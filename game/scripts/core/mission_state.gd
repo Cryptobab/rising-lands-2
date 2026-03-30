@@ -69,6 +69,9 @@ func evaluate(snapshot: Dictionary) -> Array[String]:
             "unit_count":
                 current_value = int(snapshot.get("unit_counts", {}).get(str(objective.get("unit_id", "")), 0))
                 completed = current_value >= target_value
+            "unit_in_area":
+                current_value = _count_units_in_area(snapshot, objective)
+                completed = current_value >= maxi(1, target_value)
             "tech_count":
                 current_value = int(snapshot.get("unlocked_tech_count", 0))
                 completed = current_value >= target_value
@@ -79,6 +82,9 @@ func evaluate(snapshot: Dictionary) -> Array[String]:
                 var clan_id: String = str(objective.get("clan_id", ""))
                 var allied_clans: Array = snapshot.get("allied_clans", [])
                 current_value = 1 if allied_clans.has(clan_id) else 0
+                completed = current_value >= maxi(1, target_value)
+            "alliance_count":
+                current_value = int(snapshot.get("allied_clans", []).size())
                 completed = current_value >= maxi(1, target_value)
             "survive_until":
                 current_value = int(floor(float(snapshot.get("elapsed_time", 0.0))))
@@ -145,3 +151,25 @@ func objective_lines() -> Array[String]:
 
         lines.append("%s %s%s" % [marker, str(objective.get("label", "Objective")), progress_suffix])
     return lines
+
+
+func _count_units_in_area(snapshot: Dictionary, objective: Dictionary) -> int:
+    var unit_positions: Array = snapshot.get("player_unit_positions", [])
+    var target_unit_id: String = str(objective.get("unit_id", ""))
+    var area_x: float = float(objective.get("x", 0))
+    var area_y: float = float(objective.get("y", 0))
+    var area_width: float = maxf(1.0, float(objective.get("width", 1.0)))
+    var area_height: float = maxf(1.0, float(objective.get("height", 1.0)))
+    var area_rect := Rect2(Vector2(area_x, area_y), Vector2(area_width, area_height))
+    var count: int = 0
+
+    for payload in unit_positions:
+        var unit_id: String = str(payload.get("unit_id", ""))
+        if not target_unit_id.is_empty() and unit_id != target_unit_id:
+            continue
+
+        var unit_position := Vector2(float(payload.get("x", -9999.0)), float(payload.get("y", -9999.0)))
+        if area_rect.has_point(unit_position):
+            count += 1
+
+    return count

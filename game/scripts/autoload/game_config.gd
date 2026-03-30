@@ -1,6 +1,6 @@
 extends Node
 
-const PROJECT_PHASE: String = "campaign_ui_shell_options"
+const PROJECT_PHASE: String = "campaign_content_chapter_two"
 const ACTIVE_RULESET: String = "classic"
 const CLASSIC_DATA_PATH: String = "res://data/classic/raw"
 const EXPANDED_DATA_PATH: String = "res://data/expanded"
