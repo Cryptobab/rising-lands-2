@@ -4,19 +4,19 @@ This document is the source of truth for what is actually done, what is still mi
 
 ## Audit Snapshot
 
-As of `2026-03-30`, the project is no longer a rewrite bootstrap. The classic Godot baseline is real and test-backed, but the remake is not yet feature-complete and the expansion lane is still only a scaffold.
+As of `2026-03-30`, the project is no longer a rewrite bootstrap. The classic Godot baseline is real and test-backed, the first `GameRoot` extraction boundary is now in place, but the remake is not yet feature-complete and the expansion lane is still only a scaffold.
 
 Verified in this audit:
 
 - importer unit tests passed
 - Godot `4.6.1` resolves locally and runs headless
-- representative Godot smoke tests passed: `taming_smoke`, `transport_smoke`, `hunger_smoke`, `spell_smoke`, `vertical_slice_smoke`, `systems_smoke`, `app_shell_smoke`, `final_campaign_smoke`, `enemy_ai_wave_directives_smoke`, `ruleset_loader_smoke`, and `campaign_carryover_smoke`
+- targeted Godot smoke tests passed locally: `systems_smoke`, `command_surface_smoke`, `spell_smoke`, `transport_smoke`, and `taming_smoke`
 
 Current data truth:
 
 - `classic` normalized data contains `26` units, `22` buildings, `5` spells, `81` techs, and `25` missions
 - `expanded` normalized data contains `0` units, `0` buildings, `0` spells, `0` techs, and `1` internal proving-ground mission
-- the repo contains `33` Godot smoke tests, but the entire sweep was not rerun in one shell command during this audit because the long batch exceeded the command timeout
+- the repo contains `34` Godot smoke tests, but the entire sweep was not rerun in one shell command during this audit because the long batch exceeded the command timeout and the local Windows headless launcher hung on `app_shell_smoke`
 
 ## What Is Done
 
@@ -35,6 +35,7 @@ Current data truth:
 - a first druid spell slice now exists with command-card and hotkey casting, mana and cooldowns, persistent spell effects, and automated smoke coverage
 - a first transport slice now exists for `balloon` and `heliped` with boarding, unload actions, save persistence, and mission-objective compatibility
 - a first taming slice now exists where druids can convert weakened creature units into the player roster with save persistence and automated smoke coverage
+- the first command-card and selected-unit action slice has been extracted from `GameRoot` into a dedicated command-surface helper with save-safe smoke coverage
 - mission objectives and mission events are data-driven and persist through save/load
 - diplomacy now covers alliances, stance, trust, demands, and revenge state
 - campaign progression, named save slots, campaign completion, and campaign carryover all exist
@@ -50,9 +51,9 @@ Current data truth:
 ### Validation And Workflow
 
 - importer unit tests exist and pass locally
-- `33` Godot smoke tests exist across economy, construction, systems, missions, diplomacy, shell flow, AI, ruleset loading, transport, taming, and campaign carryover
+- `34` Godot smoke tests exist across economy, construction, systems, command-surface extraction, missions, diplomacy, shell flow, AI, ruleset loading, transport, taming, and campaign carryover
 - GitHub issue templates and PR template exist
-- GitHub Actions now covers importer tests plus a representative Godot runtime smoke suite
+- GitHub Actions now covers importer tests plus a representative Godot runtime smoke suite that includes the extracted command-surface boundary
 
 ## What Is Not Done
 
@@ -68,7 +69,7 @@ These are the main reasons the project cannot yet claim a complete remake revamp
 
 ### Production And Tech Blockers
 
-- `game/scripts/core/game_root.gd` is carrying too much orchestration and should be split as the runtime deepens
+- `game/scripts/core/game_root.gd` is still carrying too much orchestration even after the first command-surface extraction and should be split further as the runtime deepens
 - there is no export pipeline, release automation, or public build packaging
 - there is effectively no committed art, animation, VFX, or audio production layer beyond code-driven placeholders and the icon
 - key UX improvements such as richer command queueing, better selection ergonomics, and more informative combat feedback are still unfinished

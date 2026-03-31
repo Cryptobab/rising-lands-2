@@ -8,10 +8,10 @@ This is the next forward-looking 20-task tranche. It shifts the project from cla
 2. `[done]` Implement the taming runtime and allegiance transfer behavior.
 3. `[done]` Add a dedicated taming smoke test.
 4. `[done]` Add a GitHub Actions workflow for representative Godot smoke coverage.
-5. `[pending]` Audit `GameRoot` orchestration slices and choose the first extraction boundary.
-6. `[pending]` Extract command-card and selected-unit action handling from `GameRoot`.
+5. `[done]` Audit `GameRoot` orchestration slices and choose the first extraction boundary.
+6. `[done]` Extract command-card and selected-unit action handling from `GameRoot`.
 7. `[pending]` Extract mission snapshot or objective support from `GameRoot`.
-8. `[pending]` Preserve save compatibility and smoke coverage across the first refactor boundary.
+8. `[done]` Preserve save compatibility and smoke coverage across the first refactor boundary.
 9. `[pending]` Improve move-order clarity or formation spacing around dense groups and transports.
 10. `[pending]` Surface richer selected-unit cooldown, transport, and tame state in the HUD.
 11. `[pending]` Add a small manual interactive classic-campaign validation checklist.

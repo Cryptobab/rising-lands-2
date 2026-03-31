@@ -7,6 +7,7 @@ const MissionStateScript = preload("res://scripts/core/mission_state.gd")
 const MissionEventStateScript = preload("res://scripts/core/mission_event_state.gd")
 const DiplomacyTargetStateScript = preload("res://scripts/core/diplomacy_target_state.gd")
 const MapStateScript = preload("res://scripts/core/map_state.gd")
+const GameRootCommandSurfaceScript = preload("res://scripts/core/game_root_command_surface.gd")
 const RulesetDatabaseScript = preload("res://scripts/data/ruleset_database.gd")
 const ResourceNodeStateScript = preload("res://scripts/simulation/resource_node_state.gd")
 const BuildingStateScript = preload("res://scripts/simulation/building_state.gd")
@@ -90,6 +91,7 @@ var campaign_profile_path: String = "user://campaign_profile.json"
 var save_slot_directory: String = "user://save_slots"
 var mission_resolution_recorded: bool = false
 var next_entity_id: int = 1
+var command_surface = GameRootCommandSurfaceScript.new()
 
 
 func _ready() -> void:
@@ -3119,55 +3121,11 @@ func _handle_context_action(slot: int) -> void:
 
 
 func selected_building_actions() -> Array:
-    var selected_unit = _selected_combat_unit()
-    if selected_combat_indices.size() == 1 and selected_unit != null:
-        var combat_actions: Array = _combat_unit_actions(selected_unit)
-        if not combat_actions.is_empty():
-            return combat_actions.duplicate(true)
-
-    var building = _selected_building()
-    if building == null:
-        return []
-    return _building_actions(building.building_id).duplicate(true)
+    return command_surface.selected_actions(self)
 
 
 func invoke_selected_building_action(slot: int) -> bool:
-    var selected_unit = _selected_combat_unit()
-    if selected_combat_indices.size() == 1 and selected_unit != null:
-        for action in _combat_unit_actions(selected_unit):
-            if int(action.get("slot", 0)) != slot:
-                continue
-
-            var action_kind: String = str(action.get("kind", ""))
-            var action_id: String = str(action.get("id", ""))
-            match action_kind:
-                "spell":
-                    return cast_spell_for_selected_unit(action_id)
-                "tame":
-                    return tame_creature_for_selected_unit()
-                "transport_unload":
-                    return unload_selected_transport()
-                _:
-                    return false
-
-    var building = _selected_building()
-    if building == null:
-        return false
-
-    for action in _building_actions(building.building_id):
-        if int(action.get("slot", 0)) != slot:
-            continue
-
-        var action_kind: String = str(action.get("kind", ""))
-        var action_id: String = str(action.get("id", ""))
-        match action_kind:
-            "train":
-                return queue_training_for_building(selected_building_index, action_id)
-            "research":
-                return queue_research_for_building(selected_building_index, action_id)
-            _:
-                return false
-    return false
+    return command_surface.invoke_selected_action(self, slot)
 
 
 func _build_mode_for_key(keycode: Key) -> String:
@@ -3206,115 +3164,6 @@ func _key_label(keycode: int) -> String:
             return "="
         _:
             return OS.get_keycode_string(keycode)
-
-
-func _combat_unit_actions(combat_unit) -> Array:
-    if combat_unit == null or combat_unit.team != "player":
-        return []
-
-    if combat_unit.can_transport():
-        return [{
-            "slot": 1,
-            "key": "Q",
-            "kind": "transport_unload",
-            "id": "unload",
-            "label": "Unload %d/%d" % [combat_unit.passenger_ids.size(), combat_unit.transport_capacity]
-        }]
-
-    if combat_unit.unit_id != "druid":
-        return []
-
-    var supported_spells := [
-        {"slot": 1, "key": "Q", "id": "armour"},
-        {"slot": 2, "key": "W", "id": "petrification"},
-        {"slot": 3, "key": "E", "id": "nova"},
-        {"slot": 4, "key": "R", "id": "vision"},
-    ]
-    var actions: Array = []
-    for action in supported_spells:
-        var spell_id: String = str(action.get("id", ""))
-        var spell_record: Dictionary = ruleset_database.find_spell(spell_id)
-        if spell_record.is_empty():
-            continue
-
-        var label: String = str(spell_record.get("name", spell_id))
-        var cooldown: float = combat_unit.cooldown_for_spell(spell_id)
-        if cooldown > 0.0:
-            label = "%s %.1fs" % [label, cooldown]
-
-        actions.append({
-            "slot": int(action.get("slot", 0)),
-            "key": str(action.get("key", "")),
-            "kind": "spell",
-            "id": spell_id,
-            "label": label
-        })
-
-    var tame_label: String = "Tame"
-    var tame_cooldown: float = combat_unit.cooldown_for_spell("tame")
-    if tame_cooldown > 0.0:
-        tame_label = "Tame %.1fs" % tame_cooldown
-    actions.append({
-        "slot": 5,
-        "key": "T",
-        "kind": "tame",
-        "id": "tame",
-        "label": tame_label
-    })
-    return actions
-
-
-func _building_actions(building_id: String) -> Array:
-    match building_id:
-        "culture":
-            return [
-                {"slot": 1, "key": "Q", "kind": "train", "id": "farmer", "label": "farmer"},
-                {"slot": 2, "key": "W", "kind": "train", "id": "builder", "label": "builder"},
-                {"slot": 3, "key": "E", "kind": "train", "id": "mechanic", "label": "mechanic"},
-                {"slot": 4, "key": "R", "kind": "train", "id": "settler", "label": "settler"},
-                {"slot": 5, "key": "T", "kind": "train", "id": "messenger", "label": "messenger"},
-            ]
-        "barracks":
-            return [
-                {"slot": 1, "key": "Q", "kind": "train", "id": "swordsman", "label": "swordsman"},
-                {"slot": 2, "key": "W", "kind": "train", "id": "captain", "label": "captain"},
-                {"slot": 3, "key": "E", "kind": "train", "id": "archer", "label": "archer"},
-                {"slot": 4, "key": "R", "kind": "train", "id": "scorcher", "label": "scorcher"},
-            ]
-        "sanctuary", "temple":
-            return [
-                {"slot": 1, "key": "Q", "kind": "train", "id": "druid", "label": "druid"},
-            ]
-        "workshop":
-            return [
-                {"slot": 1, "key": "Q", "kind": "train", "id": "stomper", "label": "stomper"},
-            ]
-        "garage":
-            return [
-                {"slot": 1, "key": "Q", "kind": "train", "id": "speeder", "label": "speeder"},
-                {"slot": 2, "key": "W", "kind": "train", "id": "boomer", "label": "boomer"},
-                {"slot": 3, "key": "E", "kind": "train", "id": "reaper", "label": "reaper"},
-                {"slot": 4, "key": "R", "kind": "train", "id": "bomber", "label": "bomber"},
-                {"slot": 5, "key": "T", "kind": "train", "id": "hellfire", "label": "hellfire"},
-            ]
-        "hangar", "heliport":
-            return [
-                {"slot": 1, "key": "Q", "kind": "train", "id": "heliped", "label": "heliped"},
-                {"slot": 2, "key": "W", "kind": "train", "id": "balloon", "label": "balloon"},
-            ]
-        "market":
-            return [
-                {"slot": 1, "key": "Q", "kind": "train", "id": "messenger", "label": "messenger"},
-            ]
-        "laboratory", "library":
-            return [
-                {"slot": 1, "key": "Q", "kind": "research", "id": "agriculture", "label": "agriculture"},
-                {"slot": 2, "key": "W", "kind": "research", "id": "military", "label": "military"},
-                {"slot": 3, "key": "E", "kind": "research", "id": "civil_engineering", "label": "civil"},
-                {"slot": 4, "key": "R", "kind": "research", "id": "religious", "label": "religious"},
-            ]
-        _:
-            return []
 
 
 func _spell_resource_cost(spell_record: Dictionary) -> Dictionary:
@@ -3457,17 +3306,6 @@ func _cast_nova_spell(caster, primary_target, spell_record: Dictionary) -> bool:
 
     caster.last_action = "cast nova"
     return true
-
-
-func _context_hint_for_building(building) -> String:
-    var actions: Array = _building_actions(building.building_id)
-    if actions.is_empty():
-        return "Context: %s" % building.queue_label()
-
-    var hints: Array[String] = []
-    for action in actions:
-        hints.append("%s %s" % [str(action.get("key", "")), str(action.get("label", action.get("id", "")))])
-    return "Context: %s" % " | ".join(hints)
 
 
 func _building_display_name(building_id: String) -> String:
@@ -3705,26 +3543,6 @@ func _attack_status_text(combat_count: int) -> String:
     return "%d units attacking" % combat_count
 
 
-func _count_selected_builders() -> int:
-    var builder_count: int = 0
-    for worker in _selected_workers():
-        if worker.unit_id == "builder":
-            builder_count += 1
-    return builder_count
-
-
-func _selected_role_summary(selected_units: Array) -> String:
-    var role_counts: Dictionary = {}
-    for unit in selected_units:
-        var role_id: String = str(unit.unit_id)
-        role_counts[role_id] = int(role_counts.get(role_id, 0)) + 1
-
-    var fragments: Array[String] = []
-    for role_id in role_counts.keys():
-        fragments.append("%s x%d" % [role_id, int(role_counts.get(role_id, 0))])
-    return ", ".join(fragments)
-
-
 func _command_marker_color(kind: String) -> Color:
     match kind:
         "gather":
@@ -3739,64 +3557,6 @@ func _command_marker_color(kind: String) -> Color:
             return Color("9fd9ff")
         _:
             return Color("70b8e8")
-
-
-func _selection_detail_lines() -> Array[String]:
-    var lines: Array[String] = []
-    var selected_workers := _selected_workers()
-    var selected_combat := _selected_combat_units()
-    var selected_total: int = selected_workers.size() + selected_combat.size()
-
-    if selected_total > 1:
-        lines.append("Selected Units: %d" % selected_total)
-        if not selected_workers.is_empty():
-            lines.append("Workers: %d | Builders: %d" % [selected_workers.size(), _count_selected_builders()])
-        if not selected_combat.is_empty():
-            lines.append("Combat: %d | %s" % [selected_combat.size(), _selected_role_summary(selected_combat)])
-        return lines
-
-    var selected_worker = _selected_worker()
-    if selected_worker != null:
-        lines.append(
-            "Selected Worker: %s | hp %d/%d | %s"
-            % [selected_worker.name, int(ceil(selected_worker.health)), int(ceil(selected_worker.max_health)), selected_worker.status_text()]
-        )
-        return lines
-
-    var selected_combat_unit = _selected_combat_unit()
-    if selected_combat_unit != null:
-        lines.append(
-            "Selected Unit: %s | hp %d/%d | %s"
-            % [
-                selected_combat_unit.name,
-                int(ceil(selected_combat_unit.health)),
-                int(ceil(selected_combat_unit.max_health)),
-                selected_combat_unit.status_text()
-            ]
-        )
-        for spell_line in selected_combat_unit.spell_status_lines():
-            lines.append(spell_line)
-        return lines
-
-    var selected_building = _selected_building()
-    if selected_building != null:
-        lines.append(
-            "Selected Building: %s | hp %d/%d"
-            % [selected_building.name, int(ceil(selected_building.health)), int(ceil(selected_building.max_health))]
-        )
-        lines.append("Queue: %s" % selected_building.queue_label())
-        if selected_building.can_attack():
-            lines.append("Defense: %dm range | %s" % [int(round(selected_building.attack_range)), selected_building.last_action])
-        return lines
-
-    if selected_site_index >= 0 and selected_site_index < construction_sites.size():
-        var selected_site = construction_sites[selected_site_index]
-        lines.append(
-            "Selected Site: %s | build %d%%"
-            % [selected_site.name, int(round(selected_site.build_ratio() * 100.0))]
-        )
-
-    return lines
 
 
 func set_interactive_runtime(enabled: bool) -> void:
@@ -3827,6 +3587,7 @@ func mission_synopsis_for_id(mission_id: String = "") -> String:
 
 
 func build_ui_snapshot() -> Dictionary:
+    var command_surface_snapshot: Dictionary = command_surface.build_selection_snapshot(self)
     var summary: Dictionary = ruleset_database.summary()
     var ruleset_summary: Dictionary = ruleset_database.ruleset_summary()
     var active_record: Dictionary = mission_record_for_id()
@@ -3888,19 +3649,6 @@ func build_ui_snapshot() -> Dictionary:
             pending_enemy_spawns.size(),
             allied_clans.size()
         ]
-
-    var selection_text := "Selection: none"
-    if not selected_worker_indices.is_empty() or not selected_combat_indices.is_empty():
-        selection_text = "Selection: %s" % _selection_status_text(selected_worker_indices.size(), selected_combat_indices.size())
-    elif selected_building_index >= 0 and selected_building_index < buildings.size():
-        selection_text = "Selection: %s" % buildings[selected_building_index].name
-    elif selected_site_index >= 0 and selected_site_index < construction_sites.size():
-        selection_text = "Selection: %s site" % construction_sites[selected_site_index].name
-
-    var context_hint: String = "Context: none"
-    var selected_building = _selected_building()
-    if selected_building != null:
-        context_hint = _context_hint_for_building(selected_building)
 
     var actor_lines: Array[String] = []
     for index in range(mini(3, workers.size())):
@@ -3971,13 +3719,13 @@ func build_ui_snapshot() -> Dictionary:
         "carryover_text": carryover_text,
         "objective_lines": objective_lines,
         "goal_text": goal_text,
-        "selection_text": selection_text,
-        "context_hint": context_hint,
+        "selection_text": str(command_surface_snapshot.get("selection_text", "Selection: none")),
+        "context_hint": str(command_surface_snapshot.get("context_hint", "Context: none")),
         "status_text": simulation_status,
         "alert_lines": alert_log.duplicate(true),
         "actor_lines": actor_lines,
-        "selection_detail_lines": _selection_detail_lines(),
-        "selected_building_actions": selected_building_actions(),
+        "selection_detail_lines": command_surface_snapshot.get("selection_detail_lines", []),
+        "selected_building_actions": command_surface_snapshot.get("actions", []),
         "mission_title": mission_state.title,
         "mission_label": mission_label,
         "chapter_text": chapter_text,

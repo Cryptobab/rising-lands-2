@@ -35,6 +35,7 @@ jobs:
         working-directory: game
         run: |
           "$RUNNER_TEMP/godot/$GODOT_BIN" --headless --path . --script res://scripts/tests/systems_smoke.gd
+          "$RUNNER_TEMP/godot/$GODOT_BIN" --headless --path . --script res://scripts/tests/command_surface_smoke.gd
           "$RUNNER_TEMP/godot/$GODOT_BIN" --headless --path . --script res://scripts/tests/app_shell_smoke.gd
           "$RUNNER_TEMP/godot/$GODOT_BIN" --headless --path . --script res://scripts/tests/final_campaign_smoke.gd
           "$RUNNER_TEMP/godot/$GODOT_BIN" --headless --path . --script res://scripts/tests/enemy_ai_wave_directives_smoke.gd

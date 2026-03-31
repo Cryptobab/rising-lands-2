@@ -506,3 +506,38 @@
 
 - add export presets or packaging discipline to complement the now-live runtime CI
 - start the first `GameRoot` extraction boundary defined in the new `NEXT-20` tranche
+
+### GameRoot Command-Surface Tranche
+
+- audited `game_root.gd` and selected the command-card plus selected-unit action surface as the first honest extraction boundary because it was large, UI-facing, and save-independent
+- extracted command-card action building, selected-unit detail formatting, selection summary text, and context-hint generation into `game_root_command_surface.gd`
+- kept the actual spell, taming, transport, and production mutations inside `GameRoot`, so the public gameplay behavior stayed stable while the orchestration file shrank
+- added a dedicated `command_surface_smoke.gd` regression covering building actions, druid spell actions, transport action labels, and save/load persistence for the extracted helper
+- extended the Godot runtime workflow so CI now covers the new command-surface boundary alongside the existing representative smokes
+- verified importer tests plus `systems_smoke`, `command_surface_smoke`, `spell_smoke`, `transport_smoke`, and `taming_smoke` locally after the refactor
+- recorded that `app_shell_smoke.gd` remained in CI but the local Windows headless launcher hung during this audit, so shell-scene regression still needs CI or interactive-editor confirmation before a broader tranche is closed
+
+### Files Added Or Changed
+
+- [`.github/workflows/godot-runtime.yml`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/.github/workflows/godot-runtime.yml)
+- [`docs/MASTER-PLAN.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/MASTER-PLAN.md)
+- [`docs/CONTINUATION.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/CONTINUATION.md)
+- [`docs/NEXT-20.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/NEXT-20.md)
+- [`docs/SESSION-LOG.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/SESSION-LOG.md)
+- [`game/scripts/core/game_root.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/game_root.gd)
+- [`game/scripts/core/game_root_command_surface.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/game_root_command_surface.gd)
+- [`game/scripts/tests/command_surface_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/command_surface_smoke.gd)
+
+### Validation
+
+- importer unit tests passed
+- Godot headless systems smoke test completed without reported errors
+- Godot headless command-surface smoke test completed without reported errors
+- Godot headless spell smoke test completed without reported errors
+- Godot headless transport smoke test completed without reported errors
+- Godot headless taming smoke test completed without reported errors
+
+### Outstanding
+
+- extract mission snapshot or objective support from `GameRoot` as the next decomposition boundary
+- rerun the full representative Godot suite from CI or a launcher path that reliably exercises `app_shell_smoke.gd`
