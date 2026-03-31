@@ -299,3 +299,210 @@
 
 - validate the project in the interactive Godot editor
 - start explicit expanded-mode layering and loader hooks now that classic carryover is in place on top of the shell/ruleset baseline
+
+### Roadmap Audit And Continuation Refresh
+
+- audited the repo docs against the current runtime and test surface
+- verified importer tests plus representative Godot smoke coverage on the local machine
+- confirmed that the classic baseline is real and playable, including campaign completion, shell flow, ruleset loading, enemy AI wave directives, and campaign carryover
+- identified the main blockers to calling the remake fully revamped: hunger, spell casting, balloon or heliped transport, creature taming, stronger movement quality, Godot CI, and shipping or presentation layers
+- rewrote the master roadmap to reflect the verified truth state instead of the older bootstrap-phase assumptions
+- rewrote the continuation handoff into an autonomous execution runbook ordered around the actual missing classic parity systems
+- replaced the old retrospective `NEXT-20` recap with a forward tranche aimed at hunger, spells, transport, taming, and Godot CI
+
+### Files Added Or Changed
+
+- [`docs/MASTER-PLAN.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/MASTER-PLAN.md)
+- [`docs/CONTINUATION.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/CONTINUATION.md)
+- [`docs/NEXT-20.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/NEXT-20.md)
+- [`docs/SESSION-LOG.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/SESSION-LOG.md)
+
+### Validation
+
+- importer unit tests passed
+- Godot headless systems smoke test completed without reported errors
+- Godot headless app-shell smoke test completed without reported errors
+- Godot headless final-campaign smoke test completed without reported errors
+- Godot headless enemy-AI wave-directives smoke test completed without reported errors
+- Godot headless ruleset-loader smoke test completed without reported errors
+- Godot headless campaign-carryover smoke test completed without reported errors
+
+### Outstanding
+
+- execute the new parity-focused `NEXT-20` tranche starting with hunger
+- add Godot runtime CI so the larger smoke surface can be exercised without local shell timeout constraints
+
+### Hunger Runtime Tranche
+
+- audited the imported classic data and confirmed that food costs, housing values, and creature references existed in data while the runtime still lacked a real hunger loop
+- added world-state hunger tracking with periodic ration consumption, starvation strike tracking, save persistence, and shell-visible hunger status
+- added runtime starvation pressure so repeated missed rations now damage the clan and eventually fail the mission
+- threaded hunger state into mission snapshots, debug output, and the shell resource or context presentation
+- added a dedicated `hunger_smoke.gd` regression that verifies food consumption, save/load persistence, HUD snapshot visibility, and starvation defeat
+- updated the roadmap, continuation runbook, and next-tranche backlog so spells are now the next autonomous priority instead of hunger
+
+### Files Added Or Changed
+
+- [`docs/MASTER-PLAN.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/MASTER-PLAN.md)
+- [`docs/CONTINUATION.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/CONTINUATION.md)
+- [`docs/NEXT-20.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/NEXT-20.md)
+- [`docs/SESSION-LOG.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/SESSION-LOG.md)
+- [`game/scripts/core/world_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/world_state.gd)
+- [`game/scripts/core/game_root.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/game_root.gd)
+- [`game/scripts/ui/app_shell.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/ui/app_shell.gd)
+- [`game/scripts/tests/hunger_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/hunger_smoke.gd)
+
+### Validation
+
+- importer unit tests passed
+- Godot headless hunger smoke test completed without reported errors
+- Godot headless vertical-slice smoke test completed without reported errors
+- Godot headless systems smoke test completed without reported errors
+- Godot headless app-shell smoke test completed without reported errors
+- Godot headless ruleset-loader smoke test completed without reported errors
+- Godot headless campaign-carryover smoke test completed without reported errors
+- Godot headless final-campaign smoke test completed without reported errors
+
+### Outstanding
+
+- start the spell-runtime tranche
+- keep the hunger numbers conservative until a broader balance pass and longer campaign regression sweep happen
+
+### Spell Runtime Tranche
+
+- audited normalized classic spell data and selected a first supported druid spell slice instead of waiting for a full spell-system rewrite
+- added spell lookup helpers on the ruleset database
+- extended combat units with mana, cooldowns, persistent spell effects, and petrification disable state
+- wired the existing context-command surface so a selected druid can cast spells through the command card or hotkeys
+- implemented a first playable spell subset with persistent support and offensive behavior: `armour`, `vision`, `petrification`, and `nova`
+- surfaced spell state in selected-unit detail and broadened the HUD command placeholder text to acknowledge druid actions
+- added a dedicated `spell_smoke.gd` regression covering command-surface spell casting, mana spending, persistence, petrification, and nova damage
+- updated the roadmap, continuation runbook, and active backlog so transport is now the next autonomous priority instead of spells
+
+### Files Added Or Changed
+
+- [`docs/MASTER-PLAN.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/MASTER-PLAN.md)
+- [`docs/CONTINUATION.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/CONTINUATION.md)
+- [`docs/NEXT-20.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/NEXT-20.md)
+- [`docs/SESSION-LOG.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/SESSION-LOG.md)
+- [`game/scripts/data/ruleset_database.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/data/ruleset_database.gd)
+- [`game/scripts/core/game_root.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/game_root.gd)
+- [`game/scripts/simulation/combat_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/combat_unit_state.gd)
+- [`game/scripts/ui/app_shell.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/ui/app_shell.gd)
+- [`game/scripts/tests/spell_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/spell_smoke.gd)
+
+### Validation
+
+- importer unit tests passed
+- Godot headless spell smoke test completed without reported errors
+- Godot headless hunger smoke test completed without reported errors
+- Godot headless vertical-slice smoke test completed without reported errors
+- Godot headless systems smoke test completed without reported errors
+- Godot headless app-shell smoke test completed without reported errors
+- Godot headless ruleset-loader smoke test completed without reported errors
+- Godot headless campaign-carryover smoke test completed without reported errors
+- Godot headless final-campaign smoke test completed without reported errors
+
+### Outstanding
+
+- start the transport tranche for `balloon` and `heliped`
+- expand spell depth later with broader targeting, full classic spell coverage, and presentation work once the remaining parity blockers are closed
+
+### Transport Runtime Tranche
+
+- implemented real carrier state for `balloon` and `heliped`, including boarding capacity, passenger manifests, and save/load persistence
+- added stable entity ids for worker and combat actors so boarded passengers can survive save/load and carrier ownership changes cleanly
+- wired right-click boarding orders into the existing selection flow and added unload actions to the unit command card
+- made boarded units invisible and inactive in selection, combat targeting, and rendering while still counting for population and mission logic
+- verified that mission-area objectives can resolve from transported passengers by syncing boarded-unit positions to the carrier location
+- broadened the HUD command placeholder text to acknowledge transport actions and updated the roadmap/backlog so taming is now the next autonomous priority
+
+### Files Added Or Changed
+
+- [`docs/MASTER-PLAN.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/MASTER-PLAN.md)
+- [`docs/CONTINUATION.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/CONTINUATION.md)
+- [`docs/NEXT-20.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/NEXT-20.md)
+- [`docs/SESSION-LOG.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/SESSION-LOG.md)
+- [`game/scripts/core/game_root.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/game_root.gd)
+- [`game/scripts/simulation/combat_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/combat_unit_state.gd)
+- [`game/scripts/simulation/worker_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/worker_unit_state.gd)
+- [`game/scripts/simulation/building_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/building_state.gd)
+- [`game/scripts/ui/app_shell.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/ui/app_shell.gd)
+- [`game/scripts/tests/transport_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/transport_smoke.gd)
+
+### Validation
+
+- importer unit tests passed
+- Godot headless transport smoke test completed without reported errors
+- Godot headless spell smoke test completed without reported errors
+- Godot headless hunger smoke test completed without reported errors
+- Godot headless systems smoke test completed without reported errors
+- Godot headless app-shell smoke test completed without reported errors
+- Godot headless final-campaign smoke test completed without reported errors
+- Godot headless enemy-AI wave-directives smoke test completed without reported errors
+- Godot headless ruleset-loader smoke test completed without reported errors
+- Godot headless campaign-carryover smoke test completed without reported errors
+- Godot headless vertical-slice smoke test completed without reported errors
+
+### Outstanding
+
+- start the taming tranche using the now-live transport and spell baselines as the next parity feature
+- add Godot runtime CI so the representative smoke surface runs automatically instead of depending on local batching
+
+### Taming Runtime Tranche
+
+- implemented a first honest taming path on the existing druid command surface instead of inventing a separate targeting mode
+- limited taming to weakened creature units from the imported classic roster so the feature uses real mission and unit data
+- transferred tamed creatures into the player combat roster with clean team-color refresh, cleared enemy AI state, and save/load persistence
+- reused existing mission unit-count logic so a tamed creature can satisfy runtime objectives without bespoke mission hacks
+- added a dedicated `taming_smoke.gd` regression covering command exposure, weakened-target gating, allegiance transfer, save/load persistence, and post-tame combat behavior
+
+### Files Added Or Changed
+
+- [`game/scripts/core/game_root.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/game_root.gd)
+- [`game/scripts/simulation/combat_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/combat_unit_state.gd)
+- [`game/scripts/tests/taming_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/taming_smoke.gd)
+
+### Validation
+
+- importer unit tests passed
+- Godot headless taming smoke test completed without reported errors
+- Godot headless transport smoke test completed without reported errors
+- Godot headless spell smoke test completed without reported errors
+- Godot headless hunger smoke test completed without reported errors
+- Godot headless systems smoke test completed without reported errors
+- Godot headless app-shell smoke test completed without reported errors
+- Godot headless final-campaign smoke test completed without reported errors
+- Godot headless enemy-AI wave-directives smoke test completed without reported errors
+- Godot headless ruleset-loader smoke test completed without reported errors
+- Godot headless campaign-carryover smoke test completed without reported errors
+- Godot headless vertical-slice smoke test completed without reported errors
+
+### Outstanding
+
+- move the active lane from parity feature closure into runtime decomposition, polish, export discipline, and expanded seeding
+- keep extending spell depth and unit differentiation now that transport and taming are both live
+
+### Godot CI Tranche
+
+- added a dedicated GitHub Actions workflow for the representative Godot smoke batch instead of folding it into the Python-only workflow
+- pinned the workflow to Godot `4.6.1` and verified the official Linux editor download URL resolves
+- updated the roadmap, continuation handoff, and next-tranche backlog so autonomous continuation now points at classic alpha polish and shipping discipline instead of stale parity blockers
+
+### Files Added Or Changed
+
+- [`.github/workflows/godot-runtime.yml`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/.github/workflows/godot-runtime.yml)
+- [`docs/MASTER-PLAN.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/MASTER-PLAN.md)
+- [`docs/CONTINUATION.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/CONTINUATION.md)
+- [`docs/NEXT-20.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/NEXT-20.md)
+- [`docs/SESSION-LOG.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/SESSION-LOG.md)
+
+### Validation
+
+- official `4.6.1` Linux Godot download URL returned a successful HTTP response during this session
+- local importer tests and representative Godot smoke batches remained green after the workflow file was added
+
+### Outstanding
+
+- add export presets or packaging discipline to complement the now-live runtime CI
+- start the first `GameRoot` extraction boundary defined in the new `NEXT-20` tranche

@@ -4,217 +4,121 @@
 
 - Date: `2026-03-30`
 - Repo: `C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2`
-- Public repo: `Cryptobab/rising-lands-2`
 - Active engine: `Godot 4`
 - Active language: typed `GDScript`
-- Import tooling: `Python`
-- Legacy prototype: retired and removed from the canonical branch
+- Data tooling: `Python`
+- Project state: `classic campaign baseline verified, hunger, first spell, transport, and taming slices landed, CI active, expanded mode still scaffold-only`
 
-## Source Of Truth
+## Truth State
 
-- Roadmap: [`docs/MASTER-PLAN.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/MASTER-PLAN.md)
-- Engine choice: [`docs/ENGINE-DECISION.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/ENGINE-DECISION.md)
-- Session trace: [`docs/SESSION-LOG.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/SESSION-LOG.md)
-- Tranche backlog: [`docs/NEXT-20.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/NEXT-20.md)
-- Godot entry: [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot)
-- Shell scene: [`game/scenes/main.tscn`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scenes/main.tscn)
-- Importer: [`tools/importers/extract_classic_data.py`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/tools/importers/extract_classic_data.py)
+The current baseline is stronger than the old docs implied:
 
-## Locked Decisions
+- the classic campaign has authored runtime coverage through Mission `25`
+- campaign progression, shell flow, save slots, diplomacy carryover, enemy AI directives, and ruleset-safe persistence are live
+- balloon and heliped transport now exists with boarding, unload, save/load persistence, and mission-area compatibility
+- druid taming now exists for weakened creature units with allegiance transfer and save/load persistence
+- the runtime is test-backed and boots locally in Godot
 
-- The browser prototype is no longer the target architecture.
-- The browser prototype has been removed from the active branch.
-- The shipping runtime direction is Godot 4.
-- Classic remake parity comes before expansion content.
-- Classic imported data and expanded data stay separate.
-- Original proprietary binaries remain reference material, not public repo assets.
+The current baseline is weaker than a full remake claim:
 
-## Current State
+- full spell coverage, richer spell targeting, and spell presentation are still incomplete
+- pathing and formation quality are still lightweight
+- presentation, audio, and export automation are still missing
+- expanded mode still contains only one internal mission and no real roster or tech content
 
-Working now:
+## Verified In This Audit
 
-- Godot project scaffold exists
-- importer exports both `raw/` and `normalized/` classic JSON
-- normalized data includes units, buildings, spells, tech tree, strings, missions, and misc settings
-- Godot bootstrap scene now loads normalized classic data counts and Mission 1 metadata
-- deterministic Mission 1 through Mission 4 scenario maps exist and are loaded from JSON
-- Mission 1 bootstrap now spawns a storehouse and worker units from imported classic data
-- scenario maps can now define starting resources, starting buildings, starting units, and a mission-scoped build palette
-- workers automatically gather, return, and deposit food, stone, and parts
-- left-click selection and right-click worker assignment exist
-- builders can place and complete `storehouse`, `culture`, `barracks`, `laboratory`, `library`, `sanctuary`, `workshop`, `garage`, `hangar`, `tower_catapult`, `tower_cannon`, and `wall` construction sites
-- newly built storehouses become deposit targets
-- completed `culture`, `barracks`, `sanctuary`, `workshop`, `garage`, and `hangar` buildings now support broader training queues
-- completed `library` and `laboratory` buildings now support branch-based research queues
-- completed `tower_catapult` and `tower_cannon` buildings now auto-fire on nearby enemies
-- player combat units and enemy units now run through the same lightweight combat runtime
-- Mission 1 map includes scripted enemy pressure data
-- save/load exists for the current runtime state
-- campaign progression now tracks unlocked and completed missions from imported classic metadata
-- named save slots now persist runtime state plus slot metadata through a campaign profile
-- mission victory now persists carried research unlocks plus clan stance/trust state through campaign transitions and profile reloads, while explicit mission-authored diplomacy payloads can still override scenario openings
-- runtime mission objectives now drive victory state instead of only the old stockpile fallback
-- Mission 1 map now includes scripted mission-event beats, rewards, and reinforcements
-- Mission 2, Mission 3, and Mission 4 now have actual scenario maps with build, stockpile, research, and diplomacy-driven objectives
-- Mission 4 now introduces diplomacy targets, messenger alliance orders, alliance-tracking runtime state, and diplomacy-aware save/load
-- `market` is now part of the runtime build palette and trains `messenger`
-- the command layer now supports drag box-selection, grouped worker/combat orders, and durable worker move-hold behavior
-- command markers and a minimap overlay now provide basic RTS spatial feedback in the active HUD
-- the project now boots into a real shell scene with a mission board, save-slot controls, and a structured in-game HUD layered over the RTS runtime
-- the active HUD now surfaces objective progress, recent mission alerts, deeper selection detail, and command-card style context
-- selected production and research buildings now expose clickable command-card buttons in the shell HUD
-- mission victory and defeat now surface a shell-side result panel with retry and next-mission actions
-- shell options now persist runtime pressure and menu-pause behavior in `user://shell_settings.json`
-- enemy combat units now advance on the player settlement when idle instead of stalling outside vision range
-- enemy production plans now normalize into persisted plan ids with rally points, aggression modes, pressure targets, target priorities, and latched group-release coordination for trained and preplaced enemy units
-- scheduled enemy waves can now carry the same AI directives or attach to an authored plan id, and those queued-wave directives persist through save/load until spawn
-- runtime bootstrap, mission lookup, shell snapshots, campaign profiles, save slots, and raw runtime saves now carry explicit `ruleset_id` metadata through a neutral ruleset-aware database loader
-- classic data now loads through a per-ruleset manifest instead of a hard-wired classic path, while existing classic campaign behavior remains unchanged
-- an internal expanded proving-ground dataset now lives under `game/data/expanded/normalized` and `game/data/expanded/vertical_slice` to prove alternate ruleset discovery and save/profile restoration
-- enemy rally groups now ignore their own buildings while forming and only release once the authored rally condition has actually latched
-- queued wave directives now register runtime AI-plan state so direct rally/pressure directives behave the same way as authored plan ids and survive save/load cleanly
-- Mission 5 through Mission 25 now have authored scenario maps with diplomacy-count, exploration-area, build-in-area, survival, prison-break escape chains, trust-demand deadlines, takeover scripts, and queued guardian-wave behavior
-- diplomacy targets now track clan trust, alliance thresholds, active demands, and revenge-on-failure state
-- mission objectives now support alliance-count, unit-in-area, reach-area-once, build-in-area, control-building, clear-hostiles, clan-trust, and demand-status checks
-- mission events now support alliance-count, clan-stance, clan-trust, demand-status, and unit-in-area triggers plus queued enemy-wave scheduling, explicit clan-stance shifts, trust changes, demand injection, dynamic build-palette updates, building transfer, unit transfer, enemy-building production plans, and mission-outcome actions
-- campaign results now distinguish between mission victory and full campaign completion in the shell snapshot
-- the shell mission board now renders the full 25-mission campaign with chapter framing, synopsis snippets, locked/completed states, best times, and win/loss summaries
-- the shell briefing, HUD header, and result panel now surface richer chapter/mission framing plus campaign record summaries and clearer next-mission state
-- a Godot smoke-test script exists for the vertical-slice resource loop
-- a second Godot smoke-test script exists for builder construction
-- a third Godot smoke-test script exists for production, research, combat, and save/load
-- a fourth Godot smoke-test script exists for runtime objectives
-- a fifth Godot smoke-test script exists for mission events and mission-event save/load persistence
-- a sixth Godot smoke-test script exists for the expanded roster and advanced-production save/load path
-- a seventh Godot smoke-test script exists for defensive towers and tower-combat save/load path
-- an eighth Godot smoke-test script exists for campaign progression and mission unlock persistence
-- a ninth Godot smoke-test script exists for named save slots and slot-metadata persistence
-- a tenth Godot smoke-test script exists for actual Mission 1 -> Mission 2 -> Mission 3 campaign content progression
-- an eleventh Godot smoke-test script exists for diplomacy order persistence and Mission 4 alliance completion
-- a twelfth Godot smoke-test script exists for grouped selection and grouped order behavior
-- a thirteenth Godot smoke-test script exists for the shell scene, mission board, and HUD boot flow
-- a fourteenth Godot smoke-test script exists for shell-settings persistence and live menu-pause behavior
-- a fifteenth Godot smoke-test script exists for Chapter II content progression through Missions 5 and 8
-- a sixteenth Godot smoke-test script exists for Chapter III content progression through Missions 9 and 12
-- a seventeenth Godot smoke-test script exists for explicit mission-event clan-stance and mission-outcome actions
-- an eighteenth Godot smoke-test script exists for diplomacy-demand fulfillment, persistence, and revenge failure paths
-- a nineteenth Godot smoke-test script exists for Mission 13 through Mission 16 progression
-- a twentieth Godot smoke-test script exists for dynamic build-palette unlock persistence
-- a twenty-first Godot smoke-test script exists for Mission 17 through Mission 20 progression
-- a twenty-second Godot smoke-test script exists for ownership-transfer takeover scripting
-- a twenty-third Godot smoke-test script exists for Mission 21 through Mission 25 progression and full campaign completion
-- a twenty-fourth Godot smoke-test script exists for enemy building production-plan persistence
-- a twenty-fifth Godot smoke-test script exists for rally, aggression, target-priority, and save/load enemy AI behavior
-- a twenty-sixth Godot smoke-test script exists for full mission-board shell rendering and campaign-complete shell state
-- a twenty-seventh Godot smoke-test script exists for scheduled-wave AI directives and their save/load release behavior
-- a twenty-eighth Godot smoke-test script exists for ruleset-aware loader bootstrap, save/load, and profile restoration
-- a twenty-ninth Godot smoke-test script exists for campaign research/diplomacy carryover across mission transitions and profile reloads
-- issue and PR templates exist for public repo workflow
-- the old browser prototype files have been removed from the active codebase
+Passed locally during this audit:
 
-Not done yet:
+- importer unit tests
+- `res://scripts/tests/hunger_smoke.gd`
+- `res://scripts/tests/spell_smoke.gd`
+- `res://scripts/tests/vertical_slice_smoke.gd`
+- `res://scripts/tests/systems_smoke.gd`
+- `res://scripts/tests/app_shell_smoke.gd`
+- `res://scripts/tests/final_campaign_smoke.gd`
+- `res://scripts/tests/enemy_ai_wave_directives_smoke.gd`
+- `res://scripts/tests/ruleset_loader_smoke.gd`
+- `res://scripts/tests/campaign_carryover_smoke.gd`
+- `res://scripts/tests/transport_smoke.gd`
+- `res://scripts/tests/taming_smoke.gd`
 
-- stronger command queueing, selection UX, and richer HUD feedback
-- broader diplomacy rules beyond the current trust-demand-revenge shell
-- broader mission scripting coverage across additional scenarios and campaign flow
-- more authored scenario maps beyond the first twenty-five campaign missions
-- additional faction-specific buildings, support effects, and deeper unit parity beyond the current advanced roster slice
-- expanded-content ruleset layered cleanly on top of the classic remake
+Notes:
 
-## Important Paths
+- Godot version resolving locally is `4.6.1`
+- a single-command run of all smoke tests exceeded the shell timeout, so broad regression should be rerun in deliberate batches or from CI
+- `.github/workflows/godot-runtime.yml` now covers the representative Godot smoke batch alongside the existing Python importer workflow
 
-- Original game reference: `C:\Users\BAB\PROJECTS\Rising_land_remake\Rising Lands Release`
-- Raw classic data: [`game/data/classic/raw/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/raw)
-- Normalized classic data: [`game/data/classic/normalized/`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/normalized)
-- Godot bootstrap script: [`game/scripts/core/game_root.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/game_root.gd)
-- Shell runtime: [`game/scripts/ui/app_shell.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/ui/app_shell.gd)
-- Campaign runtime: [`game/scripts/core/campaign_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/campaign_state.gd)
-- Godot classic loader: [`game/scripts/data/classic_database.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/data/classic_database.gd)
-- Godot ruleset loader: [`game/scripts/data/ruleset_database.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/data/ruleset_database.gd)
-- Vertical-slice map: [`game/data/classic/vertical_slice/mission_001_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/mission_001_map.json)
-- Classic ruleset manifest: [`game/data/classic/ruleset_manifest.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/ruleset_manifest.json)
-- Expanded ruleset manifest: [`game/data/expanded/ruleset_manifest.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/ruleset_manifest.json)
-- Expanded proving-ground mission: [`game/data/expanded/normalized/missions.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/normalized/missions.json)
-- Expanded proving-ground map: [`game/data/expanded/vertical_slice/expedition01_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/vertical_slice/expedition01_map.json)
-- Mission 2 map: [`game/data/classic/vertical_slice/monde02_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde02_map.json)
-- Mission 3 map: [`game/data/classic/vertical_slice/monde03_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde03_map.json)
-- Mission 4 map: [`game/data/classic/vertical_slice/monde04_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde04_map.json)
-- Mission 5 map: [`game/data/classic/vertical_slice/monde05_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde05_map.json)
-- Mission 6 map: [`game/data/classic/vertical_slice/monde06_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde06_map.json)
-- Mission 7 map: [`game/data/classic/vertical_slice/monde07_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde07_map.json)
-- Mission 8 map: [`game/data/classic/vertical_slice/monde08_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde08_map.json)
-- Mission 9 map: [`game/data/classic/vertical_slice/monde09_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde09_map.json)
-- Mission 10 map: [`game/data/classic/vertical_slice/monde10_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde10_map.json)
-- Mission 11 map: [`game/data/classic/vertical_slice/monde11_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde11_map.json)
-- Mission 12 map: [`game/data/classic/vertical_slice/monde12_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde12_map.json)
-- Mission 13 map: [`game/data/classic/vertical_slice/monde13_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde13_map.json)
-- Mission 14 map: [`game/data/classic/vertical_slice/monde14_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde14_map.json)
-- Mission 15 map: [`game/data/classic/vertical_slice/monde15_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde15_map.json)
-- Mission 16 map: [`game/data/classic/vertical_slice/monde16_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde16_map.json)
-- Mission 17 map: [`game/data/classic/vertical_slice/monde17_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde17_map.json)
-- Mission 18 map: [`game/data/classic/vertical_slice/monde18_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde18_map.json)
-- Mission 19 map: [`game/data/classic/vertical_slice/monde19_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde19_map.json)
-- Mission 20 map: [`game/data/classic/vertical_slice/monde20_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde20_map.json)
-- Mission 21 map: [`game/data/classic/vertical_slice/monde21_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde21_map.json)
-- Mission 22 map: [`game/data/classic/vertical_slice/monde22_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde22_map.json)
-- Mission 23 map: [`game/data/classic/vertical_slice/monde23_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde23_map.json)
-- Mission 24 map: [`game/data/classic/vertical_slice/monde24_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde24_map.json)
-- Mission 25 map: [`game/data/classic/vertical_slice/monde25_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/monde25_map.json)
-- Enemy AI test map: [`game/data/classic/vertical_slice/enemy_ai_test_map.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/vertical_slice/enemy_ai_test_map.json)
-- Godot map loader: [`game/scripts/core/map_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/map_state.gd)
-- Diplomacy runtime: [`game/scripts/core/diplomacy_target_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/diplomacy_target_state.gd)
-- Mission-event runtime: [`game/scripts/core/mission_event_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/mission_event_state.gd)
-- Worker runtime: [`game/scripts/simulation/worker_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/worker_unit_state.gd)
-- Combat runtime: [`game/scripts/simulation/combat_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/combat_unit_state.gd)
-- Building runtime: [`game/scripts/simulation/building_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/building_state.gd)
-- Resource runtime: [`game/scripts/simulation/resource_node_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/resource_node_state.gd)
-- Smoke test: [`game/scripts/tests/vertical_slice_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/vertical_slice_smoke.gd)
-- Construction smoke test: [`game/scripts/tests/construction_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/construction_smoke.gd)
-- Systems smoke test: [`game/scripts/tests/systems_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/systems_smoke.gd)
-- Objective smoke test: [`game/scripts/tests/mission_objectives_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mission_objectives_smoke.gd)
-- Mission-events smoke test: [`game/scripts/tests/mission_events_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mission_events_smoke.gd)
-- Expanded-roster smoke test: [`game/scripts/tests/expanded_roster_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/expanded_roster_smoke.gd)
-- Tower-defense smoke test: [`game/scripts/tests/tower_defense_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/tower_defense_smoke.gd)
-- Campaign-progression smoke test: [`game/scripts/tests/campaign_progression_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_progression_smoke.gd)
-- Save-slots smoke test: [`game/scripts/tests/save_slots_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/save_slots_smoke.gd)
-- Multi-mission content smoke test: [`game/scripts/tests/multi_mission_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/multi_mission_content_smoke.gd)
-- Diplomacy smoke test: [`game/scripts/tests/diplomacy_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/diplomacy_smoke.gd)
-- Selection-orders smoke test: [`game/scripts/tests/selection_orders_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/selection_orders_smoke.gd)
-- App-shell smoke test: [`game/scripts/tests/app_shell_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/app_shell_smoke.gd)
-- Shell-settings smoke test: [`game/scripts/tests/shell_settings_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/shell_settings_smoke.gd)
-- Chapter-two content smoke test: [`game/scripts/tests/chapter_two_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/chapter_two_content_smoke.gd)
-- Chapter-three content smoke test: [`game/scripts/tests/chapter_three_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/chapter_three_content_smoke.gd)
-- Mission-event actions smoke test: [`game/scripts/tests/mission_event_actions_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mission_event_actions_smoke.gd)
-- Diplomacy-demands smoke test: [`game/scripts/tests/diplomacy_demands_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/diplomacy_demands_smoke.gd)
-- Mid-campaign content smoke test: [`game/scripts/tests/mid_campaign_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/mid_campaign_content_smoke.gd)
-- Dynamic build-palette smoke test: [`game/scripts/tests/dynamic_build_palette_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/dynamic_build_palette_smoke.gd)
-- Late-campaign content smoke test: [`game/scripts/tests/late_campaign_content_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/late_campaign_content_smoke.gd)
-- Ownership-transfer smoke test: [`game/scripts/tests/ownership_transfer_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/ownership_transfer_smoke.gd)
-- Final-campaign smoke test: [`game/scripts/tests/final_campaign_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/final_campaign_smoke.gd)
-- Enemy-AI pressure smoke test: [`game/scripts/tests/enemy_ai_pressure_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_pressure_smoke.gd)
-- Enemy-AI behavior smoke test: [`game/scripts/tests/enemy_ai_behaviors_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_behaviors_smoke.gd)
-- Enemy-AI wave-directives smoke test: [`game/scripts/tests/enemy_ai_wave_directives_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/enemy_ai_wave_directives_smoke.gd)
-- Campaign-board smoke test: [`game/scripts/tests/campaign_board_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_board_smoke.gd)
-- Ruleset-loader smoke test: [`game/scripts/tests/ruleset_loader_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/ruleset_loader_smoke.gd)
-- Campaign-carryover smoke test: [`game/scripts/tests/campaign_carryover_smoke.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/tests/campaign_carryover_smoke.gd)
+## Where To Work Next
 
-## Next Session Start Here
+Primary lane:
 
-1. Open [`game/project.godot`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/project.godot) in the Godot editor and validate the classic shell flow plus ruleset-safe save/profile behavior on live interaction.
-2. Decide the next honest expanded-mode target on top of the new foundation: either a small playable proving-ground mission or a broader expanded database slice with actual units/buildings/tech.
-3. Keep the public shell conservative until expanded runtime content is coherent enough to justify a developer-facing or player-facing launch path.
-4. Broaden AI or shell polish only where it supports the stable classic baseline or the new ruleset foundation.
-5. Keep the repo trace clean by updating this file and the session log whenever systems behavior changes.
+1. runtime decomposition and polish
+2. export automation and manual validation discipline
+3. broader spell depth and classic mission usage
+4. expanded ruleset seeding
+5. expanded-mode-specific new tech after the first seeded slice is coherent
 
-## Commands
+Do not start a public expanded-mode push before items `1` and `2` are honest in the classic remake.
 
-Refresh imported classic data:
+## Autonomous Continuation Pattern
 
-```powershell
-python tools/importers/extract_classic_data.py `
-  --source "C:\Users\BAB\PROJECTS\Rising_land_remake\Rising Lands Release" `
-  --output "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game\data\classic"
-```
+Use this loop for each feature tranche:
+
+1. Pick the highest unfinished item from [`docs/NEXT-20.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/NEXT-20.md).
+2. Inspect current hooks in `GameRoot`, `WorldState`, the relevant unit or building state classes, and the normalized data records.
+3. Implement the smallest honest end-to-end slice of the feature in runtime code.
+4. Add or extend a Godot smoke test that proves the feature works and persists.
+5. Run importer tests plus the new targeted smoke and the representative runtime suite.
+6. Update `MASTER-PLAN`, `CONTINUATION`, `NEXT-20`, and `SESSION-LOG` if the truth state changed.
+7. Only move to the next backlog item after the tranche is passing and documented.
+
+## Feature Order With Rationale
+
+### 1. Runtime Decomposition And Alpha Polish
+
+Why next:
+
+- `game/scripts/core/game_root.gd` is now carrying multiple completed systems and needs cleaner slice boundaries before more features pile on
+- command clarity, movement quality, and selected-unit feedback are the next biggest gains for actual playability
+
+Minimum acceptable implementation:
+
+- extract at least one real runtime responsibility out of `GameRoot`
+- preserve save compatibility while doing so
+- improve one concrete playability surface such as selection clarity, unit state feedback, or movement readability
+- smoke coverage
+
+### 2. Tooling And Shipping
+
+- keep the Godot runtime CI batch healthy as the representative suite changes
+- define export steps and reproducible build commands
+- add a short manual interactive checklist for editor validation
+
+### 3. Expanded Ruleset Seeding
+
+Only once the classic parity lane is honest:
+
+- add the first real expanded units, buildings, techs, and spells
+- keep expanded missions clearly labeled as proving-ground or alpha content until they are coherent
+
+## Important Files
+
+- roadmap: [`docs/MASTER-PLAN.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/MASTER-PLAN.md)
+- active tranche: [`docs/NEXT-20.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/NEXT-20.md)
+- session trace: [`docs/SESSION-LOG.md`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/docs/SESSION-LOG.md)
+- runtime entry: [`game/scripts/core/game_root.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/game_root.gd)
+- world state: [`game/scripts/core/world_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/world_state.gd)
+- mission runtime: [`game/scripts/core/mission_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/core/mission_state.gd)
+- shell runtime: [`game/scripts/ui/app_shell.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/ui/app_shell.gd)
+- worker runtime: [`game/scripts/simulation/worker_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/worker_unit_state.gd)
+- combat runtime: [`game/scripts/simulation/combat_unit_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/combat_unit_state.gd)
+- building runtime: [`game/scripts/simulation/building_state.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/simulation/building_state.gd)
+- ruleset loader: [`game/scripts/data/ruleset_database.gd`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/scripts/data/ruleset_database.gd)
+- classic data manifest: [`game/data/classic/normalized/manifest.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/classic/normalized/manifest.json)
+- expanded data manifest: [`game/data/expanded/normalized/manifest.json`](/C:/Users/BAB/PROJECTS/Rising_land_remake/rising-lands-2/game/data/expanded/normalized/manifest.json)
+
+## Validation Commands
 
 Run importer tests:
 
@@ -224,259 +128,29 @@ python -m unittest discover `
   -p "test_*.py"
 ```
 
-Run the Godot vertical-slice smoke test:
+Run the representative Godot suite:
 
 ```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/vertical_slice_smoke.gd
+$godot = "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe"
+$game = "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game"
+
+& $godot --headless --path $game --script res://scripts/tests/systems_smoke.gd
+& $godot --headless --path $game --script res://scripts/tests/app_shell_smoke.gd
+& $godot --headless --path $game --script res://scripts/tests/final_campaign_smoke.gd
+& $godot --headless --path $game --script res://scripts/tests/enemy_ai_wave_directives_smoke.gd
+& $godot --headless --path $game --script res://scripts/tests/ruleset_loader_smoke.gd
+& $godot --headless --path $game --script res://scripts/tests/campaign_carryover_smoke.gd
+& $godot --headless --path $game --script res://scripts/tests/hunger_smoke.gd
+& $godot --headless --path $game --script res://scripts/tests/spell_smoke.gd
+& $godot --headless --path $game --script res://scripts/tests/transport_smoke.gd
+& $godot --headless --path $game --script res://scripts/tests/taming_smoke.gd
 ```
 
-Run the construction smoke test:
+## Stop Conditions
 
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/construction_smoke.gd
-```
+Pause and reassess if any of the following happens:
 
-Run the systems smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/systems_smoke.gd
-```
-
-Run the runtime-objectives smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/mission_objectives_smoke.gd
-```
-
-Run the mission-events smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/mission_events_smoke.gd
-```
-
-Run the expanded-roster smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/expanded_roster_smoke.gd
-```
-
-Run the tower-defense smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/tower_defense_smoke.gd
-```
-
-Run the campaign-progression smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/campaign_progression_smoke.gd
-```
-
-Run the save-slots smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/save_slots_smoke.gd
-```
-
-Run the multi-mission content smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/multi_mission_content_smoke.gd
-```
-
-Run the diplomacy smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/diplomacy_smoke.gd
-```
-
-Run the selection-orders smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/selection_orders_smoke.gd
-```
-
-Run the app-shell smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/app_shell_smoke.gd
-```
-
-Run the shell-settings smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/shell_settings_smoke.gd
-```
-
-Run the chapter-two content smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/chapter_two_content_smoke.gd
-```
-
-Run the chapter-three content smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/chapter_three_content_smoke.gd
-```
-
-Run the mission-event actions smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/mission_event_actions_smoke.gd
-```
-
-Run the diplomacy-demands smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/diplomacy_demands_smoke.gd
-```
-
-Run the mid-campaign content smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/mid_campaign_content_smoke.gd
-```
-
-Run the dynamic build-palette smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/dynamic_build_palette_smoke.gd
-```
-
-Run the late-campaign content smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/late_campaign_content_smoke.gd
-```
-
-Run the ownership-transfer smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/ownership_transfer_smoke.gd
-```
-
-Run the final-campaign smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/final_campaign_smoke.gd
-```
-
-Run the enemy-AI pressure smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/enemy_ai_pressure_smoke.gd
-```
-
-Run the enemy-AI behavior smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/enemy_ai_behaviors_smoke.gd
-```
-
-Run the enemy-AI wave-directives smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/enemy_ai_wave_directives_smoke.gd
-```
-
-Run the campaign-board smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/campaign_board_smoke.gd
-```
-
-Run the campaign-carryover smoke test:
-
-```powershell
-& "C:\Users\BAB\AppData\Local\Microsoft\WinGet\Links\godot.exe" `
-  --headless `
-  --path "C:\Users\BAB\PROJECTS\Rising_land_remake\rising-lands-2\game" `
-  --script res://scripts/tests/campaign_carryover_smoke.gd
-```
-
-## Blockers
-
-- `.NET SDK` is not installed, so a Godot C# workflow is not practical right now
-- current shell PATH may need a refresh before bare `git` or `godot` commands resolve without full paths
+- a parity feature requires a save-schema break without a migration plan
+- expansion work starts leaking into classic data or classic saves
+- a refactor touches unrelated runtime areas without new test coverage
+- a feature exists only in data or UI text but not in actual gameplay behavior

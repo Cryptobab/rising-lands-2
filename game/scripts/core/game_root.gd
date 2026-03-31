@@ -23,6 +23,13 @@ const MAX_ALERT_LOG: int = 6
 const COMMAND_MARKER_DURATION: float = 1.1
 const SELECTION_DRAG_THRESHOLD: float = 12.0
 const MINIMAP_SIZE: Vector2 = Vector2(220.0, 144.0)
+const TRANSPORT_BOARD_DISTANCE: float = 0.75
+const TRANSPORT_UNLOAD_SPACING: float = 0.8
+const TAME_MANA_COST: float = 5.0
+const TAME_COOLDOWN_SECONDS: float = 14.0
+const TAME_RANGE: float = 5.5
+const TAME_HEALTH_RATIO: float = 0.5
+const TAME_STABILIZE_RATIO: float = 0.35
 
 const BUILD_KEY_ORDER: Array = [
     {"keycode": KEY_1, "building_id": "storehouse"},
@@ -82,6 +89,7 @@ var active_save_slot_id: String = "slot_1"
 var campaign_profile_path: String = "user://campaign_profile.json"
 var save_slot_directory: String = "user://save_slots"
 var mission_resolution_recorded: bool = false
+var next_entity_id: int = 1
 
 
 func _ready() -> void:
@@ -207,6 +215,7 @@ func _bootstrap_runtime_state() -> void:
     world_state = WorldStateScript.new()
     mission_state = MissionStateScript.new()
     map_state = MapStateScript.new()
+    next_entity_id = 1
 
     world_state.bootstrap_runtime(ruleset_id)
     if not map_state.load_from_file(current_map_path):
@@ -288,11 +297,13 @@ func advance_simulation(delta: float) -> void:
             _enemy_ai_context_for_unit(enemy_unit, enemy_ai_contexts)
         )
 
+    _update_transport_runtime()
     _update_clan_demands(_build_mission_snapshot())
     _update_diplomacy_state()
     _finalize_construction_sites()
     _cleanup_destroyed_entities()
     _update_worker_home_positions()
+    _update_hunger(delta)
     _update_mission_state()
 
     if ui_enabled and debug_label != null and Engine.get_process_frames() % 10 == 0:
@@ -322,17 +333,246 @@ func spawn_unit(unit_id: String, position: Vector2, team: String = "player") -> 
     if team == "player" and _is_worker_unit_id(unit_id):
         var worker = WorkerUnitStateScript.new()
         worker.configure_from_record(unit_record, position, _nearest_deposit_position(position))
+        worker.entity_id = _allocate_entity_id()
         workers.append(worker)
         return worker
 
     var combat_unit = CombatUnitStateScript.new()
     combat_unit.configure_from_record(unit_record, position, team)
+    combat_unit.entity_id = _allocate_entity_id()
     if team == "player":
         combat_unit.refresh_modifiers(world_state)
         combat_units.append(combat_unit)
     else:
         enemy_units.append(combat_unit)
     return combat_unit
+
+
+func _allocate_entity_id() -> int:
+    var allocated_id: int = next_entity_id
+    next_entity_id += 1
+    return allocated_id
+
+
+func _assign_missing_entity_ids() -> void:
+    for worker in workers:
+        if worker.entity_id < 0:
+            worker.entity_id = _allocate_entity_id()
+
+    for combat_unit in combat_units:
+        if combat_unit.entity_id < 0:
+            combat_unit.entity_id = _allocate_entity_id()
+
+    for enemy_unit in enemy_units:
+        if enemy_unit.entity_id < 0:
+            enemy_unit.entity_id = _allocate_entity_id()
+
+
+func _recalculate_next_entity_id() -> void:
+    var max_entity_id: int = 0
+    for worker in workers:
+        max_entity_id = maxi(max_entity_id, int(worker.entity_id))
+    for combat_unit in combat_units:
+        max_entity_id = maxi(max_entity_id, int(combat_unit.entity_id))
+    for enemy_unit in enemy_units:
+        max_entity_id = maxi(max_entity_id, int(enemy_unit.entity_id))
+    next_entity_id = maxi(next_entity_id, max_entity_id + 1)
+
+
+func _transport_unit_by_entity_id(entity_id: int):
+    if entity_id < 0:
+        return null
+    for combat_unit in combat_units:
+        if combat_unit.entity_id == entity_id:
+            return combat_unit
+    return null
+
+
+func _player_actor_by_entity_id(entity_id: int):
+    if entity_id < 0:
+        return null
+    for worker in workers:
+        if worker.entity_id == entity_id:
+            return worker
+    for combat_unit in combat_units:
+        if combat_unit.entity_id == entity_id:
+            return combat_unit
+    return null
+
+
+func _can_board_transport(carrier, actor) -> bool:
+    if carrier == null or actor == null:
+        return false
+    if not carrier.can_transport() or carrier.team != "player" or not carrier.is_alive():
+        return false
+    if carrier.entity_id == actor.entity_id:
+        return false
+    if carrier.passenger_ids.has(actor.entity_id) or carrier.passenger_ids.size() >= carrier.transport_capacity:
+        return false
+    if actor is WorkerUnitStateScript:
+        return actor.team == "player" and actor.is_alive() and not actor.is_boarded()
+    if actor is CombatUnitStateScript:
+        return (
+            actor.team == "player"
+            and actor.is_alive()
+            and not actor.is_boarded()
+            and not actor.can_transport()
+            and actor.role != "flying"
+        )
+    return false
+
+
+func _board_actor_onto_transport(carrier, actor) -> void:
+    if carrier == null or actor == null or not _can_board_transport(carrier, actor):
+        return
+    carrier.passenger_ids.append(actor.entity_id)
+    actor.pending_transport_id = -1
+    actor.boarded_transport_id = carrier.entity_id
+    actor.position = carrier.position
+    actor.move_target = carrier.position
+    actor.has_move_target = false
+    actor.state = "transported"
+    actor.last_action = "aboard %s" % carrier.name
+    if actor is WorkerUnitStateScript:
+        actor.manual_hold = true
+        actor.target_resource_index = -1
+        actor.target_construction_index = -1
+    else:
+        actor.target_ref = null
+        actor.target_kind = ""
+    carrier.last_action = "loaded %s" % actor.name
+
+
+func _crash_transport_passenger(actor, carrier_name: String) -> void:
+    if actor == null or not actor.is_alive():
+        return
+    actor.pending_transport_id = -1
+    actor.boarded_transport_id = -1
+    actor.apply_damage(actor.health + 9999.0)
+    actor.last_action = "lost with %s" % carrier_name
+
+
+func _update_transport_runtime() -> void:
+    for carrier in combat_units:
+        if not carrier.can_transport():
+            continue
+
+        var next_passenger_ids: Array[int] = []
+        for passenger_id in carrier.passenger_ids:
+            var actor = _player_actor_by_entity_id(passenger_id)
+            if actor == null or not actor.is_alive():
+                continue
+            if not carrier.is_alive():
+                _crash_transport_passenger(actor, carrier.name)
+                continue
+            actor.pending_transport_id = -1
+            actor.boarded_transport_id = carrier.entity_id
+            actor.position = carrier.position
+            actor.move_target = carrier.position
+            actor.has_move_target = false
+            actor.state = "transported"
+            actor.last_action = "aboard %s" % carrier.name
+            next_passenger_ids.append(passenger_id)
+        carrier.passenger_ids = next_passenger_ids
+
+    for worker in workers:
+        _resolve_transport_order_for_actor(worker)
+    for combat_unit in combat_units:
+        if combat_unit.team == "player":
+            _resolve_transport_order_for_actor(combat_unit)
+
+    _prune_transport_selection()
+
+
+func _resolve_transport_order_for_actor(actor) -> void:
+    if actor == null or not actor.is_alive() or actor.is_boarded():
+        return
+
+    var transport_id: int = int(actor.pending_transport_id)
+    if transport_id < 0:
+        return
+
+    var carrier = _transport_unit_by_entity_id(transport_id)
+    if carrier == null or not _can_board_transport(carrier, actor):
+        actor.pending_transport_id = -1
+        actor.has_move_target = false
+        actor.state = "holding"
+        actor.last_action = "transport unavailable"
+        return
+
+    if actor.position.distance_to(carrier.position) > TRANSPORT_BOARD_DISTANCE:
+        actor.move_target = carrier.position
+        actor.has_move_target = true
+        actor.state = "boarding"
+        actor.last_action = "boarding %s" % carrier.name
+        return
+
+    _board_actor_onto_transport(carrier, actor)
+
+
+func unload_selected_transport() -> bool:
+    var carrier = _selected_combat_unit()
+    if carrier == null or carrier.team != "player" or not carrier.can_transport():
+        return false
+    return _unload_transport(carrier)
+
+
+func _unload_transport(carrier) -> bool:
+    if carrier == null or carrier.passenger_ids.is_empty():
+        simulation_status = "transport empty"
+        return false
+
+    var unload_offsets: Array = _formation_offsets(carrier.passenger_ids.size(), TRANSPORT_UNLOAD_SPACING)
+    var unload_count: int = 0
+    for index in range(carrier.passenger_ids.size()):
+        var actor = _player_actor_by_entity_id(int(carrier.passenger_ids[index]))
+        if actor == null or not actor.is_alive():
+            continue
+        _set_actor_unloaded(actor, carrier.position + unload_offsets[index])
+        unload_count += 1
+
+    var remaining_passenger_ids: Array[int] = []
+    carrier.passenger_ids = remaining_passenger_ids
+    carrier.last_action = "unloaded passengers"
+    if unload_count <= 0:
+        simulation_status = "transport empty"
+        return false
+
+    _push_command_marker(carrier.position, "transport")
+    simulation_status = "%s unloaded %d passengers" % [carrier.name, unload_count]
+    return true
+
+
+func _set_actor_unloaded(actor, unload_position: Vector2) -> void:
+    actor.pending_transport_id = -1
+    actor.boarded_transport_id = -1
+    actor.position = unload_position
+    actor.move_target = unload_position
+    actor.has_move_target = false
+    actor.state = "holding"
+    actor.last_action = "unloaded from transport"
+    if actor is WorkerUnitStateScript:
+        actor.manual_hold = true
+        actor.target_resource_index = -1
+        actor.target_construction_index = -1
+    else:
+        actor.target_ref = null
+        actor.target_kind = ""
+
+
+func _prune_transport_selection() -> void:
+    var next_worker_selection: Array[int] = []
+    for index in selected_worker_indices:
+        if index >= 0 and index < workers.size() and not workers[index].is_boarded():
+            next_worker_selection.append(index)
+    selected_worker_indices = next_worker_selection
+
+    var next_combat_selection: Array[int] = []
+    for index in selected_combat_indices:
+        if index >= 0 and index < combat_units.size() and not combat_units[index].is_boarded():
+            next_combat_selection.append(index)
+    selected_combat_indices = next_combat_selection
+    _sync_primary_selection_indices()
 
 
 func queue_training_for_building(building_index: int, unit_id: String) -> bool:
@@ -384,6 +624,103 @@ func queue_research_for_building(building_index: int, branch: String) -> bool:
         {"branch": branch, "tech_cost": normalized_cost}
     )
     simulation_status = "%s started %s" % [building.name, str(tech_record.get("id", "tech"))]
+    return true
+
+
+func cast_spell_for_selected_unit(spell_id: String) -> bool:
+    var caster = _selected_combat_unit()
+    if caster == null or caster.team != "player" or caster.unit_id != "druid":
+        return false
+
+    var spell_record: Dictionary = ruleset_database.find_spell(spell_id)
+    if spell_record.is_empty():
+        simulation_status = "unknown spell: %s" % spell_id
+        return false
+
+    var mana_cost: float = float(spell_record.get("cost", {}).get("mana", 0))
+    if not caster.can_cast_spell(spell_id, mana_cost):
+        simulation_status = "spell not ready: %s" % str(spell_record.get("name", spell_id))
+        return false
+
+    var resource_cost: Dictionary = _spell_resource_cost(spell_record)
+    if not world_state.can_afford(resource_cost):
+        simulation_status = "insufficient resources for %s" % str(spell_record.get("name", spell_id))
+        return false
+
+    var enemy_target = null
+    match spell_id:
+        "petrification", "nova":
+            enemy_target = _nearest_enemy_spell_target(caster, float(spell_record.get("range", 0)))
+            if enemy_target == null:
+                simulation_status = "no target for %s" % str(spell_record.get("name", spell_id))
+                return false
+        _:
+            pass
+
+    if not world_state.spend_resources(resource_cost):
+        simulation_status = "insufficient resources for %s" % str(spell_record.get("name", spell_id))
+        return false
+    if not caster.spend_mana(mana_cost):
+        for resource_type in resource_cost.keys():
+            world_state.add_resource(str(resource_type), int(resource_cost.get(resource_type, 0)))
+        simulation_status = "not enough mana for %s" % str(spell_record.get("name", spell_id))
+        return false
+
+    var cast_succeeded: bool = false
+    match spell_id:
+        "armour":
+            cast_succeeded = _cast_armour_spell(caster, spell_record)
+        "vision":
+            cast_succeeded = _cast_vision_spell(caster, spell_record)
+        "petrification":
+            cast_succeeded = _cast_petrification_spell(caster, enemy_target, spell_record)
+        "nova":
+            cast_succeeded = _cast_nova_spell(caster, enemy_target, spell_record)
+        _:
+            cast_succeeded = false
+
+    if not cast_succeeded:
+        for resource_type in resource_cost.keys():
+            world_state.add_resource(str(resource_type), int(resource_cost.get(resource_type, 0)))
+        caster.mana = minf(caster.max_mana, caster.mana + mana_cost)
+        simulation_status = "spell failed: %s" % str(spell_record.get("name", spell_id))
+        return false
+
+    caster.set_spell_cooldown(spell_id, _spell_cooldown_seconds(spell_record))
+    _push_alert("%s cast %s" % [caster.name, str(spell_record.get("name", spell_id))])
+    return true
+
+
+func tame_creature_for_selected_unit() -> bool:
+    var caster = _selected_combat_unit()
+    if caster == null or caster.team != "player" or caster.unit_id != "druid":
+        return false
+
+    if caster.cooldown_for_spell("tame") > 0.0:
+        simulation_status = "taming not ready"
+        return false
+
+    if caster.mana < TAME_MANA_COST:
+        simulation_status = "not enough mana to tame"
+        return false
+
+    var target = _nearest_tamable_creature(caster, TAME_RANGE)
+    if target == null:
+        simulation_status = "no weakened creature to tame"
+        return false
+
+    if not caster.spend_mana(TAME_MANA_COST):
+        simulation_status = "not enough mana to tame"
+        return false
+
+    if not _tame_creature(target, caster):
+        caster.mana = minf(caster.max_mana, caster.mana + TAME_MANA_COST)
+        simulation_status = "taming failed"
+        return false
+
+    caster.set_spell_cooldown("tame", TAME_COOLDOWN_SECONDS)
+    caster.last_action = "tamed a creature"
+    _push_alert("%s tamed %s" % [caster.name, target.name])
     return true
 
 
@@ -624,6 +961,10 @@ func load_game_state(path: String = DEFAULT_SAVE_PATH) -> bool:
     _clear_drag_selection()
     runtime_initialized = true
     mission_resolution_recorded = bool(payload.get("mission_resolution_recorded", false))
+    next_entity_id = int(payload.get("next_entity_id", 1))
+    _assign_missing_entity_ids()
+    _recalculate_next_entity_id()
+    _update_transport_runtime()
     if campaign_state != null:
         campaign_state.set_active_mission(current_mission_id)
     _refresh_player_modifiers()
@@ -641,6 +982,7 @@ func serialize_runtime() -> Dictionary:
         "map_path": current_map_path,
         "mission_id": current_mission_id,
         "save_slot_id": active_save_slot_id,
+        "next_entity_id": next_entity_id,
         "build_palette": map_state.build_palette.duplicate(true),
         "world_state": world_state.serialize(),
         "resource_nodes": _serialize_collection(resource_nodes),
@@ -734,6 +1076,10 @@ func _build_mission_snapshot() -> Dictionary:
         "player_building_positions": player_building_positions,
         "unit_counts": unit_counts,
         "player_unit_positions": player_unit_positions,
+        "population_count": world_state.population_count,
+        "housing_capacity": world_state.housing_capacity,
+        "starvation_strikes": world_state.starvation_strikes,
+        "starving": world_state.starving,
         "enemy_building_count": enemy_building_count,
         "branch_levels": world_state.branch_levels.duplicate(true),
         "unlocked_tech_count": world_state.unlocked_techs.size(),
@@ -826,6 +1172,8 @@ func _draw() -> void:
 
     for worker_index in range(workers.size()):
         var worker = workers[worker_index]
+        if worker.is_boarded():
+            continue
         var unit_screen_pos: Vector2 = origin + (worker.position * TILE_SIZE)
         draw_circle(unit_screen_pos, 9.0, worker.unit_color)
         draw_circle(unit_screen_pos, 3.0, Color("11161c"))
@@ -836,11 +1184,15 @@ func _draw() -> void:
 
     for combat_index in range(combat_units.size()):
         var combat_unit = combat_units[combat_index]
+        if combat_unit.is_boarded():
+            continue
         var combat_pos: Vector2 = origin + (combat_unit.position * TILE_SIZE)
         draw_circle(combat_pos, 10.0, combat_unit.unit_color)
         draw_circle(combat_pos, 3.0, Color("11161c"))
         if selected_combat_indices.has(combat_index):
             draw_arc(combat_pos, 15.0, 0.0, TAU, 24, Color("f6d36b"), 2.0)
+        if combat_unit.can_transport() and not combat_unit.passenger_ids.is_empty():
+            draw_circle(combat_pos + Vector2(12.0, -10.0), 5.0, Color("f0c58a"))
 
     for enemy_unit in enemy_units:
         var enemy_pos: Vector2 = origin + (enemy_unit.position * TILE_SIZE)
@@ -1723,6 +2075,35 @@ func _update_worker_home_positions() -> void:
         worker.set_home_position(best_home)
 
 
+func _update_hunger(delta: float) -> void:
+    var hunger_result: Dictionary = world_state.process_hunger(delta, _player_population_count(), _player_housing_capacity())
+    if bool(hunger_result.get("recovered", false)):
+        _push_alert("food stocks stabilized")
+
+    if not bool(hunger_result.get("missed", false)):
+        return
+
+    _apply_starvation_penalty()
+    _push_alert(
+        "starvation warning: need %d food (%s)"
+        % [
+            maxi(1, int(hunger_result.get("shortfall", 0))),
+            world_state.hunger_status_text()
+        ]
+    )
+
+
+func _apply_starvation_penalty() -> void:
+    var starvation_damage: float = 2.0 + (float(world_state.starvation_strikes) * 1.5)
+    for worker in workers:
+        if worker.is_alive():
+            worker.apply_damage(starvation_damage)
+
+    for combat_unit in combat_units:
+        if combat_unit.team == "player" and combat_unit.is_alive():
+            combat_unit.apply_damage(starvation_damage)
+
+
 func _update_mission_state() -> void:
     var snapshot: Dictionary = _build_mission_snapshot()
     var newly_completed: Array[String] = mission_state.evaluate(snapshot)
@@ -1733,6 +2114,12 @@ func _update_mission_state() -> void:
     if world_state.mission_status != "active":
         return
     mission_state.evaluate(_build_mission_snapshot())
+
+    if world_state.starvation_failed():
+        world_state.mission_status = "defeat"
+        simulation_status = "clan starved"
+        _register_campaign_outcome(false)
+        return
 
     if _goal_complete():
         world_state.mission_status = "victory"
@@ -1756,7 +2143,18 @@ func _player_defeated() -> bool:
             has_storehouse = true
             break
 
-    return not has_storehouse or (workers.is_empty() and combat_units.is_empty())
+    var has_living_units: bool = false
+    for worker in workers:
+        if worker.is_alive():
+            has_living_units = true
+            break
+    if not has_living_units:
+        for combat_unit in combat_units:
+            if combat_unit.team == "player" and combat_unit.is_alive():
+                has_living_units = true
+                break
+
+    return not has_storehouse or not has_living_units
 
 
 func _campaign_carryover_clan_payload() -> Dictionary:
@@ -2361,6 +2759,8 @@ func _worker_index_at_tile(tile: Vector2i) -> int:
     var best_index := -1
     var best_distance := 0.6
     for index in range(workers.size()):
+        if not workers[index].is_alive() or workers[index].is_boarded():
+            continue
         var distance_to_worker: float = workers[index].position.distance_to(tile_center)
         if distance_to_worker < best_distance:
             best_distance = distance_to_worker
@@ -2373,6 +2773,8 @@ func _combat_unit_index_at_tile(tile: Vector2i) -> int:
     var best_index := -1
     var best_distance := 0.65
     for index in range(combat_units.size()):
+        if not combat_units[index].is_alive() or combat_units[index].is_boarded():
+            continue
         var distance_to_unit: float = combat_units[index].position.distance_to(tile_center)
         if distance_to_unit < best_distance:
             best_distance = distance_to_unit
@@ -2390,6 +2792,16 @@ func _enemy_unit_index_at_tile(tile: Vector2i) -> int:
             best_distance = distance_to_unit
             best_index = index
     return best_index
+
+
+func _friendly_transport_index_at_tile(tile: Vector2i) -> int:
+    var clicked_index: int = _combat_unit_index_at_tile(tile)
+    if clicked_index < 0:
+        return -1
+    var carrier = combat_units[clicked_index]
+    if carrier.team != "player" or not carrier.can_transport():
+        return -1
+    return clicked_index
 
 
 func _diplomacy_target_index_at_tile(tile: Vector2i) -> int:
@@ -2424,13 +2836,15 @@ func _can_place_building(tile: Vector2i) -> bool:
 func _selected_worker():
     if selected_worker_index < 0 or selected_worker_index >= workers.size():
         return null
+    if workers[selected_worker_index].is_boarded():
+        return null
     return workers[selected_worker_index]
 
 
 func _selected_workers() -> Array:
     var results: Array = []
     for index in selected_worker_indices:
-        if index >= 0 and index < workers.size():
+        if index >= 0 and index < workers.size() and not workers[index].is_boarded():
             results.append(workers[index])
     return results
 
@@ -2438,13 +2852,15 @@ func _selected_workers() -> Array:
 func _selected_combat_unit():
     if selected_combat_index < 0 or selected_combat_index >= combat_units.size():
         return null
+    if combat_units[selected_combat_index].is_boarded():
+        return null
     return combat_units[selected_combat_index]
 
 
 func _selected_combat_units() -> Array:
     var results: Array = []
     for index in selected_combat_indices:
-        if index >= 0 and index < combat_units.size():
+        if index >= 0 and index < combat_units.size() and not combat_units[index].is_boarded():
             results.append(combat_units[index])
     return results
 
@@ -2470,10 +2886,14 @@ func select_units_in_world_rect(selection_rect: Rect2) -> int:
     selected_site_index = -1
 
     for worker_index in range(workers.size()):
+        if workers[worker_index].is_boarded():
+            continue
         if normalized_rect.has_point(workers[worker_index].position):
             selected_worker_indices.append(worker_index)
 
     for combat_index in range(combat_units.size()):
+        if combat_units[combat_index].is_boarded():
+            continue
         if normalized_rect.has_point(combat_units[combat_index].position):
             selected_combat_indices.append(combat_index)
 
@@ -2699,6 +3119,12 @@ func _handle_context_action(slot: int) -> void:
 
 
 func selected_building_actions() -> Array:
+    var selected_unit = _selected_combat_unit()
+    if selected_combat_indices.size() == 1 and selected_unit != null:
+        var combat_actions: Array = _combat_unit_actions(selected_unit)
+        if not combat_actions.is_empty():
+            return combat_actions.duplicate(true)
+
     var building = _selected_building()
     if building == null:
         return []
@@ -2706,6 +3132,24 @@ func selected_building_actions() -> Array:
 
 
 func invoke_selected_building_action(slot: int) -> bool:
+    var selected_unit = _selected_combat_unit()
+    if selected_combat_indices.size() == 1 and selected_unit != null:
+        for action in _combat_unit_actions(selected_unit):
+            if int(action.get("slot", 0)) != slot:
+                continue
+
+            var action_kind: String = str(action.get("kind", ""))
+            var action_id: String = str(action.get("id", ""))
+            match action_kind:
+                "spell":
+                    return cast_spell_for_selected_unit(action_id)
+                "tame":
+                    return tame_creature_for_selected_unit()
+                "transport_unload":
+                    return unload_selected_transport()
+                _:
+                    return false
+
     var building = _selected_building()
     if building == null:
         return false
@@ -2764,6 +3208,62 @@ func _key_label(keycode: int) -> String:
             return OS.get_keycode_string(keycode)
 
 
+func _combat_unit_actions(combat_unit) -> Array:
+    if combat_unit == null or combat_unit.team != "player":
+        return []
+
+    if combat_unit.can_transport():
+        return [{
+            "slot": 1,
+            "key": "Q",
+            "kind": "transport_unload",
+            "id": "unload",
+            "label": "Unload %d/%d" % [combat_unit.passenger_ids.size(), combat_unit.transport_capacity]
+        }]
+
+    if combat_unit.unit_id != "druid":
+        return []
+
+    var supported_spells := [
+        {"slot": 1, "key": "Q", "id": "armour"},
+        {"slot": 2, "key": "W", "id": "petrification"},
+        {"slot": 3, "key": "E", "id": "nova"},
+        {"slot": 4, "key": "R", "id": "vision"},
+    ]
+    var actions: Array = []
+    for action in supported_spells:
+        var spell_id: String = str(action.get("id", ""))
+        var spell_record: Dictionary = ruleset_database.find_spell(spell_id)
+        if spell_record.is_empty():
+            continue
+
+        var label: String = str(spell_record.get("name", spell_id))
+        var cooldown: float = combat_unit.cooldown_for_spell(spell_id)
+        if cooldown > 0.0:
+            label = "%s %.1fs" % [label, cooldown]
+
+        actions.append({
+            "slot": int(action.get("slot", 0)),
+            "key": str(action.get("key", "")),
+            "kind": "spell",
+            "id": spell_id,
+            "label": label
+        })
+
+    var tame_label: String = "Tame"
+    var tame_cooldown: float = combat_unit.cooldown_for_spell("tame")
+    if tame_cooldown > 0.0:
+        tame_label = "Tame %.1fs" % tame_cooldown
+    actions.append({
+        "slot": 5,
+        "key": "T",
+        "kind": "tame",
+        "id": "tame",
+        "label": tame_label
+    })
+    return actions
+
+
 func _building_actions(building_id: String) -> Array:
     match building_id:
         "culture":
@@ -2815,6 +3315,148 @@ func _building_actions(building_id: String) -> Array:
             ]
         _:
             return []
+
+
+func _spell_resource_cost(spell_record: Dictionary) -> Dictionary:
+    var resource_cost: Dictionary = {}
+    var raw_cost: Dictionary = spell_record.get("cost", {})
+    for resource_type in ["food", "stone", "parts"]:
+        var amount: int = int(raw_cost.get(resource_type, 0))
+        if amount > 0:
+            resource_cost[resource_type] = amount
+    return resource_cost
+
+
+func _spell_duration_seconds(spell_record: Dictionary) -> float:
+    return maxf(1.5, float(spell_record.get("duration", 30)) / 30.0)
+
+
+func _spell_cooldown_seconds(spell_record: Dictionary) -> float:
+    return maxf(2.0, float(spell_record.get("learn_time", 1000)) / 500.0)
+
+
+func _nearest_enemy_spell_target(caster, max_range: float) -> Variant:
+    var best_target = null
+    var best_distance: float = INF
+    var effective_range: float = maxf(2.0, max_range)
+    for enemy_unit in enemy_units:
+        if enemy_unit == null or not enemy_unit.is_alive():
+            continue
+        var distance_to_target: float = caster.position.distance_to(enemy_unit.position)
+        if distance_to_target > effective_range:
+            continue
+        if distance_to_target < best_distance:
+            best_distance = distance_to_target
+            best_target = enemy_unit
+    return best_target
+
+
+func _nearest_tamable_creature(caster, max_range: float) -> Variant:
+    var best_target = null
+    var best_distance: float = INF
+    for enemy_unit in enemy_units:
+        if enemy_unit == null or not enemy_unit.is_alive():
+            continue
+        if not _is_tamable_creature(enemy_unit):
+            continue
+        if enemy_unit.health > (enemy_unit.max_health * TAME_HEALTH_RATIO):
+            continue
+        var distance_to_target: float = caster.position.distance_to(enemy_unit.position)
+        if distance_to_target > maxf(1.5, max_range):
+            continue
+        if distance_to_target < best_distance:
+            best_distance = distance_to_target
+            best_target = enemy_unit
+    return best_target
+
+
+func _is_tamable_creature(actor) -> bool:
+    if actor == null or actor.team == "player":
+        return false
+    var unit_record: Dictionary = ruleset_database.find_unit(str(actor.unit_id))
+    if unit_record.is_empty():
+        return false
+    return (
+        str(unit_record.get("faction", "")).to_lower() == "creature"
+        or str(unit_record.get("role", "")).to_lower() == "creature"
+    )
+
+
+func _tame_creature(target, caster) -> bool:
+    if target == null or caster == null:
+        return false
+
+    var target_index: int = enemy_units.find(target)
+    if target_index < 0:
+        return false
+
+    enemy_units.remove_at(target_index)
+    target.set_team("player")
+    target.clear_runtime_references()
+    target.clear_diplomacy_target()
+    target.has_move_target = false
+    target.move_target = caster.position
+    target.position = caster.position + Vector2(0.65, 0.0)
+    target.health = maxf(target.health, target.max_health * TAME_STABILIZE_RATIO)
+    target.state = "holding"
+    target.last_action = "tamed by %s" % caster.name
+    target.refresh_modifiers(world_state)
+    combat_units.append(target)
+    return true
+
+
+func _cast_armour_spell(caster, spell_record: Dictionary) -> bool:
+    caster.apply_spell_effect({
+        "id": "armour",
+        "duration": _spell_duration_seconds(spell_record),
+        "armor_bonus": 2.0
+    })
+    caster.last_action = "cast armour"
+    return true
+
+
+func _cast_vision_spell(caster, spell_record: Dictionary) -> bool:
+    caster.apply_spell_effect({
+        "id": "vision",
+        "duration": _spell_duration_seconds(spell_record),
+        "vision_bonus": maxf(2.0, float(spell_record.get("radius", 4)))
+    })
+    caster.last_action = "cast vision"
+    return true
+
+
+func _cast_petrification_spell(caster, target, spell_record: Dictionary) -> bool:
+    if target == null:
+        return false
+
+    target.apply_spell_effect({
+        "id": "petrification",
+        "duration": _spell_duration_seconds(spell_record)
+    })
+    target.has_move_target = false
+    target.last_action = "petrified"
+    caster.last_action = "cast petrification"
+    return true
+
+
+func _cast_nova_spell(caster, primary_target, spell_record: Dictionary) -> bool:
+    if primary_target == null:
+        return false
+
+    var damage_amount: float = float(ruleset_database.misc.get("degat_nova_petite", 40))
+    var effect_radius: float = maxf(0.75, float(spell_record.get("radius", 0)))
+    var impact_position: Vector2 = primary_target.position
+
+    for enemy_unit in enemy_units:
+        if enemy_unit == null or not enemy_unit.is_alive():
+            continue
+        if enemy_unit.position.distance_to(impact_position) > effect_radius:
+            continue
+        enemy_unit.apply_damage(damage_amount)
+        enemy_unit.last_action = "shaken by nova"
+
+    caster.last_action = "cast nova"
+    return true
 
 
 func _context_hint_for_building(building) -> String:
@@ -2933,6 +3575,15 @@ func _issue_order_to_tile(tile: Vector2i) -> void:
                 simulation_status = "no builder selected"
             return
 
+    var transport_index := _friendly_transport_index_at_tile(tile)
+    if transport_index >= 0:
+        var carrier = combat_units[transport_index]
+        var boarding_count: int = _issue_transport_board_orders(selected_workers, selected_combat, carrier)
+        if boarding_count > 0:
+            _push_command_marker(carrier.position, "transport")
+            simulation_status = "%d units boarding %s" % [boarding_count, carrier.name]
+            return
+
     if not selected_combat.is_empty():
         var diplomacy_index := _diplomacy_target_index_at_tile(tile)
         if diplomacy_index >= 0:
@@ -2982,6 +3633,26 @@ func _issue_combat_move_orders(selected_combat: Array, target_position: Vector2)
     for index in range(selected_combat.size()):
         var combat_unit = selected_combat[index]
         combat_unit.assign_move_target(target_position + offsets[index])
+
+
+func _issue_transport_board_orders(selected_workers: Array, selected_combat: Array, carrier) -> int:
+    if carrier == null or not carrier.can_transport():
+        return 0
+
+    var boarding_count: int = 0
+    for worker in selected_workers:
+        if not _can_board_transport(carrier, worker):
+            continue
+        worker.assign_transport_target(carrier.entity_id, carrier.position)
+        boarding_count += 1
+
+    for combat_unit in selected_combat:
+        if not _can_board_transport(carrier, combat_unit):
+            continue
+        combat_unit.assign_transport_target(carrier.entity_id, carrier.position)
+        boarding_count += 1
+
+    return boarding_count
 
 
 func _formation_offsets(count: int, spacing: float) -> Array:
@@ -3064,6 +3735,8 @@ func _command_marker_color(kind: String) -> Color:
             return Color("e15c55")
         "diplomacy":
             return Color("d9a259")
+        "transport":
+            return Color("9fd9ff")
         _:
             return Color("70b8e8")
 
@@ -3101,6 +3774,8 @@ func _selection_detail_lines() -> Array[String]:
                 selected_combat_unit.status_text()
             ]
         )
+        for spell_line in selected_combat_unit.spell_status_lines():
+            lines.append(spell_line)
         return lines
 
     var selected_building = _selected_building()
@@ -3162,6 +3837,7 @@ func build_ui_snapshot() -> Dictionary:
     var campaign_text: String = "Campaign: offline"
     var campaign_summary_lines: Array[String] = []
     var carryover_text: String = ""
+    var hunger_text: String = world_state.hunger_status_text()
     if campaign_state != null:
         campaign_text = "Campaign: %d/%d complete | %d unlocked" % [
             campaign_state.completed_count(),
@@ -3279,7 +3955,12 @@ func build_ui_snapshot() -> Dictionary:
     elif world_state.mission_status == "defeat":
         result_payload["visible"] = true
         result_payload["title"] = "Mission Failed"
-        result_payload["body"] = "%s broke under pressure. Retry the mission or regroup in the campaign shell." % _mission_frame_text(active_record, current_mission_id)
+        result_payload["body"] = (
+            "%s starved after the clan exhausted its food stores. Retry the mission or regroup in the campaign shell."
+            % _mission_frame_text(active_record, current_mission_id)
+            if world_state.starvation_failed()
+            else "%s broke under pressure. Retry the mission or regroup in the campaign shell." % _mission_frame_text(active_record, current_mission_id)
+        )
 
     return {
         "ruleset_id": ruleset_id,
@@ -3305,7 +3986,14 @@ func build_ui_snapshot() -> Dictionary:
         "current_mission_id": current_mission_id,
         "active_save_slot_id": active_save_slot_id,
         "build_palette_label": _build_palette_label(),
-        "forces_text": "%d workers | %d units | %d enemies" % [workers.size(), combat_units.size(), enemy_units.size()],
+        "forces_text": "%d workers | %d units | %d enemies | Pop %d/%d" % [
+            workers.size(),
+            combat_units.size(),
+            enemy_units.size(),
+            world_state.population_count,
+            world_state.housing_capacity
+        ],
+        "hunger_text": hunger_text,
         "research_text": "%d unlocked" % world_state.unlocked_techs.size(),
         "tick_text": str(world_state.tick_count),
         "summary": summary.duplicate(true),
@@ -3315,7 +4003,10 @@ func build_ui_snapshot() -> Dictionary:
             "stone": int(world_state.resources.get("stone", 0)),
             "parts": int(world_state.resources.get("parts", 0)),
             "tech": int(world_state.resources.get("tech", 0)),
-            "allies": allied_clans.size()
+            "allies": allied_clans.size(),
+            "population": world_state.population_count,
+            "housing": world_state.housing_capacity,
+            "starvation_strikes": world_state.starvation_strikes
         }
     }
 
@@ -3356,6 +4047,7 @@ func _refresh_debug_text() -> void:
         "Stone: %s" % str(snapshot.get("resources", {}).get("stone", 0)),
         "Parts: %s" % str(snapshot.get("resources", {}).get("parts", 0)),
         "Tech: %s" % str(snapshot.get("resources", {}).get("tech", 0)),
+        str(snapshot.get("hunger_text", "")),
         "Research: %s" % str(snapshot.get("research_text", "")),
         "Forces: %s" % str(snapshot.get("forces_text", "")),
         "Tick: %s" % str(snapshot.get("tick_text", "")),
@@ -3393,6 +4085,28 @@ func _player_owned_buildings() -> Array:
             continue
         player_buildings.append(building)
     return player_buildings
+
+
+func _player_population_count() -> int:
+    var population: int = 0
+    for worker in workers:
+        if worker.is_alive():
+            population += 1
+
+    for combat_unit in combat_units:
+        if combat_unit.team == "player" and combat_unit.is_alive():
+            population += 1
+
+    return population
+
+
+func _player_housing_capacity() -> int:
+    var housing: int = 0
+    for building in buildings:
+        if building.team != "player" or not building.is_alive():
+            continue
+        housing += int(building.housing)
+    return housing
 
 
 func _push_alert(message: String) -> void:

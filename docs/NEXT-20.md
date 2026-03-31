@@ -1,36 +1,36 @@
 # Next 20 Execution Backlog
 
-This document records the next bounded 20-task tranche that was selected and executed to push the classic campaign toward completion.
+This is the next forward-looking 20-task tranche. It shifts the project from classic parity closure into classic alpha polish, runtime decomposition, shipping discipline, and the first honest expanded seeding work.
 
 ## Status
 
-1. `[done]` Add a tracked execution backlog document for the next tranche.
-2. `[done]` Add `control_building` mission-objective support for takeover scenarios.
-3. `[done]` Add `transfer_building_team` mission-event action.
-4. `[done]` Add `transfer_unit_team` mission-event action.
-5. `[done]` Add `campaign_complete()` campaign-state helper.
-6. `[done]` Surface campaign-complete result payload in the mission result flow.
-7. `[done]` Author Mission 21 scenario content.
-8. `[done]` Author Mission 22 scenario content.
-9. `[done]` Author Mission 23 Great Library takeover scenario content.
-10. `[done]` Author Mission 24 southeast sanctuary scenario content.
-11. `[done]` Author Mission 25 final-annihilation scenario content.
-12. `[done]` Add ownership-transfer regression coverage.
-13. `[done]` Add final-campaign progression regression coverage for Missions 21 through 25.
-14. `[done]` Update the active project phase marker.
-15. `[done]` Update the README to reflect the full 25-mission classic slice.
-16. `[done]` Update the continuation handoff with the new runtime and campaign coverage.
-17. `[done]` Update the session log with the new tranche.
-18. `[done]` Run importer tests.
-19. `[done]` Run the full Godot smoke-test regression suite.
-20. `[done]` Commit and push the tranche to `origin/main`.
+1. `[done]` Design the first honest creature-taming interaction using existing mission and unit data.
+2. `[done]` Implement the taming runtime and allegiance transfer behavior.
+3. `[done]` Add a dedicated taming smoke test.
+4. `[done]` Add a GitHub Actions workflow for representative Godot smoke coverage.
+5. `[pending]` Audit `GameRoot` orchestration slices and choose the first extraction boundary.
+6. `[pending]` Extract command-card and selected-unit action handling from `GameRoot`.
+7. `[pending]` Extract mission snapshot or objective support from `GameRoot`.
+8. `[pending]` Preserve save compatibility and smoke coverage across the first refactor boundary.
+9. `[pending]` Improve move-order clarity or formation spacing around dense groups and transports.
+10. `[pending]` Surface richer selected-unit cooldown, transport, and tame state in the HUD.
+11. `[pending]` Add a small manual interactive classic-campaign validation checklist.
+12. `[pending]` Document reproducible local smoke commands in a helper script or README section.
+13. `[pending]` Define the first export or package path for Windows builds.
+14. `[pending]` Add export preset or packaging scaffolding without committing binaries.
+15. `[pending]` Audit the remaining classic spell data for the second spell tranche.
+16. `[pending]` Implement one additional spell-depth or targeting improvement beyond the first druid slice.
+17. `[pending]` Extend spell smoke coverage for the new spell-depth slice.
+18. `[pending]` Seed the first real expanded unit data.
+19. `[pending]` Seed the first real expanded building or tech data.
+20. `[pending]` Add one expanded proving-ground smoke or loader-backed runtime check and update the roadmap docs with the tranche result.
 
-## Result
+## Success Condition
 
-The classic campaign now has authored scenario coverage through Mission 25, a final-campaign smoke path, ownership-transfer scripting for takeover scenarios, and campaign-complete result support in the shell/runtime snapshot.
+This tranche is complete when:
 
-Follow-on foundation after this tranche:
-
-- explicit `classic` / `expanded` ruleset manifests now back a neutral database loader
-- runtime saves, campaign profiles, slot metadata, and shell snapshots now carry `ruleset_id`
-- `game/data/expanded` now contains an internal proving-ground dataset used to validate alternate ruleset loading without exposing a public unfinished mode
+- the first oversized `GameRoot` responsibilities have moved into smaller runtime slices without breaking saves or smoke coverage
+- local and CI validation cover importer tests plus the representative Godot runtime suite
+- a Windows export path exists in committed config or documentation even if the build remains manual
+- the expanded ruleset has its first real roster or building or tech footholds instead of remaining structurally empty
+- the roadmap and continuation docs point to polish and expanded seeding instead of stale parity blockers

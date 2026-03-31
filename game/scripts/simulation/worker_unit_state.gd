@@ -1,6 +1,7 @@
 class_name WorkerUnitState
 extends RefCounted
 
+var entity_id: int = -1
 var team: String = "player"
 var unit_id: String = ""
 var name: String = ""
@@ -23,6 +24,8 @@ var health: float = 60.0
 var manual_hold: bool = false
 var target_resource_index: int = -1
 var target_construction_index: int = -1
+var pending_transport_id: int = -1
+var boarded_transport_id: int = -1
 var unit_color: Color = Color.WHITE
 var last_action: String = "spawned"
 
@@ -44,6 +47,8 @@ func configure_from_record(record: Dictionary, spawn_position: Vector2, new_home
 
     max_health = float(maxi(45, 50 + int(armor * 12.0) + (total_cost * 2)))
     health = max_health
+    pending_transport_id = -1
+    boarded_transport_id = -1
 
     match unit_id:
         "farmer":
@@ -79,6 +84,12 @@ func update(
 ) -> void:
     if not is_alive():
         state = "dead"
+        return
+
+    if is_boarded():
+        has_move_target = false
+        state = "transported"
+        last_action = "aboard transport"
         return
 
     _regenerate(delta, world_state)
@@ -151,6 +162,8 @@ func update(
 
 
 func status_text() -> String:
+    if is_boarded():
+        return "aboard transport"
     if target_construction_index >= 0:
         return "%s build" % state
     if carry_amount > 0:
@@ -159,6 +172,7 @@ func status_text() -> String:
 
 
 func assign_resource_target(resource_index: int) -> void:
+    pending_transport_id = -1
     manual_hold = false
     has_move_target = false
     target_resource_index = resource_index
@@ -173,6 +187,7 @@ func assign_resource_target(resource_index: int) -> void:
 func assign_construction_target(site_index: int) -> void:
     if unit_id != "builder":
         return
+    pending_transport_id = -1
     manual_hold = false
     has_move_target = false
     target_construction_index = site_index
@@ -185,6 +200,7 @@ func assign_construction_target(site_index: int) -> void:
 
 
 func assign_move_target(new_target: Vector2) -> void:
+    pending_transport_id = -1
     manual_hold = true
     move_target = new_target
     has_move_target = true
@@ -198,6 +214,7 @@ func assign_move_target(new_target: Vector2) -> void:
 
 
 func clear_orders() -> void:
+    pending_transport_id = -1
     target_resource_index = -1
     target_construction_index = -1
     has_move_target = false
@@ -211,6 +228,26 @@ func clear_orders() -> void:
 
 func set_home_position(new_home_position: Vector2) -> void:
     home_position = new_home_position
+
+
+func assign_transport_target(transport_id: int, transport_position: Vector2) -> void:
+    if transport_id < 0 or is_boarded():
+        return
+    pending_transport_id = transport_id
+    manual_hold = true
+    move_target = transport_position
+    has_move_target = true
+    target_resource_index = -1
+    target_construction_index = -1
+    carry_amount = 0
+    carry_type = ""
+    work_timer = 0.0
+    state = "boarding"
+    last_action = "boarding transport"
+
+
+func is_boarded() -> bool:
+    return boarded_transport_id >= 0
 
 
 func current_carry_capacity(world_state = null) -> int:
@@ -248,6 +285,7 @@ func is_alive() -> bool:
 
 func serialize() -> Dictionary:
     return {
+        "entity_id": entity_id,
         "team": team,
         "unit_id": unit_id,
         "name": name,
@@ -270,6 +308,8 @@ func serialize() -> Dictionary:
         "manual_hold": manual_hold,
         "target_resource_index": target_resource_index,
         "target_construction_index": target_construction_index,
+        "pending_transport_id": pending_transport_id,
+        "boarded_transport_id": boarded_transport_id,
         "last_action": last_action
     }
 
@@ -283,6 +323,7 @@ func load_from_payload(payload: Dictionary, record: Dictionary) -> void:
         Vector2(float(home_position_payload.get("x", 0.0)), float(home_position_payload.get("y", 0.0)))
     )
     var move_target_payload: Dictionary = payload.get("move_target", {})
+    entity_id = int(payload.get("entity_id", entity_id))
     team = str(payload.get("team", "player"))
     name = str(payload.get("name", name))
     move_target = Vector2(float(move_target_payload.get("x", position.x)), float(move_target_payload.get("y", position.y)))
@@ -301,6 +342,8 @@ func load_from_payload(payload: Dictionary, record: Dictionary) -> void:
     manual_hold = bool(payload.get("manual_hold", false))
     target_resource_index = int(payload.get("target_resource_index", -1))
     target_construction_index = int(payload.get("target_construction_index", -1))
+    pending_transport_id = int(payload.get("pending_transport_id", -1))
+    boarded_transport_id = int(payload.get("boarded_transport_id", -1))
     last_action = str(payload.get("last_action", last_action))
 
 

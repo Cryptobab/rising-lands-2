@@ -273,7 +273,7 @@ func _find_nearest_target(hostile_units: Array) -> Variant:
     var effective_range: float = maxf(attack_range, vision)
 
     for hostile_unit in hostile_units:
-        if hostile_unit == null or not hostile_unit.is_alive():
+        if hostile_unit == null or not hostile_unit.is_alive() or hostile_unit.is_boarded():
             continue
 
         var distance_to_target: float = center.distance_to(hostile_unit.position)

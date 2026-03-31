@@ -1,214 +1,227 @@
 # Rising Lands 2 Master Plan
 
-This document is the working source of truth for the project.
+This document is the source of truth for what is actually done, what is still missing, and what order the revamp should follow.
 
-The target is a professional PC remake first, then a larger "Rising Lands 2" expansion after the remake loop is stable.
+## Audit Snapshot
 
-## Engine Decision
+As of `2026-03-30`, the project is no longer a rewrite bootstrap. The classic Godot baseline is real and test-backed, but the remake is not yet feature-complete and the expansion lane is still only a scaffold.
 
-The project is moving to `Godot 4` as the main game engine.
+Verified in this audit:
 
-Reasons:
+- importer unit tests passed
+- Godot `4.6.1` resolves locally and runs headless
+- representative Godot smoke tests passed: `taming_smoke`, `transport_smoke`, `hunger_smoke`, `spell_smoke`, `vertical_slice_smoke`, `systems_smoke`, `app_shell_smoke`, `final_campaign_smoke`, `enemy_ai_wave_directives_smoke`, `ruleset_loader_smoke`, and `campaign_carryover_smoke`
 
-- strong 2D workflow for tilemaps, navigation, physics, particles, and editor tooling
-- much better long-term structure than a single-file browser prototype
-- good fit for a public repo and solo/small-team iteration
-- no need to carry the overhead of Unreal for a 2D RTS
-- cleaner public-repo posture than basing the whole project around Unity licensing risk
+Current data truth:
 
-Current scripting choice:
+- `classic` normalized data contains `26` units, `22` buildings, `5` spells, `81` techs, and `25` missions
+- `expanded` normalized data contains `0` units, `0` buildings, `0` spells, `0` techs, and `1` internal proving-ground mission
+- the repo contains `33` Godot smoke tests, but the entire sweep was not rerun in one shell command during this audit because the long batch exceeded the command timeout
 
-- typed `GDScript`
+## What Is Done
 
-Supporting tools:
+### Engine And Data Foundation
 
-- `Python` for data importers and extraction scripts
-- GitHub for issues, PRs, releases, and public demo process
+- the browser prototype is retired and the active runtime is `Godot 4`
+- importer tooling exists in `Python` and exports classic `raw` plus `normalized` JSON
+- classic and expanded rulesets are separated at the data level
+- a neutral `RulesetDatabase` loader exists and saves/profiles now carry explicit `ruleset_id`
 
-## Product Direction
+### Classic Runtime Baseline
 
-The game should be built in two lanes:
+- the project boots into a real shell scene instead of a debug bootstrap
+- worker economy, construction, production queues, research queues, combat, towers, and save/load exist
+- a first hunger loop now exists with ration consumption, starvation pressure, shell visibility, save persistence, and automated smoke coverage
+- a first druid spell slice now exists with command-card and hotkey casting, mana and cooldowns, persistent spell effects, and automated smoke coverage
+- a first transport slice now exists for `balloon` and `heliped` with boarding, unload actions, save persistence, and mission-objective compatibility
+- a first taming slice now exists where druids can convert weakened creature units into the player roster with save persistence and automated smoke coverage
+- mission objectives and mission events are data-driven and persist through save/load
+- diplomacy now covers alliances, stance, trust, demands, and revenge state
+- campaign progression, named save slots, campaign completion, and campaign carryover all exist
+- all `25` classic campaign missions have authored scenario map coverage
+- enemy pressure supports authored production plans, rally behavior, aggression modes, target priorities, and scheduled waves
 
-1. `Classic Remake`
-Faithful reconstruction of the original game loop and campaign identity.
+### UI And Playable Shell
 
-2. `Expanded Mode`
-New units, tech trees, missions, rulesets, and QoL after the classic layer is solid.
+- the shell includes a mission board, briefing surface, result panel, save-slot panel, options, and in-game HUD
+- grouped selection, right-click orders, build placement, command markers, minimap feedback, and command-card buttons exist
+- shell settings persist, and campaign framing is visible in both the board and result flow
 
-Do not mix those lanes too early. RTS scope expands very fast.
+### Validation And Workflow
 
-## Core Features To Preserve
+- importer unit tests exist and pass locally
+- `33` Godot smoke tests exist across economy, construction, systems, missions, diplomacy, shell flow, AI, ruleset loading, transport, taming, and campaign carryover
+- GitHub issue templates and PR template exist
+- GitHub Actions now covers importer tests plus a representative Godot runtime smoke suite
 
-- hunger system
-- persistent research across campaign missions
-- persistent diplomacy
-- four-branch tech structure
-- creature taming
-- balloon transport
-- campaign progression across 25 missions
+## What Is Not Done
 
-## Current Repo Reality
+### Classic Parity Blockers
 
-As of 2026-03-29:
+These are the main reasons the project cannot yet claim a complete remake revamp:
 
-- the old web prototype has been retired from the canonical branch
-- a new Godot rewrite scaffold has been created
-- importer tooling now starts from the original game files
-- classic and expanded data are being split from the start
-- explicit ruleset-aware loading now exists through per-ruleset manifests, neutral database plumbing, and ruleset-safe save/profile payloads
+- only a first spell slice exists, so broader spell coverage, richer targeting, and presentation are still incomplete
+- many units are present only as generic combat actors rather than fully differentiated unit behaviors
+- movement is still simple direct steering, not full RTS-grade pathfinding, avoidance, terrain handling, or formation logic
+- there is no fog-of-war or visibility gameplay layer beyond local attack vision checks
+- the classic baseline still needs honest balance work and longer interactive play validation
 
-What still does not exist:
+### Production And Tech Blockers
 
-- production gameplay loop in the new engine
-- campaign runtime
-- AI
-- save system
-- polished UI
-- CI and release automation
+- `game/scripts/core/game_root.gd` is carrying too much orchestration and should be split as the runtime deepens
+- there is no export pipeline, release automation, or public build packaging
+- there is effectively no committed art, animation, VFX, or audio production layer beyond code-driven placeholders and the icon
+- key UX improvements such as richer command queueing, better selection ergonomics, and more informative combat feedback are still unfinished
 
-## Repo Structure
+### Expansion And New-Tech Blockers
 
-Target structure:
+- the expanded ruleset is only a loader proof and not yet a real playable mode
+- expanded data currently has no actual units, buildings, tech branches, or spells
+- there is no implemented expansion economy, progression, roster identity, or mission arc
+- the "new tech" vision is still design intent, not runtime content
 
-```text
-rising-lands-2/
-├── game/
-│   ├── project.godot
-│   ├── scenes/
-│   ├── scripts/
-│   └── data/
-│       ├── classic/
-│       └── expanded/
-├── tools/
-│   └── importers/
-├── docs/
-└── .github/
-```
+## Delivery Order
 
-## Content Pipeline
+The project should now move in five phases.
 
-Primary reference source:
+### Phase 0: Foundation Lock
 
-- `C:\Users\BAB\PROJECTS\Rising_land_remake\Rising Lands Release`
+Status: `done`
 
-Important text sources:
+Outcome:
 
-- `RISING.INI`
-- `MONSTRE.INI`
-- `TEXTES.TXT`
-- `WORLD\MONDE*.TXT`
+- Godot rewrite established
+- importer and normalized data pipeline established
+- classic shell, campaign flow, save system, diplomacy framework, and ruleset-safe persistence established
 
-Pipeline rule:
+### Phase 1: Classic Parity Gap Closure
 
-1. import raw classic data
-2. normalize it into game-ready structures
-3. keep expanded content separate from classic imported data
-4. document intentional balance or design deviations
+Status: `done`
 
-## Architecture Rules
+Goal:
 
-1. `Simulation first.`
-Rules, state transitions, and campaign persistence matter more than effects polish.
-
-2. `Data-driven content.`
-Units, buildings, spells, tech trees, missions, and balance should not be buried in scene scripts.
-
-3. `Classic and expanded content stay separated.`
-The remake baseline must remain testable without expansion noise.
-
-3a. `Ruleset identity must be explicit.`
-Runtime bootstrap, mission lookup, shell snapshots, and persistence payloads should carry `ruleset_id` instead of inferring mode from ad hoc paths or flags.
-
-4. `Version saved data.`
-Campaign carry-over will become fragile fast without explicit save versions.
-
-5. `Keep proprietary binaries out of the public repo.`
-Reference them, parse them, document them, but do not dump them into shipping source.
-
-## Milestones
-
-### Milestone 0: Rewrite Bootstrap
+- finish the remaining signature classic systems that are still missing from the runtime
 
 Deliverables:
 
-- Godot project scaffold
-- importer scripts
-- honest docs
-- repo workflow standards
-- clear classic vs expanded split
+- hunger pressure in live gameplay
+- first druid spell support in live gameplay
+- balloon and heliped transport flow
+- creature taming or equivalent creature-control runtime
+- save/load and smoke coverage for each of the above
 
-### Milestone 1: Vertical Slice
+Exit criteria:
 
-Deliver one real playable scenario with:
+- every preserved pillar named in the project brief exists in live gameplay, not only in data
+- the classic campaign can use those systems without bespoke hacks
+- the representative smoke suite plus the new feature tests all pass
 
-- deterministic handcrafted test map
-- food and stone economy
-- hunger loop
-- 4 to 6 units
-- 4 to 6 buildings
-- melee and ranged combat
-- objective and fail state
+### Phase 2: Classic Alpha Polish And Runtime Decomposition
 
-### Milestone 2: Classic Runtime Core
+Status: `active`
 
-Deliver:
+Goal:
 
-- worker jobs
-- construction jobs
-- production queues
-- research runtime
-- spell runtime
-- save/load
+- make the classic remake stable, understandable, and shippable as an alpha instead of merely technically complete
 
-### Milestone 3: Campaign Framework
+Deliverables:
 
-Deliver:
+- split `GameRoot` responsibilities into smaller runtime services
+- improve command queueing, feedback, selection clarity, and combat readability
+- add better pathing or avoidance, terrain-aware movement, and formation handling where needed
+- keep the new Godot smoke-test CI healthy and add a repeatable export path
+- perform manual campaign pass for pacing, difficulty, and regression discovery
 
-- mission loading
-- briefing pipeline
-- persistent tech state
-- persistent diplomacy state
-- several migrated missions proving the pipeline
+Exit criteria:
 
-### Milestone 4: Classic Campaign Alpha
+- the runtime is no longer anchored around one oversized orchestration file
+- the classic campaign is both test-backed and manually playable end-to-end
+- automated workflows cover both Python tooling and representative Godot runtime checks
 
-Deliver:
+### Phase 3: Expanded Ruleset Foundation
 
-- all 25 missions playable
-- AI economy and attack loops
-- balance pass
-- public alpha build
+Status: `pending`
 
-### Milestone 5: Rising Lands 2 Expansion
+Goal:
 
-Deliver:
+- turn the expanded lane from a loader proof into an actual playable slice
 
-- new tech branches
-- new units and buildings
-- alternate missions and skirmish
-- modern QoL feature set
+Deliverables:
 
-## First Expansion Themes
+- first real expanded roster entries
+- first real expanded buildings
+- first real expanded tech branches
+- first real expanded spell or support systems
+- one honest playable expanded proving-ground mission
 
-Recommended first expansion branches:
+Exit criteria:
 
-- `Salvage Engineering`
-- `Beast Mastery`
-- `Solar Mysticism`
+- the expanded ruleset has non-zero runtime content across units, buildings, tech, and mission flow
+- the shell can load classic and expanded content without pretending both are equally complete
 
-Those should be layered on top of a stable classic ruleset, not mixed into the remake prematurely.
+### Phase 4: Expanded Mode And New Technology
 
-## Immediate Backlog
+Status: `pending`
 
-1. Open the Godot project and validate the new scaffold.
-2. Expand the importer into normalized unit/building/tech assets.
-3. Replace placeholder scene logic with map, entity, and command systems.
-4. Build the first deterministic vertical-slice mission.
-5. Add save schema and campaign-state objects early.
+Goal:
+
+- deliver the actual "Rising Lands 2" value: new tech, new mission structures, new systems, and modernized RTS depth
+
+Deliverables:
+
+- new tech branches such as `Salvage Engineering`, `Beast Mastery`, and `Solar Mysticism`
+- new units, buildings, and support abilities tied to those branches
+- expansion missions that rely on systems not present in the classic campaign
+- new QoL systems justified by the expansion ruleset, not bolted randomly onto the remake
+
+Exit criteria:
+
+- there is a coherent player-facing expanded mode rather than a hidden data stub
+- the expansion meaningfully differentiates itself from the classic remake
+
+### Phase 5: Shipping Discipline
+
+Status: `pending`
+
+Goal:
+
+- make release and continuation sustainable
+
+Deliverables:
+
+- build and release automation
+- save-version migration discipline
+- public demo packaging
+- milestone-based regression checklists
+- contributor-facing technical docs for the modularized runtime
+
+Exit criteria:
+
+- another session can continue work without rediscovering architecture or manual test steps
+- milestone builds can be reproduced without local tribal knowledge
+
+## Immediate Priorities
+
+The current execution order should be:
+
+1. Runtime decomposition and classic alpha polish
+2. Export automation and manual validation discipline
+3. Broader spell depth and clearer unit differentiation on top of the now-live parity systems
+4. Expanded ruleset content seeding
+5. Expanded-mode-specific new tech only after the first seeded slice is coherent
+
+## Autonomous Working Rules
+
+- stay in the `classic parity` lane until the missing signature systems are live
+- do not market data-only presence as a finished gameplay feature
+- finish one feature end-to-end before starting the next one
+- every feature tranche must include runtime code, test coverage, validation, and doc updates
+- keep `classic` and `expanded` strictly separated at the data and persistence layer
+- when a system needs refactoring, refactor only the slice being touched instead of pausing delivery for a giant rewrite
+- prefer representative smoke batches during active iteration, then rerun the broader suite in deliberate batches before closing a tranche
 
 ## Non-Negotiables
 
-- Do not market stubbed systems as finished systems.
-- Do not let expansion content derail classic parity.
-- Do not mix source-of-truth gameplay values across random scripts.
-- Do not commit original copyrighted art, video, sound, or binaries without rights.
+- no copyrighted original binaries or asset dumps in the public repo
+- no pretending the expanded lane is public-ready while classic alpha polish and export discipline remain unfinished
+- no claiming feature completion without runtime behavior, save/load coverage, and at least one automated check

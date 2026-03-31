@@ -29,6 +29,10 @@ const DEFAULT_MODIFIERS := {
     "tech_generation": 1.0
 }
 
+const HUNGER_INTERVAL_SECONDS: float = 12.0
+const HUNGER_POPULATION_PER_RATION: int = 5
+const STARVATION_DEFEAT_STRIKES: int = 4
+
 var tick_count: int = 0
 var elapsed_time: float = 0.0
 var map_seed: int = 1997
@@ -42,6 +46,13 @@ var modifiers: Dictionary = {}
 var enemy_waves_spawned: int = 0
 var casualties: Dictionary = {}
 var mission_status: String = "active"
+var population_count: int = 0
+var housing_capacity: int = 0
+var hunger_timer: float = 0.0
+var last_ration_cost: int = 0
+var total_food_consumed: int = 0
+var starvation_strikes: int = 0
+var starving: bool = false
 
 
 func bootstrap_runtime(next_ruleset_id: String = "classic", next_phase_name: String = "vertical_slice_prep") -> void:
@@ -63,6 +74,13 @@ func bootstrap_runtime(next_ruleset_id: String = "classic", next_phase_name: Str
         "enemy": 0
     }
     mission_status = "active"
+    population_count = 0
+    housing_capacity = 0
+    hunger_timer = 0.0
+    last_ration_cost = 0
+    total_food_consumed = 0
+    starvation_strikes = 0
+    starving = false
 
 
 func bootstrap_classic_vertical_slice() -> void:
@@ -72,6 +90,93 @@ func bootstrap_classic_vertical_slice() -> void:
 func tick(delta: float) -> void:
     tick_count += 1
     elapsed_time += delta
+
+
+func process_hunger(delta: float, next_population_count: int, next_housing_capacity: int) -> Dictionary:
+    population_count = maxi(0, next_population_count)
+    housing_capacity = maxi(0, next_housing_capacity)
+    last_ration_cost = current_ration_cost()
+
+    var result := {
+        "population": population_count,
+        "housing": housing_capacity,
+        "ration_cost": last_ration_cost,
+        "consumed": 0,
+        "shortfall": 0,
+        "fed": false,
+        "missed": false,
+        "recovered": false,
+        "starving": starving,
+        "starvation_strikes": starvation_strikes
+    }
+
+    if population_count <= 0:
+        hunger_timer = 0.0
+        last_ration_cost = 0
+        starvation_strikes = 0
+        starving = false
+        result["ration_cost"] = 0
+        result["starving"] = false
+        result["starvation_strikes"] = 0
+        return result
+
+    hunger_timer += delta
+    while hunger_timer >= HUNGER_INTERVAL_SECONDS:
+        hunger_timer -= HUNGER_INTERVAL_SECONDS
+        var ration_cost: int = current_ration_cost()
+        last_ration_cost = ration_cost
+        result["ration_cost"] = ration_cost
+        var available_food: int = int(resources.get("food", 0))
+        if available_food >= ration_cost:
+            resources["food"] = available_food - ration_cost
+            total_food_consumed += ration_cost
+            result["consumed"] = int(result.get("consumed", 0)) + ration_cost
+            var recovered_this_tick: bool = starving
+            starving = false
+            starvation_strikes = maxi(0, starvation_strikes - 1)
+            result["fed"] = true
+            result["recovered"] = bool(result.get("recovered", false)) or recovered_this_tick
+        else:
+            if available_food > 0:
+                total_food_consumed += available_food
+            resources["food"] = 0
+            result["consumed"] = int(result.get("consumed", 0)) + available_food
+            result["shortfall"] = int(result.get("shortfall", 0)) + (ration_cost - available_food)
+            starving = true
+            starvation_strikes += 1
+            result["missed"] = true
+
+    result["starving"] = starving
+    result["starvation_strikes"] = starvation_strikes
+    return result
+
+
+func current_ration_cost() -> int:
+    if population_count <= 0:
+        return 0
+    return maxi(1, int(ceil(float(population_count) / float(HUNGER_POPULATION_PER_RATION))))
+
+
+func starvation_failed() -> bool:
+    return population_count > 0 and starvation_strikes >= STARVATION_DEFEAT_STRIKES
+
+
+func hunger_status_text() -> String:
+    if population_count <= 0:
+        return "Hunger idle"
+
+    var summary: String = "Hunger: %s | Pop %d/%d | Rations %d/%ds" % [
+        "starving" if starving else "stable",
+        population_count,
+        housing_capacity,
+        current_ration_cost(),
+        int(HUNGER_INTERVAL_SECONDS)
+    ]
+    if starving:
+        return "%s | Strikes %d/%d" % [summary, starvation_strikes, STARVATION_DEFEAT_STRIKES]
+    if starvation_strikes > 0:
+        return "%s | Recovery %d/%d" % [summary, starvation_strikes, STARVATION_DEFEAT_STRIKES]
+    return summary
 
 
 func can_afford(cost: Dictionary) -> bool:
@@ -138,7 +243,14 @@ func serialize() -> Dictionary:
         "modifiers": modifiers.duplicate(true),
         "enemy_waves_spawned": enemy_waves_spawned,
         "casualties": casualties.duplicate(true),
-        "mission_status": mission_status
+        "mission_status": mission_status,
+        "population_count": population_count,
+        "housing_capacity": housing_capacity,
+        "hunger_timer": hunger_timer,
+        "last_ration_cost": last_ration_cost,
+        "total_food_consumed": total_food_consumed,
+        "starvation_strikes": starvation_strikes,
+        "starving": starving
     }
 
 
@@ -176,3 +288,10 @@ func load_from_payload(payload: Dictionary) -> void:
         "enemy": int(payload.get("casualties", {}).get("enemy", 0))
     }
     mission_status = str(payload.get("mission_status", "active"))
+    population_count = int(payload.get("population_count", 0))
+    housing_capacity = int(payload.get("housing_capacity", 0))
+    hunger_timer = float(payload.get("hunger_timer", 0.0))
+    last_ration_cost = int(payload.get("last_ration_cost", 0))
+    total_food_consumed = int(payload.get("total_food_consumed", 0))
+    starvation_strikes = int(payload.get("starvation_strikes", 0))
+    starving = bool(payload.get("starving", false))

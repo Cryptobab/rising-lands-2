@@ -113,6 +113,13 @@ func find_building(building_id: String) -> Dictionary:
     return {}
 
 
+func find_spell(spell_id: String) -> Dictionary:
+    for spell in spells:
+        if str(spell.get("id", "")) == spell_id:
+            return spell
+    return {}
+
+
 func find_tech(tech_id: String) -> Dictionary:
     for tech in tech_tree:
         if str(tech.get("id", "")) == tech_id:

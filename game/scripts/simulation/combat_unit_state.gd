@@ -4,6 +4,7 @@ extends RefCounted
 const WorkerUnitType = preload("res://scripts/simulation/worker_unit_state.gd")
 const BuildingType = preload("res://scripts/simulation/building_state.gd")
 
+var entity_id: int = -1
 var team: String = "player"
 var unit_id: String = ""
 var name: String = ""
@@ -14,14 +15,19 @@ var diplomacy_target_position: Vector2 = Vector2.ZERO
 var move_target: Vector2 = Vector2.ZERO
 var has_move_target: bool = false
 var attack_range: float = 1.0
+var base_vision: float = 6.0
 var vision: float = 6.0
 var base_attack_interval: float = 0.8
 var attack_timer: float = 0.0
+var base_armor: float = 0.0
 var armor: float = 0.0
 var base_speed: float = 2.8
 var base_max_health: float = 75.0
 var max_health: float = 75.0
 var health: float = 75.0
+var max_mana: float = 0.0
+var mana: float = 0.0
+var mana_regen: float = 0.0
 var damage_profile: Dictionary = {}
 var unit_color: Color = Color.WHITE
 var state: String = "idle"
@@ -29,6 +35,13 @@ var target_ref: Variant = null
 var target_kind: String = ""
 var last_action: String = "spawned"
 var enemy_ai: Dictionary = {}
+var active_effects: Array = []
+var spell_cooldowns: Dictionary = {}
+var disabled_timer: float = 0.0
+var pending_transport_id: int = -1
+var boarded_transport_id: int = -1
+var transport_capacity: int = 0
+var passenger_ids: Array[int] = []
 
 
 func configure_from_record(record: Dictionary, spawn_position: Vector2, new_team: String = "player") -> void:
@@ -42,9 +55,11 @@ func configure_from_record(record: Dictionary, spawn_position: Vector2, new_team
     move_target = spawn_position
     has_move_target = false
     attack_range = maxf(1.0, float(record.get("range", 1)))
-    vision = maxf(4.0, float(record.get("vision", 6)))
+    base_vision = maxf(4.0, float(record.get("vision", 6)))
+    vision = base_vision
     base_attack_interval = maxf(0.35, float(record.get("recharge", 30)) / 30.0)
-    armor = float(record.get("armor", 0))
+    base_armor = float(record.get("armor", 0))
+    armor = base_armor
     damage_profile = record.get("damage_profile", {}).duplicate(true)
 
     var total_cost: int = 0
@@ -61,17 +76,27 @@ func configure_from_record(record: Dictionary, spawn_position: Vector2, new_team
     state = "idle"
     last_action = "awaiting orders"
     enemy_ai = {}
+    active_effects = []
+    spell_cooldowns = {}
+    disabled_timer = 0.0
+    pending_transport_id = -1
+    boarded_transport_id = -1
+    transport_capacity = 0
+    passenger_ids = []
+    max_mana = 0.0
+    mana = 0.0
+    mana_regen = 0.0
 
-    if team == "enemy":
-        unit_color = Color("e15c55")
-    else:
-        match role:
-            "ranged":
-                unit_color = Color("70b8e8")
-            "magic":
-                unit_color = Color("55d6b7")
-            _:
-                unit_color = Color("ca7753")
+    if unit_id == "druid":
+        max_mana = 12.0
+        mana = max_mana
+        mana_regen = 0.18
+    elif unit_id == "heliped":
+        transport_capacity = 2
+    elif unit_id == "balloon":
+        transport_capacity = 4
+
+    _refresh_unit_color()
 
 
 func refresh_modifiers(world_state) -> void:
@@ -81,6 +106,13 @@ func refresh_modifiers(world_state) -> void:
     var previous_max: float = maxf(1.0, max_health)
     max_health = base_max_health * float(world_state.modifiers.get("combat_health", 1.0))
     health = clampf((health / previous_max) * max_health, 1.0 if health > 0.0 else 0.0, max_health)
+
+
+func set_team(new_team: String) -> void:
+    team = new_team
+    if team != "enemy":
+        enemy_ai = {}
+    _refresh_unit_color()
 
 
 func update(
@@ -96,7 +128,26 @@ func update(
         state = "dead"
         return
 
+    if is_boarded():
+        has_move_target = false
+        target_ref = null
+        target_kind = ""
+        attack_timer = 0.0
+        state = "transported"
+        last_action = "aboard transport"
+        return
+
+    _update_spell_state(delta)
     _regenerate(delta, world_state)
+
+    if is_spell_disabled():
+        has_move_target = false
+        target_ref = null
+        target_kind = ""
+        attack_timer = 0.0
+        state = "petrified"
+        last_action = "held by magic"
+        return
 
     if not _is_target_valid(target_ref):
         target_ref = null
@@ -178,6 +229,7 @@ func update(
 
 func assign_move_target(new_target: Vector2) -> void:
     clear_diplomacy_target()
+    pending_transport_id = -1
     move_target = new_target
     has_move_target = true
     target_ref = null
@@ -188,6 +240,7 @@ func assign_move_target(new_target: Vector2) -> void:
 
 func assign_attack_target(target: Variant, kind: String) -> void:
     clear_diplomacy_target()
+    pending_transport_id = -1
     target_ref = target
     target_kind = kind
     has_move_target = false
@@ -197,6 +250,7 @@ func assign_attack_target(target: Variant, kind: String) -> void:
 
 
 func assign_diplomacy_target(target_id: String, target_position: Vector2) -> void:
+    pending_transport_id = -1
     diplomacy_target_id = target_id
     diplomacy_target_position = target_position
     move_target = target_position
@@ -213,9 +267,24 @@ func clear_diplomacy_target() -> void:
     diplomacy_target_position = Vector2.ZERO
 
 
+func assign_transport_target(transport_id: int, transport_position: Vector2) -> void:
+    if transport_id < 0 or is_boarded():
+        return
+    clear_diplomacy_target()
+    pending_transport_id = transport_id
+    move_target = transport_position
+    has_move_target = true
+    target_ref = null
+    target_kind = ""
+    attack_timer = 0.0
+    state = "boarding"
+    last_action = "boarding transport"
+
+
 func clear_runtime_references() -> void:
     target_ref = null
     target_kind = ""
+    attack_timer = 0.0
 
 
 func set_enemy_ai_directive(directive: Dictionary) -> void:
@@ -242,11 +311,82 @@ func is_alive() -> bool:
 
 
 func status_text() -> String:
+    if is_boarded():
+        return "aboard transport"
     return "%s %d hp" % [state, int(ceil(health))]
+
+
+func is_boarded() -> bool:
+    return boarded_transport_id >= 0
+
+
+func can_transport() -> bool:
+    return transport_capacity > 0
+
+
+func can_cast_spell(spell_id: String, mana_cost: float) -> bool:
+    if team != "player" or max_mana <= 0.0 or not is_alive():
+        return false
+    if float(spell_cooldowns.get(spell_id, 0.0)) > 0.0:
+        return false
+    return mana >= mana_cost
+
+
+func spend_mana(amount: float) -> bool:
+    if amount <= 0.0:
+        return true
+    if mana < amount:
+        return false
+    mana -= amount
+    return true
+
+
+func cooldown_for_spell(spell_id: String) -> float:
+    return float(spell_cooldowns.get(spell_id, 0.0))
+
+
+func set_spell_cooldown(spell_id: String, duration: float) -> void:
+    spell_cooldowns[spell_id] = maxf(0.1, duration)
+
+
+func apply_spell_effect(effect_payload: Dictionary) -> void:
+    var effect_id: String = str(effect_payload.get("id", ""))
+    if effect_id.is_empty():
+        return
+
+    var duration: float = maxf(0.1, float(effect_payload.get("duration", effect_payload.get("remaining", 0.0))))
+    var next_effect: Dictionary = effect_payload.duplicate(true)
+    next_effect["id"] = effect_id
+    next_effect["remaining"] = duration
+
+    var remaining_effects: Array = []
+    for active_effect in active_effects:
+        if str(active_effect.get("id", "")) == effect_id:
+            continue
+        remaining_effects.append(active_effect)
+    remaining_effects.append(next_effect)
+    active_effects = remaining_effects
+    _refresh_spell_modifiers()
+
+
+func is_spell_disabled() -> bool:
+    return disabled_timer > 0.0
+
+
+func spell_status_lines() -> Array[String]:
+    var lines: Array[String] = []
+    if can_transport():
+        lines.append("Transport %d/%d" % [passenger_ids.size(), transport_capacity])
+    if max_mana > 0.0:
+        lines.append("Mana %.1f/%.1f" % [mana, max_mana])
+    for spell_id in spell_cooldowns.keys():
+        lines.append("%s cooldown %.1fs" % [str(spell_id), float(spell_cooldowns.get(spell_id, 0.0))])
+    return lines
 
 
 func serialize() -> Dictionary:
     return {
+        "entity_id": entity_id,
         "team": team,
         "unit_id": unit_id,
         "name": name,
@@ -260,15 +400,26 @@ func serialize() -> Dictionary:
         "vision": vision,
         "base_attack_interval": base_attack_interval,
         "attack_timer": attack_timer,
+        "base_armor": base_armor,
         "armor": armor,
         "base_speed": base_speed,
         "base_max_health": base_max_health,
         "max_health": max_health,
         "health": health,
+        "base_vision": base_vision,
+        "max_mana": max_mana,
+        "mana": mana,
+        "mana_regen": mana_regen,
         "damage_profile": damage_profile.duplicate(true),
         "state": state,
         "last_action": last_action,
-        "enemy_ai": enemy_ai.duplicate(true)
+        "enemy_ai": enemy_ai.duplicate(true),
+        "active_effects": active_effects.duplicate(true),
+        "spell_cooldowns": spell_cooldowns.duplicate(true),
+        "pending_transport_id": pending_transport_id,
+        "boarded_transport_id": boarded_transport_id,
+        "transport_capacity": transport_capacity,
+        "passenger_ids": passenger_ids.duplicate()
     }
 
 
@@ -280,6 +431,7 @@ func load_from_payload(payload: Dictionary, record: Dictionary) -> void:
         str(payload.get("team", "player"))
     )
 
+    entity_id = int(payload.get("entity_id", entity_id))
     name = str(payload.get("name", name))
     role = str(payload.get("role", role))
 
@@ -294,20 +446,81 @@ func load_from_payload(payload: Dictionary, record: Dictionary) -> void:
     move_target = Vector2(float(move_target_payload.get("x", position.x)), float(move_target_payload.get("y", position.y)))
     has_move_target = bool(payload.get("has_move_target", false))
     attack_range = float(payload.get("attack_range", attack_range))
+    base_vision = float(payload.get("base_vision", base_vision))
     vision = float(payload.get("vision", vision))
     base_attack_interval = float(payload.get("base_attack_interval", base_attack_interval))
     attack_timer = float(payload.get("attack_timer", 0.0))
+    base_armor = float(payload.get("base_armor", base_armor))
     armor = float(payload.get("armor", armor))
     base_speed = float(payload.get("base_speed", base_speed))
     base_max_health = float(payload.get("base_max_health", base_max_health))
     max_health = float(payload.get("max_health", max_health))
     health = float(payload.get("health", health))
+    max_mana = float(payload.get("max_mana", max_mana))
+    mana = float(payload.get("mana", mana))
+    mana_regen = float(payload.get("mana_regen", mana_regen))
     damage_profile = payload.get("damage_profile", damage_profile).duplicate(true)
     state = str(payload.get("state", state))
     last_action = str(payload.get("last_action", last_action))
     enemy_ai = payload.get("enemy_ai", {}).duplicate(true)
+    active_effects = payload.get("active_effects", []).duplicate(true)
+    spell_cooldowns = payload.get("spell_cooldowns", {}).duplicate(true)
+    pending_transport_id = int(payload.get("pending_transport_id", -1))
+    boarded_transport_id = int(payload.get("boarded_transport_id", -1))
+    transport_capacity = int(payload.get("transport_capacity", transport_capacity))
+    passenger_ids = []
+    for passenger_id in payload.get("passenger_ids", []):
+        passenger_ids.append(int(passenger_id))
     target_ref = null
     target_kind = ""
+    _refresh_spell_modifiers()
+
+
+func _update_spell_state(delta: float) -> void:
+    if max_mana > 0.0 and mana < max_mana:
+        mana = minf(max_mana, mana + (delta * mana_regen))
+
+    var next_cooldowns: Dictionary = {}
+    for spell_id in spell_cooldowns.keys():
+        var next_value: float = maxf(0.0, float(spell_cooldowns.get(spell_id, 0.0)) - delta)
+        if next_value > 0.0:
+            next_cooldowns[spell_id] = next_value
+    spell_cooldowns = next_cooldowns
+
+    if active_effects.is_empty():
+        _refresh_spell_modifiers()
+        return
+
+    var next_effects: Array = []
+    for effect in active_effects:
+        var remaining: float = float(effect.get("remaining", 0.0)) - delta
+        if remaining <= 0.0:
+            continue
+        var next_effect: Dictionary = effect.duplicate(true)
+        next_effect["remaining"] = remaining
+        next_effects.append(next_effect)
+    active_effects = next_effects
+    _refresh_spell_modifiers()
+
+
+func _refresh_spell_modifiers() -> void:
+    armor = base_armor
+    vision = base_vision
+    disabled_timer = 0.0
+
+    for effect in active_effects:
+        var effect_id: String = str(effect.get("id", ""))
+        match effect_id:
+            "armour":
+                armor += float(effect.get("armor_bonus", 0.0))
+            "vision":
+                vision = maxf(vision, base_vision + float(effect.get("vision_bonus", 0.0)))
+            "petrification":
+                disabled_timer = maxf(disabled_timer, float(effect.get("remaining", 0.0)))
+            _:
+                pass
+
+    vision = maxf(4.0, vision)
 
 
 func _move_towards(target_position: Vector2, delta: float) -> void:
@@ -347,7 +560,7 @@ func _find_nearest_target(
     var best_distance: float = INF
 
     for hostile_unit in hostile_units:
-        if hostile_unit == null or not hostile_unit.is_alive():
+        if hostile_unit == null or not hostile_unit.is_alive() or hostile_unit.is_boarded():
             continue
 
         var distance_to_target: float = position.distance_to(hostile_unit.position)
@@ -357,7 +570,7 @@ func _find_nearest_target(
             best_kind = "unit"
 
     for hostile_worker in hostile_workers:
-        if hostile_worker == null or not hostile_worker.is_alive():
+        if hostile_worker == null or not hostile_worker.is_alive() or hostile_worker.is_boarded():
             continue
 
         var distance_to_target: float = position.distance_to(hostile_worker.position)
@@ -422,7 +635,7 @@ func _find_nearest_target_of_kind(
     match kind:
         "unit":
             for hostile_unit in hostile_units:
-                if hostile_unit == null or not hostile_unit.is_alive():
+                if hostile_unit == null or not hostile_unit.is_alive() or hostile_unit.is_boarded():
                     continue
                 var distance_to_target: float = position.distance_to(hostile_unit.position)
                 if distance_to_target > vision:
@@ -433,7 +646,7 @@ func _find_nearest_target_of_kind(
                     best_target = hostile_unit
         "worker":
             for hostile_worker in hostile_workers:
-                if hostile_worker == null or not hostile_worker.is_alive():
+                if hostile_worker == null or not hostile_worker.is_alive() or hostile_worker.is_boarded():
                     continue
                 var distance_to_target: float = position.distance_to(hostile_worker.position)
                 if distance_to_target > vision:
@@ -488,9 +701,9 @@ func _is_target_valid(target: Variant) -> bool:
     if target == null:
         return false
     if target is CombatUnitState:
-        return target.is_alive()
+        return target.is_alive() and not target.is_boarded()
     if target is WorkerUnitType:
-        return target.is_alive()
+        return target.is_alive() and not target.is_boarded()
     if target is BuildingType:
         return target.is_alive()
     return false
@@ -655,3 +868,17 @@ func _vector_from_payload(payload: Variant, fallback: Vector2) -> Vector2:
         float(point_payload.get("x", fallback.x)),
         float(point_payload.get("y", fallback.y))
     )
+
+
+func _refresh_unit_color() -> void:
+    if team == "enemy":
+        unit_color = Color("e15c55")
+        return
+
+    match role:
+        "ranged":
+            unit_color = Color("70b8e8")
+        "magic":
+            unit_color = Color("55d6b7")
+        _:
+            unit_color = Color("ca7753")

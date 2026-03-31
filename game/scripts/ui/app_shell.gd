@@ -184,12 +184,14 @@ func refresh_shell_ui() -> void:
         str(snapshot.get("status_text", "")),
         "\nSynopsis: %s" % mission_synopsis if not mission_synopsis.is_empty() else ""
     ]
-    hud_resource_label.text = "Food %d   Stone %d   Parts %d   Tech %d   Allies %d" % [
+    hud_resource_label.text = "Food %d   Stone %d   Parts %d   Tech %d   Allies %d   Pop %d/%d" % [
         int(resources.get("food", 0)),
         int(resources.get("stone", 0)),
         int(resources.get("parts", 0)),
         int(resources.get("tech", 0)),
-        int(resources.get("allies", 0))
+        int(resources.get("allies", 0)),
+        int(resources.get("population", 0)),
+        int(resources.get("housing", 0))
     ]
     hud_objectives_body.text = "\n".join(snapshot.get("objective_lines", []))
     hud_alerts_body.text = _join_or_placeholder(snapshot.get("alert_lines", []), "No alerts")
@@ -201,6 +203,7 @@ func refresh_shell_ui() -> void:
         mission_synopsis if not mission_synopsis.is_empty() else str(snapshot.get("context_hint", "Context: none")),
         str(snapshot.get("goal_text", "")),
         str(snapshot.get("forces_text", "")),
+        str(snapshot.get("hunger_text", "")),
         "Research %s" % str(snapshot.get("research_text", "0 unlocked"))
     ]
     var carryover_text: String = str(snapshot.get("carryover_text", ""))
@@ -241,7 +244,7 @@ func _refresh_command_buttons(actions: Array) -> void:
     _clear_container(hud_command_button_container)
 
     if actions.is_empty():
-        var placeholder := _make_body_label("Select a production or research building to unlock command buttons.", Color("a8b4bb"))
+        var placeholder := _make_body_label("Select a production building, transport, or druid to unlock command buttons.", Color("a8b4bb"))
         placeholder.custom_minimum_size = Vector2(0, 52)
         hud_command_button_container.add_child(placeholder)
         return
